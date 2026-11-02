@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Faculty Dashboard Client Action -->
+    <record id="action_umti_faculty_dashboard" model="ir.actions.client">
+        <field name="name">Faculty Dashboard</field>
+        <field name="tag">umti_faculty_dashboard_action</field>
+    </record>
+
+</odoo>

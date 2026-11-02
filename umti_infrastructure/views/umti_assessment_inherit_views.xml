@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_umti_assessment_form_facility" model="ir.ui.view">
+        <field name="name">umti.assessment.form.facility</field>
+        <field name="model">umti.assessment</field>
+        <field name="inherit_id" ref="umti_exams.view_umti_assessment_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='date'][1]" position="after">
+                <field name="facility_id" options="{'no_create': True}" placeholder="Select Exam Venue / Hall..."/>
+            </xpath>
+            <xpath expr="//field[@name='unit_schedule_ids']/list/field[@name='date']" position="after">
+                <field name="facility_id" options="{'no_create': True}" placeholder="Select Venue..."/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_umti_assessment_list_facility" model="ir.ui.view">
+        <field name="name">umti.assessment.list.facility</field>
+        <field name="model">umti.assessment</field>
+        <field name="inherit_id" ref="umti_exams.view_umti_assessment_list"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='date']" position="after">
+                <field name="facility_id" optional="show" string="Venue"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_umti_assessment_search_facility" model="ir.ui.view">
+        <field name="name">umti.assessment.search.facility</field>
+        <field name="model">umti.assessment</field>
+        <field name="inherit_id" ref="umti_exams.view_umti_assessment_search"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='semester_id']" position="after">
+                <field name="facility_id" string="Venue"/>
+            </xpath>
+            <xpath expr="//filter[@name='g_state']" position="before">
+                <filter name="g_facility" string="Facility" context="{'group_by': 'facility_id'}"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_umti_assessment_unit_schedule_popup_facility" model="ir.ui.view">
+        <field name="name">umti.assessment.unit.schedule.popup.facility</field>
+        <field name="model">umti.assessment</field>
+        <field name="inherit_id" ref="umti_exams.view_umti_assessment_unit_schedule_popup"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='unit_schedule_ids']/list/field[@name='date']" position="after">
+                <field name="facility_id" options="{'no_create': True}" placeholder="Select Venue..."/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

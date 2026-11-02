@@ -1,0 +1,43 @@
+{
+    'name': 'UMTI Trainers',
+    'version': '18.0.1.2.2',
+    'category': 'Education',
+    'summary': 'Trainer allocations, unit enrollments, schemes of work, work plans, attendance and semester transitions',
+    'depends': ['umti_core','umti_students','hr', 'hr_contract'],
+    'data': [
+        'data/umti_trainers_group_category.xml',
+        'security/security.xml',
+        'security/ir.model.access.csv',
+        'security/rules.xml',
+        'data/umti_attendance_status_data.xml',
+        'data/ir_cron_data.xml',
+        'views/umti_trainer_allocation_views.xml',
+        'views/umti_unit_trainer_views.xml',
+        'views/umti_course_units_inherit_views.xml',
+        'views/umti_student_unit_enrollment_views.xml',
+        'views/umti_student_semester_inherit_views.xml',
+        'views/umti_portal_templates.xml',
+        'views/umti_scheme_of_work_views.xml',
+        'views/umti_work_plan_views.xml',
+        'views/umti_attendance_views.xml',
+        'views/school_student_inherit_views.xml',
+        'views/umti_department_inherit_views.xml',
+        'wizard/umti_student_transition_wizard_views.xml',
+        'views/umti_trainers_menus.xml',
+        'views/umti_attendance_status_views.xml',
+        'views/umti_attendance_analysis_views.xml',
+        'views/portal_templates.xml',
+        'views/umti_dashboard_views.xml',
+    ],
+
+    'assets': {
+        'web.assets_backend': [
+            'umti_trainers/static/src/js/faculty_dashboard.js',
+            'umti_trainers/static/src/xml/faculty_dashboard.xml',
+        ],
+    },
+
+    'installable': True,
+    'application': True,
+    'license': 'LGPL-3',
+}

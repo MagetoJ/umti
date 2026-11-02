@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.umti.core</field>
+        <field name="model">res.config.settings</field>
+        <field name="priority" eval="25"/>
+        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form" position="inside">
+                <app data-string="UMTI Core" string="UMTI Core" name="umti_core" string_key="umti_core">
+                    <block>                    
+                        <block title="Semester Configurations" name="semester_configuration_block">
+                            <setting id="semester_configuration" help="Selects the structure of the school term">
+                                <field name="school_term_structure"/>
+                            </setting>
+                        </block>
+                        <block>
+
+                        </block>
+                    </block>
+                </app>
+            </xpath>
+        </field>
+    </record>
+    <record id="action_umti_core_configuration" model="ir.actions.act_window">
+        <field name="name">Settings</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">res.config.settings</field>
+        <field name="view_mode">form</field>
+        <field name="target">inline</field>
+        <field name="context">{'module': 'umti_core'}</field>
+    </record>
+</odoo>

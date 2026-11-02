@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Student semester: let the department assign unit trainers -->
+    <record id="umti_student_semester_view_form_inherit_trainers" model="ir.ui.view">
+        <field name="name">umti.student.semester.form.inherit.trainers</field>
+        <field name="model">umti.student.semester</field>
+        <field name="inherit_id" ref="umti_students.umti_student_semester_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="action_assign_unit_trainers" type="object"
+                        string="Assign Unit Trainers" class="btn-secondary"
+                        groups="umti_trainers.group_umti_trainers_manager"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Student form: split the progression units by semester state -->
+    <record id="school_student_view_form_units_progression" model="ir.ui.view">
+        <field name="name">school.student.form.units.progression</field>
+        <field name="model">school.student</field>
+        <field name="inherit_id"
+               ref="umti_students.view_school_student_form_semester_inherit"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group[@name='student_units']" position="replace">
+                <group string="Completed" name="units_completed">
+                    <field name="completed_unit_ids" nolabel="1">
+                        <list>
+                            <field name="code"/>
+                            <field name="name"/>
+                            <field name="unit_type"/>
+                            <field name="credit_contribution"/>
+                        </list>
+                    </field>
+                </group>
+                <group string="Current" name="units_current">
+                    <field name="current_unit_ids" nolabel="1">
+                        <list>
+                            <field name="code"/>
+                            <field name="name"/>
+                            <field name="unit_type"/>
+                            <field name="credit_contribution"/>
+                        </list>
+                    </field>
+                </group>
+                <group string="Upcoming" name="units_upcoming">
+                    <field name="upcoming_unit_ids" nolabel="1">
+                        <list>
+                            <field name="code"/>
+                            <field name="name"/>
+                            <field name="unit_type"/>
+                            <field name="credit_contribution"/>
+                        </list>
+                    </field>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

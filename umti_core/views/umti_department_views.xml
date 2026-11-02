@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Form View -->
+    <record id="umti_department_view_form" model="ir.ui.view">
+        <field name="name">umti.department.view.form</field>
+        <field name="model">umti.department</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        
+                    </div>
+                    <group>
+                        <field name="name"/>
+                        <field name="code"/>
+                    </group>
+                    <notebook>
+                        
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- List View -->
+    <record id="umti_department_view_list" model="ir.ui.view">
+        <field name="name">umti.department.view.list</field>
+        <field name="model">umti.department</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="code"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Kanban View -->
+    <record id="umti_department_view_kanban" model="ir.ui.view">
+        <field name="name">umti.department.view.kanban</field>
+        <field name="model">umti.department</field>
+        <field name="arch" type="xml">
+            <kanban>
+                <templates>
+                    <t t-name="card">
+                        <main>
+                            <field name="name" class="fw-bold fs-5"/>
+                            <field name="code" class="text-muted"/>
+                        </main>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- Search View -->
+    <record id="umti_department_view_search" model="ir.ui.view">
+        <field name="name">umti.department.view.search</field>
+        <field name="model">umti.department</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="code"/>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_umti_department" model="ir.actions.act_window">
+        <field name="name">Department</field>
+        <field name="res_model">umti.department</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="search_view_id" ref="umti_department_view_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first department!
+            </p>
+        </field>
+    </record>
+
+   
+</odoo>

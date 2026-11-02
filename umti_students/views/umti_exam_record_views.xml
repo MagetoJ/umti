@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_umti_exam_record_list" model="ir.ui.view">
+        <field name="name">umti.exam.record.list</field>
+        <field name="model">umti.exam.record</field>
+        <field name="arch" type="xml">
+            <list decoration-danger="result == 'fail'">
+                <field name="student_id"/>
+                <field name="academic_year_id"/>
+                <field name="semester_id"/>
+                <field name="course_id"/>
+                <field name="unit_id"/>
+                <field name="unit_code"/>
+                <field name="unit_credit"/>
+                <field name="exam_date"/>
+                <field name="marks"/>
+                <field name="max_marks"/>
+                <field name="percentage"/>
+                <field name="grade"/>
+                <field name="result" widget="badge"
+                       decoration-success="result == 'pass'"
+                       decoration-danger="result == 'fail'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_umti_exam_record_form" model="ir.ui.view">
+        <field name="name">umti.exam.record.form</field>
+        <field name="model">umti.exam.record</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="student_id"/>
+                            <field name="academic_year_id"/>
+                            <field name="semester_id"/>
+                            <field name="course_id"/>
+                            <field name="course_unit_ids" invisible="1"/>
+                            <field name="unit_id"/>
+                            <field name="unit_code"/>
+                            <field name="unit_credit"/>
+                            <field name="exam_date"/>
+                        </group>
+                        <group>
+                            <field name="marks"/>
+                            <field name="max_marks"/>
+                            <field name="percentage"/>
+                            <field name="grade"/>
+                            <field name="result"/>
+                            <field name="remarks"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_umti_exam_record_search" model="ir.ui.view">
+        <field name="name">umti.exam.record.search</field>
+        <field name="model">umti.exam.record</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="student_id"/>
+                <field name="unit_id"/>
+                <field name="course_id"/>
+                <field name="academic_year_id"/>
+                <filter name="f_fail" string="Failed" domain="[('result','=','fail')]"/>
+                <filter name="f_archived" string="Archived" domain="[('active','=',False)]"/>
+                <group expand="0" string="Group By">
+                    <filter name="g_student" string="Student" context="{'group_by':'student_id'}"/>
+                    <filter name="g_year" string="Academic Year" context="{'group_by':'academic_year_id'}"/>
+                    <filter name="g_sem" string="Semester" context="{'group_by':'semester_id'}"/>
+                    <filter name="g_course" string="Course" context="{'group_by':'course_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_umti_exam_record_kanban" model="ir.ui.view">
+        <field name="name">umti.exam.record.kanban</field>
+        <field name="model">umti.exam.record</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="course_id">
+                <field name="course_id"/>
+                <field name="result"/>
+                <templates>
+                    <t t-name="card">
+                        <main>
+                            <field name="student_id" class="fw-bold fs-5"/>
+                            <field name="unit_id"/>
+                            <field name="unit_code" class="text-muted"/>
+                            <field name="exam_date"/>
+                            <field name="marks"/>
+                            <field name="max_marks"/>
+                            <field name="percentage"/>
+                            <field name="grade"/>
+                            <footer>
+                                <field name="result" widget="badge"
+                                       decoration-success="result == 'pass'"
+                                       decoration-danger="result == 'fail'"/>
+                            </footer>
+                        </main>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="action_umti_exam_record" model="ir.actions.act_window">
+        <field name="name">Exam Records</field>
+        <field name="res_model">umti.exam.record</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="search_view_id" ref="view_umti_exam_record_search"/>
+    </record>
+</odoo>

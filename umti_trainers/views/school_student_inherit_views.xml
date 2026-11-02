@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Inherit the student form: add button_box, fields, and enrollments tab -->
+    <record id="school_student_view_form_inherit_trainers" model="ir.ui.view">
+        <field name="name">school.student.form.inherit.trainers</field>
+        <field name="model">school.student</field>
+        <field name="inherit_id" ref="umti_students.school_student_view_form"/>
+        <field name="arch" type="xml">
+
+            <!-- Add level_id and current_trainer_ids to the academic group -->
+            <xpath expr="//field[@name='department_id']" position="after">
+                <field name="course_level"/>
+                <field name="current_trainer_ids" widget="many2many_tags" readonly="1"/>
+            </xpath>
+
+            <!-- Add button_box with enrollments stat button at top of sheet -->
+            <xpath expr="//sheet/widget[@name='web_ribbon']" position="before">
+                <div class="oe_button_box" name="button_box">
+                    <button name="action_view_enrollments" type="object"
+                            class="oe_stat_button" icon="fa-book">
+                        <field name="enrollment_count" string="Enrollments" widget="statinfo"/>
+                    </button>
+                    <button name="action_enroll_course_units" type="object"
+                            class="oe_stat_button" icon="fa-plus-square"
+                            string="Enroll Units"
+                            groups="umti_trainers.group_umti_trainers_manager"/>
+                </div>
+            </xpath>
+
+            <!-- Add enrollments notebook page -->
+            <xpath expr="//page[@name='documents']" position="after">
+                <page string="Unit Enrollments" name="unit_enrollments">
+                    <field name="enrollment_ids">
+                        <list>
+                            <field name="course_id"/>
+                            <field name="unit_id"/>
+                            <field name="academic_term_id"/>
+                            <field name="trainer_id"/>
+                            <field name="state" widget="badge"
+                                   decoration-muted="state == 'draft'"
+                                   decoration-success="state == 'enrolled'"
+                                   decoration-info="state == 'completed'"
+                                   decoration-danger="state == 'dropped'"/>
+                        </list>
+                    </field>
+                </page>
+            </xpath>
+
+            <!-- Attendance Chart: summary + records -->
+            <xpath expr="//page[@name='attendance_chart']" position="inside">
+                <group>
+                    <group string="Submitted Attendance">
+                        <field name="attendance_session_count"/>
+                        <field name="attendance_rate"/>
+                    </group>
+                    <group string="Breakdown">
+                        <field name="attendance_present_count"/>
+                        <field name="attendance_absent_count"/>
+                        <!-- Graph views cannot be embedded in a form field. -->
+                        <button name="action_view_attendance_analysis"
+                                type="object" string="Open Attendance Chart"
+                                class="btn-link" icon="fa-bar-chart"/>
+                    </group>
+                </group>
+                <field name="attendance_line_ids" readonly="1">
+                    <list default_order="date desc">
+                        <field name="date"/>
+                        <field name="status_id"/>
+                        <field name="unit_id"/>
+                        <field name="academic_term_id" optional="show"/>
+                        <field name="sheet_id"/>
+                        <field name="absence_reason"/>
+                        <field name="remarks"/>
+                        <field name="sheet_state" widget="badge"
+                               decoration-muted="sheet_state == 'draft'"
+                               decoration-success="sheet_state == 'done'"/>
+                    </list>
+                </field>
+            </xpath>
+
+        </field>
+    </record>
+
+    <!-- Extend student list view -->
+    <record id="school_student_view_list_inherit_trainers" model="ir.ui.view">
+        <field name="name">school.student.list.inherit.trainers</field>
+        <field name="model">school.student</field>
+        <field name="inherit_id" ref="umti_students.school_student_view_list"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='department_id']" position="after">
+                <field name="course_level" optional="hide"/>
+                <field name="current_trainer_ids" widget="many2many_tags" optional="hide"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

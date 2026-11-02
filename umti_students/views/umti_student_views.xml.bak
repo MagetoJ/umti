@@ -1,0 +1,327 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="school_student_view_list" model="ir.ui.view">
+        <field name="name">school.student.list</field>
+        <field name="model">school.student</field>
+        <field name="arch" type="xml">
+            <list decoration-muted="state in ('discontinued', 'graduated')"
+                  decoration-warning="state in ('deferred', 'suspended')">
+                <field name="admission_no"/>
+                <field name="name"/>
+                <field name="gender" optional="show"/>
+                <field name="mobile" optional="show"/>
+                <field name="course_id"/>
+                <field name="department_id" optional="hide"/>
+                <field name="fee_status" optional="show"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'active'"
+                       decoration-info="state == 'incomplete'"
+                       decoration-warning="state in ('deferred', 'suspended')"
+                       decoration-danger="state == 'discontinued'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="school_student_view_kanban" model="ir.ui.view">
+        <field name="name">school.student.kanban</field>
+        <field name="model">school.student</field>
+        <field name="arch" type="xml">
+            <!-- <kanban default_group_by="state"
+                    decoration-muted="state in ('discontinued', 'graduated')"> -->
+            <kanban decoration-muted="state in ('discontinued', 'graduated')">
+                <field name="state"/>
+                <templates>
+                    <t t-name="card">
+                        <aside>
+                            <field name="image_128" widget="image" class="o_kanban_image"/>
+                        </aside>
+                        <main>
+                            <field name="name" class="fw-bold fs-5"/>
+                            <field name="admission_no" class="text-muted"/>
+                            <field name="course_id"/>
+                            <field name="department_id"/>
+                            <field name="mobile"/>
+                            <footer>
+                                <field name="fee_status" widget="badge"
+                                       decoration-info="fee_status == 'sponsored'"/>
+                                <field name="state" widget="badge"
+                                       decoration-success="state == 'active'"
+                                       decoration-info="state == 'incomplete'"
+                                       decoration-warning="state in ('deferred', 'suspended')"
+                                       decoration-danger="state == 'discontinued'"/>
+                            </footer>
+                        </main>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="school_student_view_form" model="ir.ui.view">
+        <field name="name">school.student.form</field>
+        <field name="model">school.student</field>
+        <field name="arch" type="xml">
+            <form string="Student">
+                <header>
+                    <button name="action_activate" type="object" string="Activate"
+                            class="btn-primary"
+                            invisible="state not in ('incomplete', 'deferred', 'suspended')"/>
+                    <button name="action_graduate" type="object" string="Graduate"
+                            invisible="state != 'active'"/>
+                    <button name="action_defer" type="object" string="Defer"
+                            invisible="state != 'active'"/>
+                    <button name="action_suspend" type="object" string="Suspend"
+                            invisible="state != 'active'"/>
+                    <button name="action_discontinue" type="object" string="Discontinue"
+                            confirm="Discontinue this student?"
+                            invisible="state in ('discontinued', 'graduated')"/>
+                    <button name="action_set_incomplete" type="object" string="Set to Incomplete"
+                            invisible="state != 'discontinued'"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="incomplete,active,graduated"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_lost_books" type="object" string="Lost Books" class="oe_stat_button" icon="fa-book">
+                            <field name="unpaid_lost_books_count" widget="statinfo" string="Lost Books"/>
+                        </button>
+                        <button name="action_view_lost_kits" type="object" string="Lost Kits" class="oe_stat_button" icon="fa-futbol-o">
+                            <field name="unpaid_lost_kits_count" widget="statinfo" string="Lost Kits"/>
+                        </button>
+                        <!--TODO: Make visisble to accounting-->
+                        <button name="action_view_invoices" type="object" string="Invoices" class="oe_stat_button" icon="fa-usd">
+                            <field name="invoices_count" widget="statinfo" string="Invoices"/>
+                        </button>
+                        <button name="action_view_payments" type="object" string="Payments" class="oe_stat_button" icon="fa-money">
+                            <field name="payments_count" widget="statinfo" string="Payments"/>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <field name="image_1920" widget="image" class="oe_avatar"
+                           options="{'preview_image': 'image_128'}"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1>
+                            <field name="name" placeholder="Student full name"/>
+                        </h1>
+                        <h2>
+                            <field name="admission_no"/>
+                        </h2>
+                    </div>
+                    <group>
+                        <group string="Personal">
+                            <field name="gender"/>
+                            <field name="date_of_birth"/>
+                            <field name="age"/>
+                            <field name="nationality_id"/>
+                            <field name="mobile"/>
+                            <field name="email"/>
+                        </group>
+                        <group string="Academic and Fees">
+                            <field name="course_id"/>
+                            <field name="department_id"/>
+                            <field name="fee_status"/>
+                            <field name="sponsor_id" invisible="fee_status != 'sponsored'"
+                                   required="fee_status == 'sponsored'"/>
+                            <field name="user_id"/>
+                            <field name="active" invisible="1"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Personal Info" name="contact">
+                            <group string="Contact and Address">
+                                <group>
+                                    <field name="po_box"/>
+                                    <field name="street" placeholder="Street 1"/>
+                                    <field name="street2" placeholder="Street 2"/>
+                                    <field name="city"/>
+                                </group>
+                                <group>
+                                    <field name="county"/>
+                                    <field name="state_id" options="{'no_open': True}"
+                                           domain="[('country_id', '=?', country_id)]"/>
+                                    <field name="zip"/>
+                                    <field name="country_id" options="{'no_open': True}"/>
+                                </group>
+                            </group>
+
+                            <group string="Health &amp; Emergency">
+                                <group string="Medical Card">
+                                    <field name="medical_card_no"/>
+                                    <field name="blood_group"/>
+                                    <field name="medical_conditions"/>
+                                </group>
+                                <group string="Emergecy Contacts">
+                                    <field name="guardian_ids" nolabel="1">
+                                        <list editable="bottom" nolabel="1">
+                                            <field name="name"/>
+                                            <field name="relationship"/>
+                                            <field name="phone"/>
+                                            <field name="email"/>
+                                            <field name="is_emergency"/>
+                                        </list>
+                                    </field>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Admission" name="documents">
+                            <field name="document_ids">
+                                <list editable="bottom">
+                                    <field name="document_type"/>
+                                    <field name="number"/>
+                                    <field name="application_id"/>
+                                    <field name="attachment" filename="filename" widget="binary"
+                                           invisible="application_id"/>
+                                    <field name="filename" column_invisible="1"/>
+                                    <field name="source_attachment" filename="source_filename" widget="binary"
+                                           string="Application File" invisible="not application_id"/>
+                                    <field name="source_filename" column_invisible="1"/>
+                                    <field name="note"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Attendance Chart">
+                        </page>
+                        <page string="Enrollment Chart">
+                        </page>
+                        <page string="Kit Issuance">
+                            <group>
+                                <field name="kit_ids" nolabel="1">
+                                    <list>
+                                        <field name="kit_id"/>
+                                        <field name="borrow_date"/>
+                                        <field name="return_date"/>
+                                        <field name="due_date"/>
+                                        <field name="is_overdue"/>
+                                        <field name="overdue_days" invisible="not is_overdue"/>
+                                        <field name="state" widget="badge"
+                                            decoration-success="state == 'leased'"
+                                            decoration-warning="state == 'returned'"
+                                            decoration-danger="state == 'overdue'"
+                                            decoration-muted="state == 'draft'"/>
+                                    </list>
+                                </field>
+                            </group>
+
+                        </page>
+                        <page string="Library">
+                            <group>
+                                <field name="lending_ids" nolabel="1">
+                                    <list>
+                                        <field name="book_id"/>
+                                        <field name="borrow_date"/>
+                                        <field name="due_date"/>
+                                        <field name="return_date"/>
+                                        <field name="is_overdue"/>
+                                        <field name="overdue_days" invisible="not is_overdue"/>
+                                        <field name="state" widget="badge"
+                                            decoration-success="state == 'leased'"
+                                            decoration-warning="state == 'returned'"
+                                            decoration-danger="state == 'overdue'"
+                                            decoration-muted="state == 'draft'"/>
+                                        <field name="invoice_id" invisible="state != 'lost'"/>
+                                        <field name="overdue_charge_id" invisible="not is_overdue"/>
+                                    </list>
+                                </field>
+                            </group>
+
+                        </page>
+                        <page string="Financial Chart" name="umti_portfolio_fees">
+                            <group>
+                                <group string="Fee Invoices">
+                                     <field name="student_student_fee_record_ids" nolabel="1" widget="one2many_list">
+                                        <list editable="bottom" aggregate="sum">
+                                            <field name="date"/>
+                                            <field name="name"/>
+                                            <field name="ref"/>
+                                            <field name="amount_total_in_currency_signed" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                            <field name="payment_state" widget="badge" 
+                                                    decoration-success="payment_state == 'paid'"
+                                                    decoration-danger="payment_state in ('not_paid', 'blocked')"
+                                                    decoration-warning="payment_state in ('partial', 'in_payment','reversed')"
+                                                    decoration-muted="payment_state == 'draft'"/>
+                                        </list>
+                                    </field>
+                                </group>
+                                <group string="Fee Payments">
+                                    <field name="student_payment_record_ids" nolabel="1" widget="one2many_list">
+                                        <list editable="bottom" aggregate="sum">
+                                            <field name="date"/>
+                                            <field name="name"/>
+                                            <field name="memo"/>
+                                            <field name="amount_company_currency_signed" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                            <field name="state" widget="badge" 
+                                                    decoration-success="state == 'paid'"
+                                                    decoration-danger="state in ('cancel', 'rejected')"
+                                                    decoration-warning="state == 'in_process'"
+                                                    decoration-muted="state == 'draft'"/>
+                                        </list>
+                                    </field>
+                                </group>
+                            </group>
+                       
+                    </page>
+                    <page string="Exam Records" name="umti_portfolio_exams">
+                        <field name="exam_record_ids">
+                            <list editable="bottom">
+                                <field name="academic_year_id"/>
+                                <field name="semester_id"/>
+                                <field name="course_id"/>
+                                <field name="course_unit_ids" column_invisible="True"/>
+                                <field name="unit_id"/>
+                                <field name="exam_date"/>
+                                <field name="marks"/>
+                                <field name="max_marks"/>
+                                <field name="grade"/>
+                                <field name="result"/>
+                            </list>
+                        </field>
+                    </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="school_student_view_search" model="ir.ui.view">
+        <field name="name">school.student.search</field>
+        <field name="model">school.student</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name" string="Student"
+                       filter_domain="['|', ('name', 'ilike', self), ('admission_no', 'ilike', self)]"/>
+                <field name="mobile"/>
+                <field name="course_id"/>
+                <field name="department_id"/>
+                <filter name="filter_incomplete" string="Incomplete" domain="[('state', '=', 'incomplete')]"/>
+                <filter name="filter_active" string="Active" domain="[('state', '=', 'active')]"/>
+                <filter name="filter_deferred" string="Deferred" domain="[('state', '=', 'deferred')]"/>
+                <filter name="filter_suspended" string="Suspended" domain="[('state', '=', 'suspended')]"/>
+                <filter name="filter_graduated" string="Graduated" domain="[('state', '=', 'graduated')]"/>
+                <filter name="filter_discontinued" string="Discontinued" domain="[('state', '=', 'discontinued')]"/>
+                <separator/>
+                <filter name="filter_sponsored" string="Sponsored" domain="[('fee_status', '=', 'sponsored')]"/>
+                <filter name="filter_archived" string="Archived" domain="[('active', '=', False)]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_state" string="Status" context="{'group_by': 'state'}"/>
+                    <filter name="group_course" string="Course" context="{'group_by': 'course_id'}"/>
+                    <filter name="group_department" string="Department" context="{'group_by': 'department_id'}"/>
+                    <filter name="group_fee_status" string="Fee Status" context="{'group_by': 'fee_status'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="school_student_action" model="ir.actions.act_window">
+        <field name="name">Students</field>
+        <field name="res_model">school.student</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="search_view_id" ref="school_student_view_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Register your first student</p>
+            <p>An admission number is generated automatically when you save.</p>
+        </field>
+    </record>
+</odoo>

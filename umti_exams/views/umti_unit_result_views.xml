@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_umti_unit_result_tree" model="ir.ui.view">
+        <field name="name">umti.unit.result.tree</field>
+        <field name="model">umti.unit.result</field>
+        <field name="arch" type="xml">
+            <list string="Mark Sheet">
+                <field name="adm_no" string="ADM NO"/>
+                <field name="student_id" string="NAME"/>
+                
+                <!-- LO1 -->
+                <field name="lo1_t" string="LO1-T"/>
+                <field name="lo1_p" string="LO1-P"/>
+                
+                <!-- LO2 -->
+                <field name="lo2_t" string="LO2-T"/>
+                <field name="lo2_p" string="LO2-P"/>
+                
+                <!-- LO3 -->
+                <field name="lo3_t" string="LO3-T"/>
+                <field name="lo3_p" string="LO3-P"/>
+                
+                <!-- LO4 -->
+                <field name="lo4_t" string="LO4-T"/>
+                <field name="lo4_p" string="LO4-P"/>
+                
+                <field name="cat_percent" string="CATs (%)" optional="show"/>
+                <field name="assignment_percent" string="Assignments (%)" optional="show"/>
+                <field name="exam_percent" string="Final Exam (%)" optional="show"/>
+                <field name="weight_total" optional="hide"/>
+                <field name="pending_count" optional="hide"/>
+                <field name="final_mark" optional="show"/>
+                <field name="grade" optional="show"/>
+                <!-- Final outcome -->
+                <field name="final_score" string="FINAL SCORE (%)"/>
+                <field name="remarks" string="REMARKS" widget="badge" 
+                       decoration-success="remarks == 'competent'" 
+                       decoration-danger="remarks == 'not_yet_competent'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_umti_unit_result_form" model="ir.ui.view">
+        <field name="name">umti.unit.result.form</field>
+        <field name="model">umti.unit.result</field>
+        <field name="arch" type="xml">
+            <form string="Mark Sheet Record">
+                <header>
+                    <button name="action_publish" type="object" string="Publish Result"
+                            class="btn-primary" invisible="state == 'published'"
+                            groups="umti_exams.group_umti_exams_manager"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group string="Trainee Information">
+                            <field name="student_id"/>
+                            <field name="adm_no"/>
+                            <field name="unit_id"/>
+                            <field name="semester_id"/>
+                        </group>
+                        <group string="Final Results">
+                            <field name="cat_percent"/>
+                            <field name="assignment_percent"/>
+                            <field name="exam_percent"/>
+                            <field name="weight_total"/>
+                            <field name="pending_count"/>
+                            <field name="final_mark"/>
+                            <field name="grade"/>
+                            <field name="result"/>
+                            <field name="is_complete"/>
+                            <field name="state"/>
+                            <field name="final_score"/>
+                            <field name="remarks"/>
+                        </group>
+                    </group>
+                    
+                    <notebook>
+                        <page string="Learning Outcome Marks">
+                            <group>
+                                <group string="LO1 Marks">
+                                    <field name="lo1_t_raw"/>
+                                    <field name="lo1_t_max"/>
+                                    <field name="lo1_t" readonly="1"/>
+                                    <field name="lo1_p_raw"/>
+                                    <field name="lo1_p_max"/>
+                                    <field name="lo1_p" readonly="1"/>
+                                </group>
+                                <group string="LO2 Marks">
+                                    <field name="lo2_t_raw"/>
+                                    <field name="lo2_t_max"/>
+                                    <field name="lo2_t" readonly="1"/>
+                                    <field name="lo2_p_raw"/>
+                                    <field name="lo2_p_max"/>
+                                    <field name="lo2_p" readonly="1"/>
+                                </group>
+                            </group>
+                            <group>
+                                <group string="LO3 Marks">
+                                    <field name="lo3_t_raw"/>
+                                    <field name="lo3_t_max"/>
+                                    <field name="lo3_t" readonly="1"/>
+                                    <field name="lo3_p_raw"/>
+                                    <field name="lo3_p_max"/>
+                                    <field name="lo3_p" readonly="1"/>
+                                </group>
+                                <group string="LO4 Marks">
+                                    <field name="lo4_t_raw"/>
+                                    <field name="lo4_t_max"/>
+                                    <field name="lo4_t" readonly="1"/>
+                                    <field name="lo4_p_raw"/>
+                                    <field name="lo4_p_max"/>
+                                    <field name="lo4_p" readonly="1"/>
+                                </group>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_umti_unit_result" model="ir.actions.act_window">
+        <field name="name">Unit Results</field>
+        <field name="res_model">umti.unit.result</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>

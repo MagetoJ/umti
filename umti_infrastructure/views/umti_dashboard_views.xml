@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_umti_infrastructure_dashboard" model="ir.actions.client">
+        <field name="name">Campus Infrastructure Dashboard</field>
+        <field name="tag">umti_section_dashboard</field>
+        <field name="context">{'umti_section': 'infrastructure'}</field>
+    </record>
+
+    <menuitem id="menu_infrastructure_dashboard"
+              name="Dashboard"
+              parent="menu_umti_infrastructure_root"
+              action="action_umti_infrastructure_dashboard"
+              sequence="1"/>
+</odoo>

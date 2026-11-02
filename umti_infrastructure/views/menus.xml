@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Root menu -->
+    <menuitem id="menu_umti_infrastructure_root"
+              name="Campus Infrastructure"
+              web_icon="umti_infrastructure,static/description/icon.png"
+              sequence="80"/>
+
+    <!-- Class Timetable -->
+    <menuitem id="menu_class_timetable"
+              name="Class Timetable"
+              parent="menu_umti_infrastructure_root"
+              action="action_umti_class_schedule"
+              sequence="10"/>
+
+    <!-- Exam Timetable -->
+    <menuitem id="menu_exam_timetable"
+              name="Exam Timetable"
+              parent="menu_umti_infrastructure_root"
+              action="action_umti_exam_schedule"
+              sequence="20"/>
+
+    <!-- Facilities -->
+    <menuitem id="menu_facilities"
+              name="Facilities &amp; Rooms"
+              parent="menu_umti_infrastructure_root"
+              action="action_umti_facility"
+              sequence="30"/>
+
+    <!-- Configuration -->
+    <menuitem id="menu_infrastructure_config"
+              name="Configuration"
+              parent="menu_umti_infrastructure_root"
+              sequence="90"/>
+
+    <menuitem id="menu_config_time_slots"
+              name="Time Slots"
+              parent="menu_infrastructure_config"
+              action="action_umti_timetable_slot"
+              sequence="10"/>
+
+    <menuitem id="menu_config_slot_templates"
+              name="Slot Templates"
+              parent="menu_infrastructure_config"
+              action="action_umti_slot_template"
+              sequence="20"/>
+
+    <menuitem id="menu_config_facility_unavailability"
+              name="Facility Unavailability"
+              parent="menu_infrastructure_config"
+              action="action_umti_facility_unavailability"
+              sequence="30"/>
+
+</odoo>

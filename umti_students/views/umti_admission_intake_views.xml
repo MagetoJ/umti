@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="school_admission_intake_view_list" model="ir.ui.view">
+        <field name="name">school.admission.intake.list</field>
+        <field name="model">school.admission.intake</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="academic_year_id"/>
+                <field name="semester_id"/>
+                <field name="course_id"/>
+                <field name="date_open"/>
+                <field name="date_close"/>
+                <field name="capacity"/>
+                <field name="seats_left"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'open'"
+                       decoration-info="state == 'draft'"
+                       decoration-muted="state in ('closed', 'cancelled')"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="school_admission_intake_view_form" model="ir.ui.view">
+        <field name="name">school.admission.intake.form</field>
+        <field name="model">school.admission.intake</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_open" type="object" string="Open Applications"
+                            class="btn-primary" invisible="state != 'draft'"/>
+                    <button name="action_close" type="object" string="Close" invisible="state != 'open'"/>
+                    <button name="action_cancel" type="object" string="Cancel"
+                            invisible="state not in ('draft', 'open')"/>
+                    <button name="action_reset_draft" type="object" string="Reset to Draft"
+                            invisible="state not in ('closed', 'cancelled')"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,open,closed"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_applications" type="object"
+                                class="oe_stat_button" icon="fa-users">
+                            <field name="application_count" widget="statinfo" string="Applications"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="e.g. Diploma in IT, Sept 2026 intake"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="academic_year_id"/>
+                            <field name="semester_id"/>
+                            <field name="course_id"/>
+                            <field name="department_id"/>
+                        </group>
+                        <group>
+                            <field name="date_open"/>
+                            <field name="date_close"/>
+                            <field name="capacity"/>
+                            <field name="seats_taken"/>
+                            <field name="seats_left" invisible="not capacity"/>
+                            <field name="admission_fee"/>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Mandatory Documents">
+                            <list>
+                                <field name="required_document_ids">
+                                    <list create="0">
+                                        <field name="name"/>
+                                        <field name="code"/>
+                                        <field name="description"/>
+                                        <field name="waivable"/>
+                                    </list>
+                                </field>
+                            </list>
+                        </page>
+                        <page string="Mandatory Requirements">
+                            <list>
+                                <field name="qualifying_requirement_ids">
+                                    <list create="0">
+                                        <field name="name"/>
+                                        <field name="required_mark"/>
+                                        <field name="description"/>
+                                    </list>
+                                </field>
+                            </list>
+                        </page>
+                        <page string="General Requirements">
+                            <list>
+                                <field name="general_requirement_ids">
+                                    <list create="0">
+                                        <field name="name"/>
+                                        <field name="description"/>
+                                    </list>
+                                </field>
+                            </list>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="school_admission_intake_view_search" model="ir.ui.view">
+        <field name="name">school.admission.intake.search</field>
+        <field name="model">school.admission.intake</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="course_id"/>
+                <field name="academic_year_id"/>
+                <filter name="filter_open" string="Open" domain="[('state', '=', 'open')]"/>
+                <filter name="filter_draft" string="Draft" domain="[('state', '=', 'draft')]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_year" string="Academic Year" context="{'group_by': 'academic_year_id'}"/>
+                    <filter name="group_course" string="Course" context="{'group_by': 'course_id'}"/>
+                    <filter name="group_state" string="Status" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="school_admission_intake_view_kanban" model="ir.ui.view">
+        <field name="name">school.admission.intake.kanban</field>
+        <field name="model">school.admission.intake</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="state">
+                <field name="state"/>
+                <templates>
+                    <t t-name="card">
+                        <main>
+                            <field name="name" class="fw-bold fs-5"/>
+                            <field name="course_id"/>
+                            <field name="academic_year_id"/>
+                            <field name="semester_id"/>
+                            <field name="date_open"/>
+                            <field name="date_close"/>
+                            <field name="seats_left"/>
+                            <footer>
+                                <field name="state" widget="badge"
+                                       decoration-success="state == 'open'"
+                                       decoration-info="state == 'draft'"
+                                       decoration-muted="state in ('closed', 'cancelled')"/>
+                            </footer>
+                        </main>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="school_admission_intake_action" model="ir.actions.act_window">
+        <field name="name">Intakes</field>
+        <field name="res_model">school.admission.intake</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="search_view_id" ref="school_admission_intake_view_search"/>
+    </record>
+</odoo>

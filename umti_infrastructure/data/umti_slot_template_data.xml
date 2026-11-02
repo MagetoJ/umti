@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data numpy="1">
+        <!-- Default Regular Slot Templates -->
+        <record id="slot_template_regular_1" model="umti.slot.template">
+            <field name="name">Morning Session 1</field>
+            <field name="slot_type">regular</field>
+            <field name="start_time">8.0</field>
+            <field name="end_time">10.0</field>
+            <field name="sequence">10</field>
+        </record>
+        <record id="slot_template_regular_2" model="umti.slot.template">
+            <field name="name">Morning Session 2</field>
+            <field name="slot_type">regular</field>
+            <field name="start_time">10.5</field>
+            <field name="end_time">12.5</field>
+            <field name="sequence">20</field>
+        </record>
+        <record id="slot_template_regular_3" model="umti.slot.template">
+            <field name="name">Afternoon Session</field>
+            <field name="slot_type">regular</field>
+            <field name="start_time">14.0</field>
+            <field name="end_time">16.0</field>
+            <field name="sequence">30</field>
+        </record>
+
+        <!-- Default Exam Slot Templates -->
+        <record id="slot_template_exam_1" model="umti.slot.template">
+            <field name="name">Exam Morning Slot</field>
+            <field name="slot_type">exam</field>
+            <field name="start_time">9.0</field>
+            <field name="end_time">12.0</field>
+            <field name="sequence">10</field>
+        </record>
+        <record id="slot_template_exam_2" model="umti.slot.template">
+            <field name="name">Exam Afternoon Slot</field>
+            <field name="slot_type">exam</field>
+            <field name="start_time">13.5</field>
+            <field name="end_time">16.5</field>
+            <field name="sequence">20</field>
+        </record>
+    </data>
+</odoo>

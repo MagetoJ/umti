@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+        <!-- Sits under the same top-level "UMTI Core" category as umti_core's groups -->
+        <record id="module_category_umti_students" model="ir.module.category">
+            <field name="name">UMTI Students</field>
+            <field name="parent_id" ref="umti_core.module_category_umti_core"/>
+        </record>
+    </data>
+</odoo>

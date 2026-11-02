@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="school_admission_review_list" model="ir.ui.view">
+        <field name="name">school.admission.review.list</field>
+        <field name="model">school.admission.review</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="application_id"/>
+                <field name="reviewer_id"/>
+                <field name="review_start_date"/>
+                <field name="review_end_date"/>
+                <field name="likely_to_reject" optional="show"/>
+                <field name="rejection_hint" optional="hide"/>
+                <field name="state" widget="badge"
+                       decoration-info="state in ('received', 'under_review')"
+                       decoration-warning="state == 'rejected'"
+                       decoration-success="state == 'accepted'"/>
+            </list>
+        </field>
+    </record>
+    <record id="school_admission_review_form" model="ir.ui.view">
+        <field name="name">school.admission.review.form</field>
+        <field name="model">school.admission.review</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_start_review" type="object" string="Start Review"
+                            class="btn-primary" invisible="state != 'received'"/>
+                    <button name="action_accept" type="object" string="Accept"
+                            class="btn-primary" invisible="state != 'under_review'"/>
+                    <button name="action_enroll" type="object" string="Enroll"
+                            class="btn-primary" invisible="state != 'accepted'"/>
+                    <button name="action_reject" type="object" string="Reject"
+                            class="btn-danger" invisible="state not in ( 'under_review')"/>
+                    <button name="action_reset_draft" type="object" string="Reset to Draft"
+                            icon="fa-undo"
+                            invisible="state not in ('rejected')"
+                            confirm="The review returns to Received and the application goes back to Draft. Proceed?"/>
+                    <field name="state" widget="statusbar" statusbar_visible="received,under_review,accepted,enrolled"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <!-- The fee is only collected once the application is
+                             accepted, so these live behind that state. -->
+                        <button name="action_view_admission_invoice" type="object"
+                                class="oe_stat_button" icon="fa-file-text-o"
+                                invisible="state != 'accepted' or not adm_fee_invoice_id">
+                            <field name="invoice_count" widget="statinfo"
+                                   string="Admission Invoice"/>
+                        </button>
+                        <button name="action_view_payments" type="object"
+                                class="oe_stat_button" icon="fa-credit-card"
+                                invisible="state != 'accepted' or not payment_count">
+                            <field name="payment_count" widget="statinfo"
+                                   string="Payment"/>
+                        </button>
+                        <button name="action_open_payment_wizard" type="object"
+                                class="oe_stat_button" icon="fa-money"
+                                invisible="state != 'accepted' or not adm_fee_invoice_id or fee_paid">
+                            <div class="o_stat_info">
+                                <span class="o_stat_text">Create payment</span>
+                            </div>
+                        </button>
+                    </div>
+                    <field name="likely_to_reject" invisible="1"/>
+                    <div class="alert alert-warning" role="alert"
+                         invisible="not likely_to_reject">
+                        <i class="fa fa-exclamation-triangle me-1"/>
+                        <strong>Likely to be rejected</strong> —
+                        <field name="rejection_hint" readonly="1" class="oe_inline"/>
+                    </div>
+                    <group>
+                        <group string="Application Info">
+                            <field name="application_id" readonly="1"/>
+                            <field name="reviewer_id" readonly="1"/>
+                            <field name="review_start_date" readonly="1"/>
+                            <field name="review_end_date" readonly="1"/>
+                            <field name="fee_status" widget="badge"
+                                   decoration-danger="fee_status in ('no_invoice', 'unpaid')"
+                                   decoration-warning="fee_status == 'partial'"
+                                   decoration-success="fee_status == 'paid'"/>
+                            <!-- Only meaningful when something is missing: the
+                                 computed flag decides. -->
+                            <field name="rejection_reason"
+                                   readonly="not likely_to_reject"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Documents" name="documents">
+                            <field name="document_ids" nolabel="1">
+                                <!-- Read-only summary; open a row to verify, waive
+                                     or look at the uploaded file. -->
+                                <list create="0" delete="0">
+                                    <field name="waivable" column_invisible="1"/>
+                                    <field name="name" string="Document"/>
+                                    <field name="filename" string="File"/>
+                                    <field name="status" widget="badge"
+                                           decoration-danger="status == 'missing'"
+                                           decoration-info="status == 'uploaded'"
+                                           decoration-success="status in ('verified', 'waived')"/>
+                                    <field name="waiver_requested"/>
+                                    <field name="verified"/>
+                                    <field name="waived"/>
+                                </list>
+                                <form>
+                                    <group>
+                                        <group string="Document">
+                                            <field name="name" readonly="1"/>
+                                            <field name="description" readonly="1"
+                                                   invisible="not description"/>
+                                            <field name="status" widget="badge"/>
+                                        </group>
+                                        <group string="File">
+                                            <field name="attachment" filename="filename"
+                                                   readonly="1"/>
+                                            <field name="filename" invisible="1"/>
+                                        </group>
+                                    </group>
+                                    <group string="Decision">
+                                        <field name="waivable" readonly="1"/>
+                                        <field name="waiver_requested" readonly="1"/>
+                                        <field name="waiver_reason" readonly="1"
+                                               invisible="not waiver_requested"/>
+                                        <field name="verified"
+                                               readonly="parent.state != 'under_review'"
+                                               invisible="waived"/>
+                                        <field name="waived"
+                                               readonly="parent.state != 'under_review'"
+                                               invisible="not waivable"/>
+                                    </group>
+                                </form>
+                            </field>
+                        </page>
+                        <page string="Course Requirements" name="requirements">
+                            <field name="requirement_ids" nolabel="1">
+                                <list create="0" delete="0">
+                                    <field name="waivable" column_invisible="1"/>
+                                    <field name="kind" column_invisible="1"/>
+                                    <field name="name" string="Requirement"/>
+                                    <field name="required_mark"
+                                           invisible="not required_mark"/>
+                                    <field name="status" widget="badge"
+                                           decoration-danger="status == 'pending'"
+                                           decoration-success="status in ('met', 'waived')"/>
+                                    <field name="waiver_requested"/>
+                                    <field name="met"/>
+                                    <field name="waived"/>
+                                </list>
+                                <form>
+                                    <group>
+                                        <group string="Requirement">
+                                            <field name="name" readonly="1"/>
+                                            <field name="required_mark" readonly="1"
+                                                   invisible="not required_mark"/>
+                                            <field name="description" readonly="1"
+                                                   invisible="not description"/>
+                                            <field name="status" widget="badge"/>
+                                        </group>
+                                        <group string="Decision">
+                                            <field name="waivable" readonly="1"/>
+                                            <field name="waiver_requested" readonly="1"/>
+                                            <field name="waiver_reason" readonly="1"
+                                                   invisible="not waiver_requested"/>
+                                            <field name="met"
+                                                   readonly="parent.state != 'under_review'"
+                                                   invisible="waived"/>
+                                            <field name="waived"
+                                                   readonly="parent.state != 'under_review'"
+                                                   invisible="not waivable"/>
+                                        </group>
+                                    </group>
+                                </form>
+                            </field>
+                        </page>
+                        <!-- Checked off while enrolling; they do not block it. -->
+                        <page string="General Requirements" name="general_requirements"
+                              invisible="state != 'accepted'">
+                            <field name="general_requirement_ids" nolabel="1">
+                                <list create="0" delete="0">
+                                    <field name="waivable" column_invisible="1"/>
+                                    <field name="name" string="Requirement"/>
+                                    <field name="description"
+                                           invisible="not description"/>
+                                    <field name="status" widget="badge"
+                                           decoration-danger="status == 'pending'"
+                                           decoration-success="status in ('met', 'waived')"/>
+                                    <field name="met"/>
+                                    <field name="waived"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+                </form>
+            </field>
+        </record>   
+        <record id="school_admission_review_kanban" model="ir.ui.view">
+            <field name="name">school.admission.review.kanban</field>
+            <field name="model">school.admission.review</field>
+            <field name="arch" type="xml">
+                <kanban default_group_by="state">
+                    <field name="state"/>
+                    <templates>
+                        <t t-name="card">
+                            <main>
+                                <field name="application_id" class="fw-bold fs-5"/>
+                                <field name="reviewer_id"/>
+                                <field name="review_start_date"/>
+                                <field name="review_end_date"/>
+                                <footer>
+                                    <field name="state" widget="badge"
+                                           decoration-info="state in ('received', 'under_review')"
+                                           decoration-warning="state == 'rejected'"
+                                           decoration-success="state == 'accepted'"/>
+                                </footer>
+                            </main>
+                        </t>
+                    </templates>
+                </kanban>
+            </field>
+        </record>
+
+        <record id="school_admission_review_search" model="ir.ui.view">
+            <field name="name">school.admission.review.search</field>
+            <field name="model">school.admission.review</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="application_id"/>
+                    <field name="reviewer_id"/>
+                    <filter name="filter_received" string="Received" domain="[('state', '=', 'received')]"/>
+                    <filter name="filter_under_review" string="Under Review" domain="[('state', '=', 'under_review')]"/>
+                    <filter name="filter_accepted" string="Accepted" domain="[('state', '=', 'accepted')]"/>
+                    <filter name="filter_rejected" string="Rejected" domain="[('state', '=', 'rejected')]"/>
+                    <group expand="0" string="Group By">
+                        <filter name="group_state" string="Status" context="{'group_by': 'state'}"/>
+                        <filter name="group_reviewer" string="Reviewer" context="{'group_by': 'reviewer_id'}"/>
+                        <filter name="group_application" string="Application" context="{'group_by': 'application_id'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <record id="school_admission_review_action" model="ir.actions.act_window">
+            <field name="name">Application Reviews</field>
+            <field name="res_model">school.admission.review</field>
+            <field name="view_mode">kanban,list,form</field>
+            <field name="search_view_id" ref="school_admission_review_search"/>
+        </record>
+</odoo>

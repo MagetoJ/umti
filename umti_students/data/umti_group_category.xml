@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+        <record id="module_category_school" model="ir.module.category">
+            <field name="name">School</field>
+            <field name="sequence">50</field>
+        </record>
+    </data>
+</odoo>

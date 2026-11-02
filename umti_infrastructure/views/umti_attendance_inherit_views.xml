@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="umti_attendance_sheet_view_form_inherit_schedule" model="ir.ui.view">
+        <field name="name">umti.attendance.sheet.form.inherit.schedule</field>
+        <field name="model">umti.attendance.sheet</field>
+        <field name="inherit_id" ref="umti_trainers.umti_attendance_sheet_view_form"/>
+        <field name="arch" type="xml">
+            <field name="date" position="before">
+                <field name="class_schedule_id"
+                       domain="[('trainer_id', '=', trainer_id)]"
+                       options="{'no_create': True}"
+                       invisible="state != 'draft'"/>
+                <field name="schedule_slot_id"
+                       invisible="not class_schedule_id"/>
+                <field name="schedule_facility_id"
+                       invisible="not class_schedule_id"/>
+            </field>
+            <field name="academic_term_id" position="after">
+                <field name="course_unit_id" invisible="1"/>
+            </field>
+        </field>
+    </record>
+</odoo>

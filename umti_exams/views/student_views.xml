@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_school_student_form_umti_exams" model="ir.ui.view">
+        <field name="name">school.student.form.umti.exams</field>
+        <field name="model">school.student</field>
+        <field name="inherit_id" ref="umti_students.school_student_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="Assessment Results" name="umti_assessment_results">
+                    <field name="unit_result_ids">
+                        <list create="0" delete="0">
+                            <field name="academic_year_id"/>
+                            <field name="semester_id"/>
+                            <field name="unit_id"/>
+                            <field name="cat_percent"/>
+                            <field name="assignment_percent"/>
+                            <field name="exam_percent"/>
+                            <field name="pending_count"/>
+                            <field name="final_mark"/>
+                            <field name="grade"/>
+                            <field name="result" widget="badge"
+                                   decoration-success="result == 'pass'" decoration-danger="result == 'fail'"/>
+                            <field name="state" widget="badge"
+                                   decoration-info="state == 'draft'" decoration-success="state == 'published'"/>
+                        </list>
+                    </field>
+                    <field name="assessment_mark_ids">
+                        <list create="0" delete="0" edit="0">
+                            <field name="assessment_id"/>
+                            <field name="unit_id"/>
+                            <field name="marks"/>
+                            <field name="max_marks"/>
+                            <field name="grade"/>
+                            <field name="result"/>
+                            <field name="state"/>
+                        </list>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Add unit-result stat button and tab to the portfolio form -->
+    <record id="view_umti_student_portfolio_form_exams" model="ir.ui.view">
+        <field name="name">school.student.portfolio.form.umti.exams</field>
+        <field name="model">school.student</field>
+        <field name="inherit_id" ref="umti_students.view_umti_student_portfolio_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_unit_results" type="object"
+                        class="oe_stat_button" icon="fa-book">
+                    <field name="unit_result_count" widget="statinfo" string="Unit Results"/>
+                </button>
+            </xpath>
+            <xpath expr="//page[@name='exams']" position="after">
+                <page string="Unit Results" name="unit_results">
+                    <field name="unit_result_ids">
+                        <list create="0" delete="0">
+                            <field name="academic_year_id"/>
+                            <field name="semester_id"/>
+                            <field name="unit_id"/>
+                            <field name="final_mark"/>
+                            <field name="grade"/>
+                            <field name="result" widget="badge"
+                                   decoration-success="result == 'pass'" decoration-danger="result == 'fail'"/>
+                            <field name="state" widget="badge"
+                                   decoration-info="state == 'draft'" decoration-success="state == 'published'"/>
+                        </list>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Add unit-result count to the portfolio kanban
+    <record id="view_umti_student_portfolio_kanban_exams" model="ir.ui.view">
+        <field name="name">school.student.portfolio.kanban.umti.exams</field>
+        <field name="model">school.student</field>
+        <field name="inherit_id" ref="umti_students.view_umti_student_portfolio_kanban"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[hasclass('text-muted')]" position="inside">
+                | <field name="unit_result_count"/> unit results
+            </xpath>
+        </field>
+    </record> -->
+
+    <record id="action_report_transcript" model="ir.actions.report">
+        <field name="name">Transcript</field>
+        <field name="model">school.student</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">umti_exams.report_transcript</field>
+        <field name="report_file">umti_exams.report_transcript</field>
+        <field name="print_report_name">'Transcript - %s' % object.name</field>
+        <field name="binding_model_id" ref="umti_students.model_school_student"/>
+        <field name="binding_type">report</field>
+    </record>
+</odoo>

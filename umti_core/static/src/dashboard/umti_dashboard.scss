@@ -1,0 +1,742 @@
+// School dashboard — calm data-first language inside the Odoo backend.
+// Principles: hairline structure, tabular figures, one accent per metric,
+// no icon chips, no heavy shadows, no gradients. Dark-mode aware.
+
+.o_umti_dashboard {
+    --umti-bg: #f6f7f9;
+    --umti-surface: #ffffff;
+    --umti-ink: #0f172a;
+    --umti-ink-soft: #475569;
+    --umti-muted: #6b7688;
+    --umti-line: rgba(15, 23, 42, 0.08);
+    --umti-line-strong: rgba(15, 23, 42, 0.16);
+    --umti-track: rgba(15, 23, 42, 0.06);
+
+    --umti-blue: #2563eb;
+    --umti-green: #0f9d76;
+    --umti-amber: #d97706;
+    --umti-red: #dc2626;
+    --umti-violet: #7c3aed;
+    --umti-slate: #64748b;
+
+    --umti-shadow: 0 1px 2px rgba(15, 23, 42, 0.04),
+        0 18px 32px -24px rgba(15, 23, 42, 0.28);
+
+    // The client action is a flex child of the action area: own the scroll.
+    display: block;
+    flex: 1 1 auto;
+    min-height: 0;
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 28px clamp(16px, 3vw, 44px) 56px;
+    background: var(--umti-bg);
+    color: var(--umti-ink);
+
+    // ------------------------------------------------------------------
+    // Header
+    // ------------------------------------------------------------------
+    .umti-dash__header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 28px;
+    }
+
+    .umti-dash__title {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 600;
+        letter-spacing: -0.02em;
+        color: var(--umti-ink);
+    }
+
+    .umti-dash__subtitle {
+        margin: 6px 0 0;
+        font-size: 0.8rem;
+        color: var(--umti-muted);
+    }
+
+    .umti-dash__company {
+        font-weight: 600;
+        color: var(--umti-ink-soft);
+    }
+
+    .umti-dash__sep {
+        margin: 0 6px;
+    }
+
+    .umti-dash__refresh {
+        flex: 0 0 auto;
+    }
+
+    // ------------------------------------------------------------------
+    // Loading / error
+    // ------------------------------------------------------------------
+    .umti-dash__state {
+        display: flex;
+        align-items: center;
+        padding: 22px 24px;
+        border: 1px solid var(--umti-line);
+        border-radius: 14px;
+        background: var(--umti-surface);
+        color: var(--umti-muted);
+        font-size: 0.86rem;
+
+        &--error {
+            color: var(--umti-red);
+            border-color: rgba(220, 38, 38, 0.28);
+        }
+    }
+
+    // ------------------------------------------------------------------
+    // Term warning
+    // ------------------------------------------------------------------
+    .umti-dash__alert {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+        margin-bottom: 24px;
+        padding: 18px 22px;
+        border: 1px solid rgba(217, 119, 6, 0.28);
+        border-radius: 14px;
+        background: rgba(217, 119, 6, 0.06);
+    }
+
+    .umti-dash__alert-body {
+        display: flex;
+        align-items: flex-start;
+        gap: 14px;
+        min-width: 0;
+    }
+
+    .umti-dash__alert-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        flex: 0 0 auto;
+        border-radius: 50%;
+        background: rgba(217, 119, 6, 0.14);
+        color: var(--umti-amber);
+        font-size: 0.85rem;
+    }
+
+    .umti-dash__alert strong {
+        display: block;
+        font-size: 0.85rem;
+        font-weight: 600;
+        letter-spacing: 0.01em;
+    }
+
+    .umti-dash__alert-text {
+        margin: 4px 0 0;
+        font-size: 0.83rem;
+        line-height: 1.45;
+        color: var(--umti-ink-soft);
+    }
+
+    .umti-dash__alert-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    // ------------------------------------------------------------------
+    // Onboarding checklist
+    // ------------------------------------------------------------------
+    .umti-onboard {
+        margin-bottom: 18px;
+        padding: 22px 24px;
+        border: 1px solid var(--umti-line);
+        border-radius: 16px;
+        background: var(--umti-surface);
+        box-shadow: var(--umti-shadow);
+    }
+
+    .umti-onboard__head {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        // The whole header is the collapse toggle.
+        cursor: pointer;
+        border-radius: 8px;
+        transition: color 0.15s ease;
+
+        &:hover .umti-onboard__chevron {
+            color: var(--umti-ink);
+        }
+
+        &:focus-visible {
+            outline: 2px solid var(--umti-blue);
+            outline-offset: 4px;
+        }
+    }
+
+    .umti-onboard__intro {
+        min-width: 0;
+    }
+
+    .umti-onboard__eyebrow {
+        margin: 0;
+        font-size: 0.66rem;
+        font-weight: 600;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--umti-muted);
+    }
+
+    .umti-onboard__title {
+        margin: 5px 0 0;
+        font-size: 1.05rem;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+    }
+
+    .umti-onboard__sub {
+        margin: 12px 0 0;
+        max-width: 62ch;
+        font-size: 0.82rem;
+        line-height: 1.45;
+        color: var(--umti-muted);
+    }
+
+    .umti-onboard__sub strong {
+        font-weight: 600;
+        color: var(--umti-ink-soft);
+    }
+
+    .umti-onboard__aside {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex: 0 0 auto;
+    }
+
+    .umti-onboard__chevron {
+        font-size: 0.95rem;
+        color: var(--umti-muted);
+        transition: color 0.15s ease;
+    }
+
+    .umti-onboard__pct {
+        font-size: 1.5rem;
+        font-weight: 600;
+        line-height: 1.1;
+        font-variant-numeric: tabular-nums;
+        letter-spacing: -0.02em;
+        color: var(--umti-ink);
+    }
+
+    .umti-onboard__track {
+        height: 6px;
+        margin-top: 16px;
+        border-radius: 999px;
+        background: var(--umti-track);
+        overflow: hidden;
+    }
+
+    .umti-onboard__fill {
+        height: 100%;
+        border-radius: inherit;
+        background: var(--umti-blue);
+        transition: width 0.45s cubic-bezier(0.2, 0.7, 0.2, 1);
+    }
+
+    .umti-onboard__steps {
+        margin: 14px 0 0;
+        padding: 0;
+        list-style: none;
+        border-top: 1px solid var(--umti-line);
+    }
+
+    .umti-onboard__step {
+        display: grid;
+        grid-template-columns: 26px minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 14px;
+        padding: 13px 0;
+        border-bottom: 1px solid var(--umti-line);
+
+        &:last-child {
+            border-bottom: 0;
+            padding-bottom: 2px;
+        }
+    }
+
+    .umti-onboard__marker {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 26px;
+        height: 26px;
+        border: 1px solid var(--umti-line-strong);
+        border-radius: 50%;
+        font-size: 0.72rem;
+        font-weight: 600;
+        font-variant-numeric: tabular-nums;
+        color: var(--umti-muted);
+    }
+
+    .umti-onboard__step--done .umti-onboard__marker {
+        border-color: transparent;
+        background: rgba(15, 157, 118, 0.12);
+        color: var(--umti-green);
+        font-size: 0.7rem;
+    }
+
+    .umti-onboard__body {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+        min-width: 0;
+    }
+
+    .umti-onboard__label {
+        font-size: 0.88rem;
+        font-weight: 600;
+        color: var(--umti-ink);
+    }
+
+    .umti-onboard__step--done .umti-onboard__label {
+        color: var(--umti-ink-soft);
+        font-weight: 500;
+    }
+
+    .umti-onboard__hint {
+        font-size: 0.8rem;
+        line-height: 1.45;
+        color: var(--umti-muted);
+    }
+
+    .umti-onboard__step--done .umti-onboard__hint {
+        color: var(--umti-muted);
+    }
+
+    .umti-onboard__cta {
+        white-space: nowrap;
+    }
+
+    // ------------------------------------------------------------------
+    // KPI row
+    // ------------------------------------------------------------------
+    .umti-dash__kpis {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+        gap: 14px;
+        margin-bottom: 18px;
+    }
+
+    .umti-kpi {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        padding: 18px 20px 18px;
+        border: 1px solid var(--umti-line);
+        border-radius: 14px;
+        background: var(--umti-surface);
+        box-shadow: var(--umti-shadow);
+        overflow: hidden;
+        transition: box-shadow 0.18s ease, transform 0.18s ease;
+
+        // One hairline keyline carries the metric's accent.
+        &::before {
+            content: "";
+            position: absolute;
+            inset: 0 0 auto 0;
+            height: 2px;
+            background: var(--umti-accent, var(--umti-slate));
+        }
+
+        &:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05),
+                0 24px 40px -26px rgba(15, 23, 42, 0.34);
+        }
+    }
+
+    .umti-kpi--clickable {
+        cursor: pointer;
+
+        &:hover .umti-kpi__icon {
+            color: var(--umti-accent, var(--umti-slate));
+        }
+
+        &:focus-visible {
+            outline: 2px solid var(--umti-accent, var(--umti-blue));
+            outline-offset: 2px;
+        }
+    }
+
+    .umti-kpi--blue { --umti-accent: var(--umti-blue); }
+    .umti-kpi--green { --umti-accent: var(--umti-green); }
+    .umti-kpi--amber { --umti-accent: var(--umti-amber); }
+    .umti-kpi--red { --umti-accent: var(--umti-red); }
+    .umti-kpi--violet { --umti-accent: var(--umti-violet); }
+    .umti-kpi--slate { --umti-accent: var(--umti-slate); }
+
+    .umti-kpi__head {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .umti-kpi__dot {
+        width: 6px;
+        height: 6px;
+        flex: 0 0 auto;
+        border-radius: 50%;
+        background: var(--umti-accent, var(--umti-slate));
+    }
+
+    .umti-kpi__label {
+        font-size: 0.7rem;
+        font-weight: 600;
+        letter-spacing: 0.09em;
+        text-transform: uppercase;
+        color: var(--umti-muted);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .umti-kpi__icon {
+        margin-left: auto;
+        font-size: 0.9rem;
+        color: var(--umti-line-strong);
+    }
+
+    .umti-kpi__value {
+        font-size: 1.85rem;
+        font-weight: 600;
+        line-height: 1.05;
+        letter-spacing: -0.03em;
+        font-variant-numeric: tabular-nums;
+        color: var(--umti-ink);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .umti-kpi__hint {
+        font-size: 0.76rem;
+        line-height: 1.4;
+        color: var(--umti-muted);
+    }
+
+    // ------------------------------------------------------------------
+    // Cards (charts + lists)
+    // ------------------------------------------------------------------
+    .umti-dash__grid,
+    .umti-dash__lists {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 14px;
+        margin-bottom: 18px;
+    }
+
+    .umti-card {
+        padding: 18px 20px 20px;
+        border: 1px solid var(--umti-line);
+        border-radius: 14px;
+        background: var(--umti-surface);
+        box-shadow: var(--umti-shadow);
+    }
+
+    .umti-card__title {
+        margin: 0 0 16px;
+        padding-bottom: 11px;
+        border-bottom: 1px solid var(--umti-line);
+        font-size: 0.8rem;
+        font-weight: 600;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        color: var(--umti-ink-soft);
+    }
+
+    .umti-card__more {
+        margin-top: 10px;
+        font-size: 0.74rem;
+        color: var(--umti-muted);
+    }
+
+    // ------------------------------------------------------------------
+    // Bars
+    // ------------------------------------------------------------------
+    .umti-bars {
+        display: flex;
+        flex-direction: column;
+        gap: 13px;
+    }
+
+    .umti-bar__head {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 6px;
+        font-size: 0.8rem;
+    }
+
+    .umti-bar__label {
+        color: var(--umti-ink-soft);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .umti-bar__value {
+        flex: 0 0 auto;
+        font-weight: 600;
+        font-variant-numeric: tabular-nums;
+        color: var(--umti-ink);
+    }
+
+    .umti-bar__track {
+        height: 6px;
+        border-radius: 999px;
+        background: var(--umti-track);
+        overflow: hidden;
+    }
+
+    .umti-bar__fill {
+        height: 100%;
+        border-radius: 999px;
+        background: var(--umti-blue);
+        transition: width 0.35s ease;
+    }
+
+    .umti-bar--clickable {
+        cursor: pointer;
+        margin: 0 -8px;
+        padding: 4px 8px 6px;
+        border-radius: 8px;
+        transition: background 0.15s ease;
+
+        &:hover {
+            background: rgba(37, 99, 235, 0.05);
+        }
+    }
+
+    // ------------------------------------------------------------------
+    // Donut
+    // ------------------------------------------------------------------
+    .umti-donut {
+        display: flex;
+        align-items: center;
+        gap: 22px;
+    }
+
+    .umti-donut__ring {
+        position: relative;
+        width: 112px;
+        height: 112px;
+        flex: 0 0 auto;
+        border-radius: 50%;
+
+        &::after {
+            content: "";
+            position: absolute;
+            inset: 16px;
+            border-radius: 50%;
+            background: var(--umti-surface);
+        }
+    }
+
+    .umti-donut__legend {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        min-width: 0;
+        font-size: 0.8rem;
+    }
+
+    .umti-donut__legend li {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        border-radius: 6px;
+    }
+
+    .umti-donut__legend-item--clickable {
+        cursor: pointer;
+        margin: 0 -6px;
+        padding: 2px 6px;
+        transition: background 0.15s ease;
+
+        &:hover {
+            background: rgba(37, 99, 235, 0.05);
+        }
+    }
+
+    .umti-donut__dot {
+        width: 7px;
+        height: 7px;
+        flex: 0 0 auto;
+        border-radius: 2px;
+    }
+
+    .umti-donut__label {
+        color: var(--umti-ink-soft);
+    }
+
+    .umti-donut__value {
+        margin-left: auto;
+        font-weight: 600;
+        font-variant-numeric: tabular-nums;
+        color: var(--umti-ink);
+    }
+
+    .umti-donut__pct {
+        font-weight: 400;
+        color: var(--umti-muted);
+        margin-left: 4px;
+    }
+
+    // ------------------------------------------------------------------
+    // Lists
+    // ------------------------------------------------------------------
+    .umti-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+
+    .umti-list__row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 10px 0;
+        border-bottom: 1px solid var(--umti-line);
+        font-size: 0.83rem;
+
+        &:first-child {
+            padding-top: 0;
+        }
+
+        &:last-child {
+            border-bottom: 0;
+            padding-bottom: 0;
+        }
+    }
+
+    .umti-list__main {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        min-width: 0;
+    }
+
+    .umti-list__label {
+        font-weight: 600;
+        color: var(--umti-ink);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .umti-list__meta {
+        font-size: 0.75rem;
+        color: var(--umti-muted);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .umti-list__badge {
+        flex: 0 0 auto;
+        padding: 3px 9px;
+        border-radius: 999px;
+        background: rgba(37, 99, 235, 0.08);
+        color: #1d4ed8;
+        font-size: 0.66rem;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+    }
+
+    .umti-list__row--clickable {
+        cursor: pointer;
+        margin: 0 -8px;
+        padding-left: 8px;
+        padding-right: 8px;
+        border-radius: 8px;
+        transition: background 0.15s ease;
+
+        &:hover {
+            background: rgba(37, 99, 235, 0.05);
+        }
+    }
+
+    .umti-list__badge--danger {
+        background: rgba(220, 38, 38, 0.1);
+        color: #b91c1c;
+    }
+
+    .umti-list__badge--warning {
+        background: rgba(217, 119, 6, 0.12);
+        color: #b45309;
+    }
+
+    .umti-list__badge--success {
+        background: rgba(15, 157, 118, 0.12);
+        color: #0b7a5b;
+    }
+
+    @media (max-width: 575px) {
+        .umti-donut {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+    }
+}
+
+// ----------------------------------------------------------------------
+// Dark mode (Odoo 18 uses Bootstrap 5.3 colour modes)
+// ----------------------------------------------------------------------
+[data-bs-theme="dark"] .o_umti_dashboard {
+    --umti-bg: #101216;
+    --umti-surface: #171a20;
+    --umti-ink: #edf1f7;
+    --umti-ink-soft: #c3cbd8;
+    --umti-muted: #9099a8;
+    --umti-line: rgba(255, 255, 255, 0.09);
+    --umti-line-strong: rgba(255, 255, 255, 0.2);
+    --umti-track: rgba(255, 255, 255, 0.08);
+    --umti-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+
+    .umti-kpi:hover {
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+    }
+
+    .umti-list__badge {
+        background: rgba(96, 165, 250, 0.14);
+        color: #93c5fd;
+    }
+
+    .umti-list__badge--danger {
+        background: rgba(248, 113, 113, 0.16);
+        color: #fca5a5;
+    }
+
+    .umti-list__badge--warning {
+        background: rgba(251, 191, 36, 0.16);
+        color: #fcd34d;
+    }
+
+    .umti-list__badge--success {
+        background: rgba(52, 211, 153, 0.16);
+        color: #6ee7b7;
+    }
+}

@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Trainer portal: the students they are taking -->
+    <template id="portal_my_students" name="My Students">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_searchbar" t-value="False"/>
+            <div class="container my-4">
+                <h2>My Students</h2>
+                <t t-if="not employee">
+                    <div class="alert alert-warning mt-3">
+                        No employee record is linked to your account. Please
+                        contact the administration.
+                    </div>
+                </t>
+                <t t-elif="not enrollments">
+                    <div class="alert alert-info mt-3">
+                        No students assigned to you yet.
+                    </div>
+                </t>
+                <t t-else="">
+                    <p class="text-muted" t-out="employee.name"/>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-striped">
+                            <thead><tr>
+                                <th>Semester</th>
+                                <th>Unit</th>
+                                <th>Student</th>
+                                <th>Admission No</th>
+                                <th>Status</th>
+                            </tr></thead>
+                            <tbody>
+                                <t t-foreach="enrollments" t-as="enr">
+                                    <tr>
+                                        <td t-out="enr.academic_term_id.name"/>
+                                        <td>
+                                            <t t-out="enr.unit_id.code"/>
+                                            <t t-out="enr.unit_id.name"/>
+                                        </td>
+                                        <td t-out="enr.student_id.name"/>
+                                        <td t-out="enr.student_id.admission_no"/>
+                                        <td t-out="dict(enr._fields['state'].selection).get(enr.state, enr.state)"/>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </div>
+                </t>
+            </div>
+        </t>
+    </template>
+
+    <!-- Student portfolio: who takes them through each unit -->
+    <template id="portal_portfolio_units_trainers"
+              inherit_id="umti_students.portal_portfolio"
+              name="Portfolio: Units and Trainers">
+        <xpath expr="//h4[@class='mt-4'][1]" position="before">
+            <h4 class="mt-4">My Units &amp; Trainers</h4>
+            <t t-if="not student.enrollment_ids">
+                <div class="alert alert-info">
+                    No units enrolled yet.
+                </div>
+            </t>
+            <div t-else="" class="table-responsive">
+                <table class="table table-sm table-striped">
+                    <thead><tr>
+                        <th>Semester</th>
+                        <th>Unit</th>
+                        <th>Trainer</th>
+                        <th>Status</th>
+                    </tr></thead>
+                    <tbody>
+                        <t t-foreach="student.enrollment_ids" t-as="enr">
+                            <tr>
+                                <td t-out="enr.academic_term_id.name"/>
+                                <td>
+                                    <t t-out="enr.unit_id.code"/>
+                                    <t t-out="enr.unit_id.name"/>
+                                </td>
+                                <td t-out="enr.trainer_id.name"/>
+                                <td t-out="dict(enr._fields['state'].selection).get(enr.state, enr.state)"/>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+            </div>
+        </xpath>
+    </template>
+
+</odoo>

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- The institute's grading bands: A >= 80, B 70-79, C 60-69,
+             D 50-59, F below 50. Exam records and unit results fall back to
+             the default scale for their company. -->
+        <record id="grade_scale_institute" model="umti.grade.scale">
+            <field name="name">Institute Grading Scale</field>
+            <field name="code">INSTITUTE</field>
+            <field name="is_default" eval="True"/>
+            <field name="pass_mark">50</field>
+            <field name="company_id" ref="base.main_company"/>
+            <field name="line_ids" eval="[
+                (0, 0, {'grade': 'A', 'min_mark': 80, 'max_mark': 100,
+                        'result_status': 'pass'}),
+                (0, 0, {'grade': 'B', 'min_mark': 70, 'max_mark': 79.99,
+                        'result_status': 'pass'}),
+                (0, 0, {'grade': 'C', 'min_mark': 60, 'max_mark': 69.99,
+                        'result_status': 'pass'}),
+                (0, 0, {'grade': 'D', 'min_mark': 50, 'max_mark': 59.99,
+                        'result_status': 'pass'}),
+                (0, 0, {'grade': 'F', 'min_mark': 0, 'max_mark': 49.99,
+                        'result_status': 'fail'}),
+            ]"/>
+        </record>
+    </data>
+</odoo>

@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo format="1.0">
+    <data noupdate="1">
+
+        <!-- 1. HR Employees (Department Head & Academic Trainers) -->
+        <record id="hr_employee_hod_engineering" model="hr.employee">
+            <field name="name">Dr. Josephat Mwangi</field>
+            <field name="job_title">Head of Department - Electrical</field>
+            <field name="work_email">j.mwangi@ujuzimanyattani.org</field>
+            <field name="mobile_phone">+254712345678</field>
+        </record>
+
+        <record id="hr_employee_trainer_1" model="hr.employee">
+            <field name="name">Jane Kimani</field>
+            <field name="job_title">Senior Trainer - Electrical Installation</field>
+            <field name="work_email">j.kimani@ujuzimanyattani.org</field>
+            <field name="mobile_phone">+254722334455</field>
+        </record>
+
+        <record id="hr_employee_trainer_2" model="hr.employee">
+            <field name="name">Peter Ochieng</field>
+            <field name="job_title">Trainer - Mechanical Engineering</field>
+            <field name="work_email">p.ochieng@ujuzimanyattani.org</field>
+            <field name="mobile_phone">+254733445566</field>
+        </record>
+
+        <!-- 2. Institute Grading Scale -->
+        <record id="grading_scale_default" model="umti.grading.scale">
+            <field name="name">Institute Standard Grading Scale</field>
+            <field name="pass_mark">50.0</field>
+            <field name="is_default">True</field>
+        </record>
+
+        <!-- Grade Breakdown Ranges -->
+        <record id="grade_line_a" model="umti.grading.scale.line">
+            <field name="grading_scale_id" ref="grading_scale_default"/>
+            <field name="grade">A</field>
+            <field name="min_mark">80.0</field>
+            <field name="max_mark">100.0</field>
+            <field name="result_status">pass</field>
+            <field name="description">Distinction</field>
+        </record>
+
+        <record id="grade_line_b" model="umti.grading.scale.line">
+            <field name="grading_scale_id" ref="grading_scale_default"/>
+            <field name="grade">B</field>
+            <field name="min_mark">65.0</field>
+            <field name="max_mark">79.9</field>
+            <field name="result_status">pass</field>
+            <field name="description">Credit</field>
+        </record>
+
+        <record id="grade_line_c" model="umti.grading.scale.line">
+            <field name="grading_scale_id" ref="grading_scale_default"/>
+            <field name="grade">C</field>
+            <field name="min_mark">50.0</field>
+            <field name="max_mark">64.9</field>
+            <field name="result_status">pass</field>
+            <field name="description">Pass</field>
+        </record>
+
+        <record id="grade_line_f" model="umti.grading.scale.line">
+            <field name="grading_scale_id" ref="grading_scale_default"/>
+            <field name="grade">F</field>
+            <field name="min_mark">0.0</field>
+            <field name="max_mark">49.9</field>
+            <field name="result_status">fail</field>
+            <field name="description">Fail / Repeat</field>
+        </record>
+
+    </data>
+</odoo>

@@ -1,0 +1,289 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="school_admission_application_view_list" model="ir.ui.view">
+        <field name="name">school.admission.application.list</field>
+        <field name="model">school.admission.application</field>
+        <field name="arch" type="xml">
+            <list decoration-muted="state == 'rejected'">
+                <field name="name"/>
+                <field name="applicant_name"/>
+                <field name="intake_id"/>
+                <field name="course_id" optional="show"/>
+                <field name="mobile" optional="show"/>
+                <field name="missing_documents" optional="show"/>
+                <field name="fee_paid" optional="show"/>
+                <field name="state" widget="badge"
+                       decoration-info="state in ('draft', 'submitted')"
+                       decoration-warning="state == 'review'"
+                       decoration-success="state in ('accepted', 'enrolled')"
+                       decoration-danger="state == 'rejected'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="school_admission_application_view_form" model="ir.ui.view">
+        <field name="name">school.admission.application.form</field>
+        <field name="model">school.admission.application</field>
+        <field name="arch" type="xml">
+            <form>
+
+                <header>
+                    <button name="action_submit" type="object" string="Submit"
+                            confirm="You will not be able to edit this application after submission. Proceed?"
+                            class="btn-primary" invisible="state != 'draft'"/>
+                    <!-- <button name="action_start_review" type="object" string="Start Review"
+                            class="btn-primary" invisible="state != 'submitted'"/> -->
+                    <!-- <button name="action_accept" type="object" string="Accept"
+                            class="btn-primary" invisible="state != 'review'"/>
+                    <button name="action_reject" type="object" string="Reject"
+                            invisible="state not in ('submitted', 'review')"/> -->
+                    <!-- Enrolling is the review's final step: see the review form. -->
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,submitted,review,accepted,enrolled"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+
+                        <button name="action_view_review_status" type="object" invisible="state =='draft'"
+                                class="oe_stat_button" icon="fa-pencil-square-o"
+                                >
+                                <div class="o_stat_info">
+                                <span class="o_stat_text">Application Review</span>
+                            </div>
+                        </button>
+
+                        <button name="action_open_student" type="object"
+                                class="oe_stat_button" icon="fa-graduation-cap"
+                                invisible="not student_id">
+                            <div class="o_stat_info">
+                                <span class="o_stat_text">Student</span>
+                            </div>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <div class="alert alert-warning" role="alert"
+                                 invisible="not missing_documents">
+                                Missing mandatory documents:
+                                <field name="missing_documents" class="oe_inline"/><br/>
+                                Please provide them or request document waiver in the required section
+                        
+                            </div>
+                    <div class="alert alert-warning" role="alert"
+                                 invisible="not pending_requirements">
+                        Unmet course requirements:
+                        <field name="pending_requirements" class="oe_inline"/>
+                    </div>
+                    <div class="oe_title">
+                        <label for="applicant_name"/>
+                        <h1><field name="applicant_name" placeholder="Applicant full name"
+                                   readonly="state not in ('draft', 'submitted')"/></h1>
+                        <h2><field name="name"/></h2>
+                    </div>
+                    <group>
+                        <group string="Applicant Details">
+                            <field name="gender" readonly="state not in ('draft', 'submitted')"/>
+                            <field name="date_of_birth" readonly="state not in ('draft', 'submitted')"/>
+                            <field name="nationality_id" readonly="state not in ('draft', 'submitted')"/>
+                            <field name="mobile" readonly="state not in ('draft', 'submitted')"/>
+                            <field name="email" readonly="state not in ('draft', 'submitted')"/>
+                        </group>
+                        <group string="Application Details">
+                            <field name="intake_id" domain="[('state', '=', 'open')]"
+                                   readonly="state != 'draft'"/>
+                            <field name="course_id"/>
+                            <field name="academic_year_id"/>
+                            <field name="admission_fee"/>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="fee_paid"/>
+                            <field name="fee_reference" invisible="not fee_paid"/>
+                            <field name="active" invisible="1"/>
+                            <field name="student_id" invisible="1"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                        <group string="Guardian">
+                            <field name="guardian_name"/>
+                            <field name="guardian_relationship"/>
+                            <field name="guardian_phone"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Documents" name="documents">
+                            <field name="document_ids" nolabel="1">
+                                <!-- Read-only summary: the row opens a form so the
+                                     file picker is visible without hunting for it. -->
+                                <list create="0" delete="0">
+                                    <field name="waivable" column_invisible="1"/>
+                                    <field name="code" column_invisible="1"/>
+                                    <field name="name" string="Document"/>
+                                    <field name="filename" string="File"/>
+                                    <field name="status" widget="badge"
+                                           decoration-danger="status == 'missing'"
+                                           decoration-info="status == 'uploaded'"
+                                           decoration-success="status in ('verified', 'waived')"/>
+                                    <field name="waiver_requested"/>
+                                    <field name="waived"/>
+                                    <field name="verified"/>
+                                </list>
+                                <form>
+                                    <group>
+                                        <group string="Document">
+                                            <field name="name" readonly="1"/>
+                                            <field name="code" readonly="1"
+                                                   invisible="not code"/>
+                                            <field name="description" readonly="1"
+                                                   invisible="not description"/>
+                                            <field name="status" widget="badge"/>
+                                        </group>
+                                        <group string="File">
+                                            <field name="attachment" filename="filename"
+                                                   readonly="parent.state not in ('draft', 'submitted')"/>
+                                            <field name="filename" invisible="1"/>
+                                        </group>
+                                    </group>
+                                    <group string="Waiver and verification">
+                                        <field name="waivable" readonly="1"/>
+                                        <field name="waiver_requested"
+                                               readonly="not waivable or parent.state not in ('draft', 'submitted')"/>
+                                        <field name="waiver_reason"
+                                               invisible="not waiver_requested"
+                                               readonly="not waivable or parent.state not in ('draft', 'submitted')"/>
+                                        <!-- Decisions belong to the review: readonly here
+                                             even for the admissions officer. -->
+                                        <field name="waived" readonly="1"
+                                               groups="umti_students.group_umti_students_admission_officer"/>
+                                        <field name="verified" readonly="1"
+                                               groups="umti_students.group_umti_students_admission_officer"/>
+                                    </group>
+                                </form>
+                            </field>
+                        </page>
+                        <page string="Course Requirements" name="requirements">
+                            <field name="requirement_ids" nolabel="1">
+                                <list create="0" delete="0">
+                                    <field name="waivable" column_invisible="1"/>
+                                    <field name="kind" column_invisible="1"/>
+                                    <field name="name" string="Requirement"/>
+                                    <field name="required_mark" invisible="not required_mark"/>
+                                    <field name="status" widget="badge"
+                                           decoration-danger="status == 'pending'"
+                                           decoration-success="status in ('met', 'waived')"/>
+                                    <field name="waiver_requested"/>
+                                    <field name="met"/>
+                                    <field name="waived"/>
+                                </list>
+                                <form>
+                                    <group>
+                                        <group string="Requirement">
+                                            <field name="name" readonly="1"/>
+                                            <field name="required_mark" readonly="1"
+                                                   invisible="not required_mark"/>
+                                            <field name="description" readonly="1"
+                                                   invisible="not description"/>
+                                            <field name="status" widget="badge"/>
+                                        </group>
+                                        <group string="Decision">
+                                            <field name="waivable" readonly="1"/>
+                                            <!-- Decisions belong to the review: readonly here
+                                                 even for the admissions officer. -->
+                                            <field name="met" readonly="1"
+                                                   groups="umti_students.group_umti_students_admission_officer"/>
+                                            <field name="waived" readonly="1"
+                                                   groups="umti_students.group_umti_students_admission_officer"/>
+                                        </group>
+                                    </group>
+                                    <group string="Waiver">
+                                        <field name="waiver_requested"
+                                               readonly="not waivable or parent.state not in ('draft', 'submitted')"/>
+                                        <field name="waiver_reason"
+                                               invisible="not waiver_requested"
+                                               readonly="not waivable or parent.state not in ('draft', 'submitted')"/>
+                                    </group>
+                                </form>
+                            </field>
+                        </page>
+                        <page string="Review" name="review">
+                            <group>
+                                <group>
+                                    <field name="reviewed_by"/>
+                                    <field name="review_date"/>
+                                </group>
+                                <group>
+                                    <field name="rejection_reason"
+                                           invisible="state not in ('submitted', 'review', 'rejected')"/>
+                                </group>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="school_admission_application_view_search" model="ir.ui.view">
+        <field name="name">school.admission.application.search</field>
+        <field name="model">school.admission.application</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="applicant_name" string="Applicant"
+                       filter_domain="['|', ('applicant_name', 'ilike', self), ('name', 'ilike', self)]"/>
+                <field name="intake_id"/>
+                <field name="course_id"/>
+                <field name="mobile"/>
+                <filter name="filter_submitted" string="Submitted" domain="[('state', '=', 'submitted')]"/>
+                <filter name="filter_review" string="Under Review" domain="[('state', '=', 'review')]"/>
+                <filter name="filter_accepted" string="Accepted" domain="[('state', '=', 'accepted')]"/>
+                <filter name="filter_rejected" string="Rejected" domain="[('state', '=', 'rejected')]"/>
+                <filter name="filter_enrolled" string="Enrolled" domain="[('state', '=', 'enrolled')]"/>
+                <separator/>
+                <!-- <filter name="filter_fee_unpaid" string="Fee Not Paid" domain="[('fee_paid', '=', False)]"/> -->
+                <group expand="0" string="Group By">
+                    <filter name="group_state" string="Status" context="{'group_by': 'state'}"/>
+                    <filter name="group_intake" string="Intake" context="{'group_by': 'intake_id'}"/>
+                    <filter name="group_course" string="Course" context="{'group_by': 'course_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="school_admission_application_view_kanban" model="ir.ui.view">
+        <field name="name">school.admission.application.kanban</field>
+        <field name="model">school.admission.application</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="state">
+                <field name="state"/>
+                <templates>
+                    <t t-name="card">
+                        <main>
+                            <field name="applicant_name" class="fw-bold fs-5"/>
+                            <field name="name" class="text-muted"/>
+                            <field name="intake_id"/>
+                            <field name="course_id"/>
+                            <field name="mobile"/>
+                            <field name="missing_documents"/>
+                            <footer>
+                                <field name="fee_paid" widget="boolean_toggle"/>
+                                <field name="state" widget="badge"
+                                       decoration-info="state in ('draft', 'submitted')"
+                                       decoration-warning="state == 'review'"
+                                       decoration-success="state in ('accepted', 'enrolled')"
+                                       decoration-danger="state == 'rejected'"/>
+                            </footer>
+                        </main>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="school_admission_application_action" model="ir.actions.act_window">
+        <field name="name">Applications</field>
+        <field name="res_model">school.admission.application</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="search_view_id" ref="school_admission_application_view_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Record your first application</p>
+            <p>Open an intake first, then add applications to it.</p>
+        </field>
+    </record>
+</odoo>

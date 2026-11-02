@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Form View -->
+        <record id="umti_course_units_form" model="ir.ui.view">
+            <field name="name">umti.course.units.form</field>
+            <field name="model">umti.course.units</field>
+            <field name="arch" type="xml">
+                <form string="Units">
+                    <sheet>
+                        <group>
+                            <group string="Unit Info">
+                                <field name="name"/>
+                                <field name="code"/>
+                                <field name="unit_type"/>
+                                <field name="department_id"/>
+                            </group>
+                            <group string="Level Info">
+                                <field name="unit_level"/>
+                                <field name="unit_semester"/>
+                                <field name="credit_contribution"/>
+                            </group>
+                        </group>
+                    </sheet>
+                     <chatter/>
+                </form>
+            </field>
+        </record>
+        
+        <!-- List View -->
+        <record id="umti_course_units_list" model="ir.ui.view">
+            <field name="name">umti.course.units.list</field>
+            <field name="model">umti.course.units</field>
+            <field name="arch" type="xml">
+                <list string="Units">
+                    <field name="name"/>
+                            <field name="code"/>
+                            <field name="unit_type"/>
+                            <field name="department_id"/>
+                            <field name="unit_level"/>
+                            <field name="unit_semester"/>
+                            <field name="credit_contribution"/>
+                </list>
+            </field>
+        </record>
+        
+        <!-- Kanban View -->
+        <record id="umti_course_units_kanban" model="ir.ui.view">
+            <field name="name">umti.course.units.kanban</field>
+            <field name="model">umti.course.units</field>
+            <field name="arch" type="xml">
+                <kanban default_group_by="department_id">
+                    <field name="department_id"/>
+                    <templates>
+                        <t t-name="card">
+                            <main>
+                                <field name="name" class="fw-bold fs-5"/>
+                                <field name="code" class="text-muted"/>
+                                <field name="unit_type"/>
+                                <field name="unit_level"/>
+                                <field name="unit_semester"/>
+                                <field name="credit_contribution"/>
+                            </main>
+                        </t>
+                    </templates>
+                </kanban>
+            </field>
+        </record>
+
+        <!-- Search View -->
+        <record id="umti_course_units_search" model="ir.ui.view">
+            <field name="name">umti.course.units.search</field>
+            <field name="model">umti.course.units</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="name"/>
+                    <field name="code"/>
+                    <field name="department_id"/>
+                    <group expand="0" string="Group By">
+                        <filter name="group_department" string="Department" context="{'group_by': 'department_id'}"/>
+                        <filter name="group_unit_type" string="Unit Type" context="{'group_by': 'unit_type'}"/>
+                        <filter name="group_unit_level" string="Level" context="{'group_by': 'unit_level'}"/>
+                        <filter name="group_unit_semester" string="Semester" context="{'group_by': 'unit_semester'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <!-- Action -->
+        <record id="action_umti_course_units" model="ir.actions.act_window">
+            <field name="name">Units</field>
+            <field name="res_model">umti.course.units</field>
+            <field name="view_mode">kanban,list,form</field>
+            <field name="search_view_id" ref="umti_course_units_search"/>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Create your first course units!
+                </p>
+            </field>
+        </record>
+        
+       
+    </data>
+</odoo>

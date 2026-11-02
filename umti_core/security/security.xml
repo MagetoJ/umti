@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- ========================================== -->
+        <!--  1. COURSE GROUPS                           -->
+        <!-- ========================================== -->
+        <record id="group_umti_user" model="res.groups">
+            <field name="name">User</field>
+            <field name="category_id" ref="module_category_umti_courses"/>
+            <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+        </record>
+
+        <record id="group_umti_manager" model="res.groups">
+            <field name="name">Manager</field>
+            <field name="category_id" ref="module_category_umti_courses"/>
+            <field name="implied_ids" eval="[(4, ref('group_umti_user'))]"/>
+        </record>
+
+        <record id="group_umti_admin" model="res.groups">
+            <field name="name">Administrator</field>
+            <field name="category_id" ref="module_category_umti_courses"/>
+            <field name="implied_ids" eval="[(4, ref('group_umti_manager'))]"/>
+            <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+        </record>
+
+
+        <!-- ========================================== -->
+        <!--  2. FEE STRUCTURE GROUPS                    -->
+        <!-- ========================================== -->
+        <record id="group_umti_fee_structure_user" model="res.groups">
+            <field name="name">User</field>
+            <field name="category_id" ref="module_category_umti_fees"/>
+            <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+        </record>
+
+        <record id="group_umti_fee_structure_manager" model="res.groups">
+            <field name="name">Manager</field>
+            <field name="category_id" ref="module_category_umti_fees"/>
+            <field name="implied_ids" eval="[(4, ref('group_umti_fee_structure_user'))]"/>
+        </record>
+
+        <record id="group_umti_fee_structure_admin" model="res.groups">
+            <field name="name">Administrator</field>
+            <field name="category_id" ref="module_category_umti_fees"/>
+            <field name="implied_ids" eval="[(4, ref('group_umti_fee_structure_manager'))]"/>
+            <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+        </record>
+
+
+        <!-- ========================================== -->
+        <!--  3. DEPARTMENT GROUPS                       -->
+        <!-- ========================================== -->
+        <record id="group_umti_department_user" model="res.groups">
+            <field name="name">User</field>
+            <field name="category_id" ref="module_category_umti_departments"/>
+            <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+        </record>
+
+        <record id="group_umti_department_manager" model="res.groups">
+            <field name="name">Manager</field>
+            <field name="category_id" ref="module_category_umti_departments"/>
+            <field name="implied_ids" eval="[(4, ref('group_umti_department_user'))]"/>
+        </record>
+
+        <record id="group_umti_department_admin" model="res.groups">
+            <field name="name">Administrator</field>
+            <field name="category_id" ref="module_category_umti_departments"/>
+            <field name="implied_ids" eval="[(4, ref('group_umti_department_manager'))]"/>
+            <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+        </record>
+
+
+        <!-- ========================================== -->
+        <!--  4. ACADEMIC YEAR GROUPS                   -->
+        <!-- ========================================== -->
+        <record id="group_umti_academic_year_user" model="res.groups">
+            <field name="name">User</field>
+            <field name="category_id" ref="module_category_umti_academic"/>
+            <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+        </record>
+
+        <record id="group_umti_academic_year_manager" model="res.groups">
+            <field name="name">Manager</field>
+            <field name="category_id" ref="module_category_umti_academic"/>
+            <field name="implied_ids" eval="[(4, ref('group_umti_academic_year_user'))]"/>
+        </record>
+
+        <record id="group_umti_academic_year_admin" model="res.groups">
+            <field name="name">Administrator</field>
+            <field name="category_id" ref="module_category_umti_academic"/>
+            <field name="implied_ids" eval="[(4, ref('group_umti_academic_year_manager'))]"/>
+            <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+        </record>
+
+    </data>
+</odoo>

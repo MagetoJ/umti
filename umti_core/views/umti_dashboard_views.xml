@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Client action rendered by the OWL dashboard component -->
+    <record id="action_umti_dashboard" model="ir.actions.client">
+        <field name="name">Dashboard</field>
+        <field name="tag">umti_dashboard</field>
+    </record>
+
+    <menuitem id="menu_umti_dashboard"
+              name="Dashboard"
+              parent="menu_umti_institute_parent"
+              sequence="0"
+              action="action_umti_dashboard"/>
+
+</odoo>

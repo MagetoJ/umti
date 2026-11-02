@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Unit form: who teaches this unit, and through which allocations -->
+    <record id="umti_course_units_form_inherit_trainers" model="ir.ui.view">
+        <field name="name">umti.course.units.form.inherit.trainers</field>
+        <field name="model">umti.course.units</field>
+        <field name="inherit_id" ref="umti_core.umti_course_units_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='credit_contribution']" position="after">
+                <field name="trainer_ids" widget="many2many_tags" readonly="1"/>
+                <field name="trainer_count" invisible="1"/>
+            </xpath>
+            <xpath expr="//sheet" position="inside">
+                <notebook>
+                    <page string="Semester Trainers" name="unit_trainers">
+                        <field name="unit_trainer_ids" readonly="1">
+                            <list>
+                                <field name="academic_year_id"/>
+                                <field name="academic_term_id"/>
+                                <field name="trainer_id"/>
+                                <field name="active" column_invisible="1"/>
+                            </list>
+                        </field>
+                    </page>
+                    <page string="Eligible Trainers" name="trainer_allocations">
+                        <field name="allocation_ids" readonly="1">
+                            <list>
+                                <field name="trainer_name"/>
+                                <field name="department_id"/>
+                                <field name="course_ids" widget="many2many_tags"/>
+                                <field name="active" column_invisible="1"/>
+                            </list>
+                        </field>
+                    </page>
+                </notebook>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Unit list: quick view of the trainer count -->
+    <record id="umti_course_units_list_inherit_trainers" model="ir.ui.view">
+        <field name="name">umti.course.units.list.inherit.trainers</field>
+        <field name="model">umti.course.units</field>
+        <field name="inherit_id" ref="umti_core.umti_course_units_list"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='credit_contribution']" position="after">
+                <field name="trainer_ids" widget="many2many_tags" optional="hide"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

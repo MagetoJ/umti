@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="umti_students.StudentDashboardTemplate">
+        <div class="o_dashboard_container p-4 bg-100 style-container overflow-auto" style="height: 100vh;">
+            <h2 class="mb-4 text-primary font-weight-bold">Student Management Dashboard</h2>
+
+            <!-- KPI Cards -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-3">
+                    <div class="card shadow-sm border-start border-primary border-4 p-3 bg-white">
+                        <div class="text-muted small fw-bold">TOTAL ENROLLED</div>
+                        <div class="h3 mb-0 text-dark" t-esc="data.kpis.active_students"/>
+                        <div class="text-secondary small mt-1">Out of <t t-esc="data.kpis.total_students"/> total records</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card shadow-sm border-start border-warning border-4 p-3 bg-white">
+                        <div class="text-muted small fw-bold">PENDING APPLICATIONS</div>
+                        <div class="h3 mb-0 text-dark" t-esc="data.kpis.pending_apps"/>
+                        <div class="text-secondary small mt-1"><t t-esc="data.kpis.total_apps"/> Total Applications</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card shadow-sm border-start border-success border-4 p-3 bg-white">
+                        <div class="text-muted small fw-bold">TOTAL COLLECTED FEES</div>
+                        <div class="h3 mb-0 text-success">KSh <t t-esc="data.kpis.total_collected.toLocaleString()"/></div>
+                        <div class="text-secondary small mt-1">Invoiced: KSh <t t-esc="data.kpis.total_invoiced.toLocaleString()"/></div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card shadow-sm border-start border-danger border-4 p-3 bg-white">
+                        <div class="text-muted small fw-bold">OUTSTANDING BALANCE</div>
+                        <div class="h3 mb-0 text-danger">KSh <t t-esc="data.kpis.total_outstanding.toLocaleString()"/></div>
+                        <div class="text-secondary small mt-1">Pending payments</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Row -->
+            <div class="row g-3">
+                <div class="col-md-7">
+                    <div class="card shadow-sm p-3 bg-white">
+                        <h5 class="card-title text-muted fw-bold border-bottom pb-2">Student Distribution by Department</h5>
+                        <div style="height: 280px;">
+                            <canvas t-ref="deptChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-5">
+                    <div class="card shadow-sm p-3 bg-white">
+                        <h5 class="card-title text-muted fw-bold border-bottom pb-2">Fee Status Breakdown</h5>
+                        <div style="height: 280px;">
+                            <canvas t-ref="feeChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>

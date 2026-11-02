@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+        
+       <!-- Main Top-Level Application Grouping -->
+        <record id="module_category_umti_core" model="ir.module.category">
+            <field name="name">UMTI Core</field>
+            <field name="sequence">20</field>
+        </record>
+
+        <!-- Feature Sub-Categories -->
+        <record id="module_category_umti_courses" model="ir.module.category">
+            <field name="name">UMTI Courses</field>
+            <field name="parent_id" ref="module_category_umti_core"/>
+        </record>
+
+        <record id="module_category_umti_fees" model="ir.module.category">
+            <field name="name">UMTI Fee Structure</field>
+            <field name="parent_id" ref="module_category_umti_core"/>
+        </record>
+
+        <record id="module_category_umti_departments" model="ir.module.category">
+            <field name="name">UMTI Departments</field>
+            <field name="parent_id" ref="module_category_umti_core"/>
+        </record>
+
+        <record id="module_category_umti_academic" model="ir.module.category">
+            <field name="name">UMTI Academic Years</field>
+            <field name="parent_id" ref="module_category_umti_core"/>
+        </record>
+
+    </data>
+</odoo>

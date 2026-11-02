@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="umti_students.KitsDashboardTemplate">
+        <div class="o_dashboard_container p-4 bg-100 overflow-auto" style="height: 100vh;">
+            <h2 class="mb-4 text-info font-weight-bold">Equipment &amp; Kit Inventory Dashboard</h2>
+
+            <!-- KPI Cards -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-3">
+                    <div class="card shadow-sm border-start border-info border-4 p-3 bg-white">
+                        <div class="text-muted small fw-bold">TOTAL KIT TYPES</div>
+                        <div class="h3 mb-0 text-dark" t-esc="data.kpis.total_kits"/>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card shadow-sm border-start border-primary border-4 p-3 bg-white">
+                        <div class="text-muted small fw-bold">ACTIVE ISSUANCES</div>
+                        <div class="h3 mb-0 text-primary" t-esc="data.kpis.active_issuances"/>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card shadow-sm border-start border-success border-4 p-3 bg-white">
+                        <div class="text-muted small fw-bold">RETURNED KITS</div>
+                        <div class="h3 mb-0 text-success" t-esc="data.kpis.returned_issuances"/>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card shadow-sm border-start border-danger border-4 p-3 bg-white">
+                        <div class="text-muted small fw-bold">OVERDUE RETURNS</div>
+                        <div class="h3 mb-0 text-danger" t-esc="data.kpis.overdue_issuances"/>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts -->
+            <div class="row g-3">
+                <div class="col-md-7">
+                    <div class="card shadow-sm p-3 bg-white">
+                        <h5 class="card-title text-muted fw-bold border-bottom pb-2">Kit Issuance Volume by Type</h5>
+                        <div style="height: 280px;">
+                            <canvas t-ref="kitUsageChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-5">
+                    <div class="card shadow-sm p-3 bg-white">
+                        <h5 class="card-title text-muted fw-bold border-bottom pb-2">Returned Equipment Condition</h5>
+                        <div style="height: 280px;">
+                            <canvas t-ref="conditionChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>

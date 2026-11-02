@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Same User / Manager / Administrator ladder as umti_core.
+             The User group also implies the umti_core read groups, because
+             fee records and exam records pick courses, departments, academic
+             years, terms and fee structure lines. Without read access to
+             those, the dropdowns raise an access error. -->
+        <record id="group_umti_student_user" model="res.groups">
+            <field name="name">User</field>
+            <field name="category_id" ref="module_category_umti_students"/>
+            <field name="implied_ids" eval="[
+                (4, ref('base.group_user')),
+                (4, ref('umti_core.group_umti_user')),
+                (4, ref('umti_core.group_umti_department_user')),
+                (4, ref('umti_core.group_umti_academic_year_user')),
+                (4, ref('umti_core.group_umti_fee_structure_user'))]"/>
+        </record>
+
+        <record id="group_umti_student_manager" model="res.groups">
+            <field name="name">Manager</field>
+            <field name="category_id" ref="module_category_umti_students"/>
+            <field name="implied_ids" eval="[(4, ref('group_umti_student_user'))]"/>
+        </record>
+
+        <record id="group_umti_student_admin" model="res.groups">
+            <field name="name">Administrator</field>
+            <field name="category_id" ref="module_category_umti_students"/>
+            <field name="implied_ids" eval="[(4, ref('group_umti_student_manager'))]"/>
+            <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+        </record>
+    </data>
+</odoo>

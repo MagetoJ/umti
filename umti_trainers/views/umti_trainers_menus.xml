@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Top-level menu: Academic & Trainer Workspace -->
+    <menuitem id="menu_umti_trainers_root"
+              name="Faculty"
+              web_icon="umti_trainers,static/description/icon.png"
+              sequence="25"/>
+
+    <!-- Allocations -->
+    <menuitem id="menu_umti_trainer_allocations"
+              name="Trainers"
+              parent="menu_umti_trainers_root"
+              action="umti_trainer_allocation_action"
+              sequence="10"/>
+
+    <!-- Unit Trainers: the single source of truth for who teaches what -->
+     <!-- TODO: Move related model to Core: Configurations Department -->
+    <menuitem id="menu_umti_unit_trainers"
+              name="Unit Trainers"
+              parent="menu_umti_trainers_root"
+              action="umti_unit_trainer_action"
+              sequence="12"/>
+
+    <!-- Unit Enrollments: one line per student and unit -->
+    <menuitem id="menu_umti_student_unit_enrollments"
+              name="Unit Enrollments"
+              parent="menu_umti_trainers_root"
+              action="umti_student_unit_enrollment_action"
+              sequence="15"/>
+
+    <!-- Students the logged-in trainer is taking -->
+    <menuitem id="menu_umti_my_students"
+              name="My Students"
+              parent="menu_umti_trainers_root"
+              action="umti_student_unit_enrollment_action_my_students"
+              sequence="16"/>
+
+    <!-- Academic Deliverables parent -->
+    <menuitem id="menu_umti_academic_deliverables"
+              name="Academic Deliverables"
+              parent="menu_umti_trainers_root"
+              sequence="20"/>
+
+    <menuitem id="menu_umti_scheme_of_work"
+              name="Schemes of Work"
+              parent="menu_umti_academic_deliverables"
+              action="umti_scheme_of_work_action"
+              sequence="10"/>
+
+    <menuitem id="menu_umti_work_plan"
+              name="Work Plans"
+              parent="menu_umti_academic_deliverables"
+              action="umti_work_plan_action"
+              sequence="20"/>
+
+    <!-- Attendance parent (dropdown, no action) -->
+    <menuitem id="menu_umti_attendance"
+              name="Attendance"
+              parent="menu_umti_trainers_root"
+              sequence="30"/>
+
+    <menuitem id="menu_umti_attendance_sheets"
+              name="Attendance Sheets"
+              parent="menu_umti_attendance"
+              action="umti_attendance_sheet_action"
+              sequence="10"/>
+
+    <!-- Semester Transition (disabled)
+    <menuitem id="menu_umti_trainers_tools"
+              name="Tools"
+              parent="menu_umti_trainers_root"
+              sequence="90"/>
+
+    <menuitem id="menu_umti_student_transition"
+              name="Semester Transition"
+              parent="menu_umti_trainers_tools"
+              action="umti_student_transition_wizard_action"
+              groups="umti_trainers.group_umti_trainers_manager"
+              sequence="10"/>
+    -->
+
+</odoo>

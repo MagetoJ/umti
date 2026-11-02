@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+        <record id="module_category_umti_infrastructure" model="ir.module.category">
+            <field name="name">UMTI Campus Infrastructure</field>
+            <field name="parent_id" ref="umti_core.module_category_umti_core"/>
+        </record>
+    </data>
+</odoo>

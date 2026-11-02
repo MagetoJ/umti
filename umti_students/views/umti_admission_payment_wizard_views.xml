@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="school_admission_payment_wizard_form" model="ir.ui.view">
+        <field name="name">school.admission.payment.wizard.form</field>
+        <field name="model">school.admission.payment.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Register Payment">
+                <group>
+                    <group string="Payment">
+                        <field name="review_id" invisible="1"/>
+                        <field name="invoice_id"/>
+                        <field name="partner_id"/>
+                        <field name="company_id" invisible="1"/>
+                        <field name="journal_id"/>
+                        <field name="amount"/>
+                        <field name="currency_id" invisible="1"/>
+                        <field name="payment_date"/>
+                    </group>
+                </group>
+                <footer>
+                    <button name="action_create_payment" type="object"
+                            string="Create payment" class="btn-primary"
+                            data-hotkey="q"/>
+                    <button string="Cancel" class="btn-secondary"
+                            special="cancel" data-hotkey="x"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Gives umti_core's "The Institute" home-screen tile an icon. Remove this file
+         (and its manifest line) once umti_core ships its own web_icon. -->
+    <record id="umti_core.menu_umti_institute_parent" model="ir.ui.menu">
+        <field name="web_icon">umti_students,static/description/icon_institute.png</field>
+    </record>
+</odoo>

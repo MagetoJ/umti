@@ -1,0 +1,259 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ============================================================ -->
+    <!--  STUDENT FORM: stat button + Attendance tab                  -->
+    <!-- ============================================================ -->
+    <record id="school_student_view_form_inherit_attendance" model="ir.ui.view">
+        <field name="name">school.student.form.inherit.attendance</field>
+        <field name="model">school.student</field>
+        <field name="inherit_id" ref="umti_trainers.school_student_view_form_inherit_trainers"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_attendance" type="object"
+                        class="oe_stat_button" icon="fa-calendar-check-o">
+                    <field name="attendance_rate" widget="statinfo" string="Attendance %"/>
+                </button>
+            </xpath>
+
+            <!-- Create the Attendance page (it is not defined in any parent view) -->
+            <xpath expr="//page[@name='unit_enrollments']" position="after">
+                <page string="Attendance" name="attendance_tab">
+                <group name="attendance_overview_group">
+                    <group string="Overview">
+                        <field name="attendance_state" widget="badge"
+                               decoration-success="attendance_state == 'good'"
+                               decoration-danger="attendance_state == 'at_risk'"
+                               decoration-muted="attendance_state == 'no_data'"/>
+                        <field name="attendance_rate"/>
+                    </group>
+                    <group string="Sessions (submitted sheets)">
+                        <field name="attendance_session_count"/>
+                        <field name="attendance_present_count"/>
+                        <field name="attendance_absent_count"/>
+                        <field name="attendance_excused_count"/>
+                    </group>
+                </group>
+                <separator string="By Unit"/>
+                <field name="attendance_summary_ids" readonly="1" nolabel="1">
+                    <list create="0" delete="0" edit="0"
+                          decoration-danger="at_risk">
+                        <field name="at_risk" column_invisible="1"/>
+                        <field name="academic_term_id"/>
+                        <field name="unit_id"/>
+                        <field name="session_count"/>
+                        <field name="present_count"/>
+                        <field name="absent_count"/>
+                        <field name="excused_count" optional="show"/>
+                        <field name="attendance_rate" widget="progressbar"/>
+                        <field name="last_session_date" optional="show"/>
+                    </list>
+                </field>
+                <separator string="Recent Sessions"/>
+                <field name="attendance_submitted_line_ids" readonly="1" nolabel="1">
+                    <list create="0" delete="0" edit="0" limit="15"
+                          decoration-danger="not is_present and counts_in_rate"
+                          decoration-muted="not is_present and not counts_in_rate">
+                        <field name="is_present" column_invisible="1"/>
+                        <field name="counts_in_rate" column_invisible="1"/>
+                        <field name="date"/>
+                        <field name="unit_id"/>
+                        <field name="status_id"/>
+                        <field name="absence_reason"/>
+                        <field name="trainer_id" optional="hide"/>
+                    </list>
+                </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Student list + search -->
+    <record id="school_student_view_list_inherit_attendance" model="ir.ui.view">
+        <field name="name">school.student.list.inherit.attendance</field>
+        <field name="model">school.student</field>
+        <field name="inherit_id" ref="umti_students.school_student_view_list"/>
+        <field name="arch" type="xml">
+            <field name="fee_status" position="after">
+                <field name="attendance_rate" optional="show" string="Attendance %"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="school_student_view_search_inherit_attendance" model="ir.ui.view">
+        <field name="name">school.student.search.inherit.attendance</field>
+        <field name="model">school.student</field>
+        <field name="inherit_id" ref="umti_students.school_student_view_search"/>
+        <field name="arch" type="xml">
+            <filter name="filter_discontinued" position="after">
+                <separator/>
+                <filter name="filter_low_attendance" string="Low Attendance"
+                        domain="[('attendance_at_risk', '=', True)]"/>
+            </filter>
+        </field>
+    </record>
+
+    <!-- ============================================================ -->
+    <!--  ATTENDANCE RECORDS (lines of submitted sheets)              -->
+    <!-- ============================================================ -->
+    <record id="umti_attendance_line_view_list" model="ir.ui.view">
+        <field name="name">umti.attendance.line.list</field>
+        <field name="model">umti.attendance.line</field>
+        <field name="arch" type="xml">
+            <list create="0" delete="0" edit="0"
+                  decoration-danger="not is_present and counts_in_rate"
+                  decoration-muted="not is_present and not counts_in_rate">
+                <field name="is_present" column_invisible="1"/>
+                <field name="counts_in_rate" column_invisible="1"/>
+                <field name="date"/>
+                <field name="student_id"/>
+                <field name="course_id" optional="hide"/>
+                <field name="unit_id"/>
+                <field name="academic_term_id" optional="hide"/>
+                <field name="status_id"/>
+                <field name="absence_reason"/>
+                <field name="trainer_id" optional="show"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="umti_attendance_line_view_pivot" model="ir.ui.view">
+        <field name="name">umti.attendance.line.pivot</field>
+        <field name="model">umti.attendance.line</field>
+        <field name="arch" type="xml">
+            <pivot string="Attendance Records">
+                <field name="unit_id" type="row"/>
+                <field name="status_id" type="col"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="umti_attendance_line_view_search" model="ir.ui.view">
+        <field name="name">umti.attendance.line.search</field>
+        <field name="model">umti.attendance.line</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="student_id"/>
+                <field name="unit_id"/>
+                <field name="course_id"/>
+                <field name="trainer_id"/>
+                <filter name="filter_present" string="Present" domain="[('is_present', '=', True)]"/>
+                <filter name="filter_absent" string="Absent"
+                        domain="[('is_present', '=', False), ('counts_in_rate', '=', True)]"/>
+                <filter name="filter_excused" string="Excused"
+                        domain="[('is_present', '=', False), ('counts_in_rate', '=', False)]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_student" string="Student" context="{'group_by': 'student_id'}"/>
+                    <filter name="group_unit" string="Unit" context="{'group_by': 'unit_id'}"/>
+                    <filter name="group_status" string="Status" context="{'group_by': 'status_id'}"/>
+                    <filter name="group_date" string="Date" context="{'group_by': 'date:week'}"/>
+                    <filter name="group_trainer" string="Trainer" context="{'group_by': 'trainer_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="umti_attendance_line_action" model="ir.actions.act_window">
+        <field name="name">Attendance Records</field>
+        <field name="res_model">umti.attendance.line</field>
+        <field name="view_mode">list,pivot</field>
+        <field name="domain">[('sheet_state', '=', 'done')]</field>
+        <field name="search_view_id" ref="umti_attendance_line_view_search"/>
+    </record>
+
+    <!-- ============================================================ -->
+    <!--  ATTENDANCE ANALYSIS (student x unit x term)                 -->
+    <!-- ============================================================ -->
+    <record id="umti_attendance_summary_view_list" model="ir.ui.view">
+        <field name="name">umti.attendance.summary.list</field>
+        <field name="model">umti.attendance.summary</field>
+        <field name="arch" type="xml">
+            <list create="0" delete="0" edit="0" decoration-danger="at_risk">
+                <field name="at_risk" column_invisible="1"/>
+                <field name="student_id"/>
+                <field name="course_id" optional="hide"/>
+                <field name="academic_term_id"/>
+                <field name="unit_id"/>
+                <field name="session_count" sum="Sessions"/>
+                <field name="present_count" sum="Present"/>
+                <field name="absent_count" sum="Absent"/>
+                <field name="excused_count" sum="Excused" optional="show"/>
+                <field name="attendance_rate" widget="progressbar"/>
+                <field name="last_session_date" optional="show"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="umti_attendance_summary_view_pivot" model="ir.ui.view">
+        <field name="name">umti.attendance.summary.pivot</field>
+        <field name="model">umti.attendance.summary</field>
+        <field name="arch" type="xml">
+            <pivot string="Attendance Analysis">
+                <field name="unit_id" type="row"/>
+                <field name="academic_term_id" type="col"/>
+                <field name="attendance_rate" type="measure"/>
+                <field name="present_count" type="measure"/>
+                <field name="absent_count" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="umti_attendance_summary_view_graph" model="ir.ui.view">
+        <field name="name">umti.attendance.summary.graph</field>
+        <field name="model">umti.attendance.summary</field>
+        <field name="arch" type="xml">
+            <graph string="Attendance by Unit" type="bar">
+                <field name="unit_id"/>
+                <field name="attendance_rate" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="umti_attendance_summary_view_search" model="ir.ui.view">
+        <field name="name">umti.attendance.summary.search</field>
+        <field name="model">umti.attendance.summary</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="student_id"/>
+                <field name="unit_id"/>
+                <field name="course_id"/>
+                <field name="department_id"/>
+                <field name="academic_term_id"/>
+                <filter name="filter_at_risk" string="Below Threshold"
+                        domain="[('at_risk', '=', True)]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_student" string="Student" context="{'group_by': 'student_id'}"/>
+                    <filter name="group_unit" string="Unit" context="{'group_by': 'unit_id'}"/>
+                    <filter name="group_course" string="Course" context="{'group_by': 'course_id'}"/>
+                    <filter name="group_department" string="Department" context="{'group_by': 'department_id'}"/>
+                    <filter name="group_term" string="Semester" context="{'group_by': 'academic_term_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="umti_attendance_summary_action" model="ir.actions.act_window">
+        <field name="name">Attendance Analysis</field>
+        <field name="res_model">umti.attendance.summary</field>
+        <field name="view_mode">list,pivot,graph</field>
+        <field name="search_view_id" ref="umti_attendance_summary_view_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No attendance to analyse yet</p>
+            <p>Figures appear here once trainers submit attendance sheets.</p>
+        </field>
+    </record>
+
+    <menuitem id="menu_umti_attendance_analysis"
+              name="Attendance Analysis"
+              parent="umti_trainers.menu_umti_attendance"
+              action="umti_attendance_summary_action"
+              sequence="20"/>
+
+    <menuitem id="menu_umti_attendance_records"
+              name="Attendance Records"
+              parent="umti_trainers.menu_umti_attendance"
+              action="umti_attendance_line_action"
+              sequence="30"
+              groups="umti_trainers.group_umti_trainers_manager"/>
+</odoo>

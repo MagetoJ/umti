@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="umti_student_transition_wizard_view_form" model="ir.ui.view">
+        <field name="name">umti.student.transition.wizard.form</field>
+        <field name="model">umti.student.transition.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Student Semester Transition">
+                <group>
+                    <group string="Current Semester">
+                        <field name="current_term_id"/>
+                        <field name="course_id"/>
+                        <field name="current_level_id"/>
+                    </group>
+                    <group string="Next Semester">
+                        <field name="next_term_id"/>
+                        <field name="next_level_id"/>
+                    </group>
+                </group>
+                <separator string="Students to Transition"/>
+                <field name="student_ids">
+                    <list>
+                        <field name="admission_no"/>
+                        <field name="name"/>
+                        <field name="course_id"/>
+                        <field name="course_level"/>
+                    </list>
+                </field>
+                <footer>
+                    <button name="action_transit_students" type="object"
+                            string="Transition Students" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="umti_student_transition_wizard_action" model="ir.actions.act_window">
+        <field name="name">Semester Transition</field>
+        <field name="res_model">umti.student.transition.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+</odoo>

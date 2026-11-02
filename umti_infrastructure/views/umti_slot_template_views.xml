@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Slot Template Form -->
+    <record id="umti_slot_template_view_form" model="ir.ui.view">
+        <field name="name">umti.timetable.slot.template.form</field>
+        <field name="model">umti.timetable.slot.template</field>
+        <field name="arch" type="xml">
+            <form string="Slot Template">
+                <header>
+                    <button name="action_generate_standard_8to5_slots"
+                            string="Generate Standard 8–5 Schedule (Mon–Fri)"
+                            type="object" class="btn-primary"
+                            icon="fa-magic"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="e.g. Standard 3-Hour Regular Set"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="code"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Time Slots" name="slots">
+                            <field name="slot_ids">
+                                <list editable="bottom">
+                                    <field name="day_of_week"/>
+                                    <field name="start_time" widget="float_time"/>
+                                    <field name="end_time" widget="float_time"/>
+                                    <field name="slot_type" widget="badge"
+                                           decoration-info="slot_type == 'regular'"
+                                           decoration-warning="slot_type == 'exam'"
+                                           decoration-success="slot_type == 'both'"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Slot Template List -->
+    <record id="umti_slot_template_view_list" model="ir.ui.view">
+        <field name="name">umti.timetable.slot.template.list</field>
+        <field name="model">umti.timetable.slot.template</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="slot_ids" widget="many2many_tags"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Slot Template Action -->
+    <record id="action_umti_slot_template" model="ir.actions.act_window">
+        <field name="name">Slot Templates</field>
+        <field name="res_model">umti.timetable.slot.template</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Create your first slot template</p>
+            <p>Group time slots into reusable seasonal or term-based templates.</p>
+        </field>
+    </record>
+
+</odoo>

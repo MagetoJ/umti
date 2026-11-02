@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+
+        <!-- ================================================================= -->
+        <!-- REGULAR TEACHING / CLASS SLOTS (3 Hours Each, Ending at 5:00 PM)  -->
+        <!-- ================================================================= -->
+
+        <!-- MONDAY CLASS SLOTS -->
+        <record id="slot_class_mon_1" model="umti.timetable.slot">
+            <field name="day_of_week">0</field> <!-- Monday -->
+            <field name="start_time">8.0</field>  <!-- 08:00 AM -->
+            <field name="end_time">11.0</field>  <!-- 11:00 AM -->
+            <field name="slot_type">regular</field>
+        </record>
+        <record id="slot_class_mon_2" model="umti.timetable.slot">
+            <field name="day_of_week">0</field>
+            <field name="start_time">11.0</field> <!-- 11:00 AM -->
+            <field name="end_time">14.0</field>  <!-- 02:00 PM (Lunch Break 1-2 PM embedded/after) -->
+            <field name="slot_type">regular</field>
+        </record>
+        <record id="slot_class_mon_3" model="umti.timetable.slot">
+            <field name="day_of_week">0</field>
+            <field name="start_time">14.0</field> <!-- 02:00 PM -->
+            <field name="end_time">17.0</field>  <!-- 05:00 PM -->
+            <field name="slot_type">regular</field>
+        </record>
+
+        <!-- TUESDAY CLASS SLOTS -->
+        <record id="slot_class_tue_1" model="umti.timetable.slot">
+            <field name="day_of_week">1</field> <!-- Tuesday -->
+            <field name="start_time">8.0</field>
+            <field name="end_time">11.0</field>
+            <field name="slot_type">regular</field>
+        </record>
+        <record id="slot_class_tue_2" model="umti.timetable.slot">
+            <field name="day_of_week">1</field>
+            <field name="start_time">11.0</field>
+            <field name="end_time">14.0</field>
+            <field name="slot_type">regular</field>
+        </record>
+        <record id="slot_class_tue_3" model="umti.timetable.slot">
+            <field name="day_of_week">1</field>
+            <field name="start_time">14.0</field>
+            <field name="end_time">17.0</field>
+            <field name="slot_type">regular</field>
+        </record>
+
+        <!-- WEDNESDAY CLASS SLOTS -->
+        <record id="slot_class_wed_1" model="umti.timetable.slot">
+            <field name="day_of_week">2</field> <!-- Wednesday -->
+            <field name="start_time">8.0</field>
+            <field name="end_time">11.0</field>
+            <field name="slot_type">regular</field>
+        </record>
+        <record id="slot_class_wed_2" model="umti.timetable.slot">
+            <field name="day_of_week">2</field>
+            <field name="start_time">11.0</field>
+            <field name="end_time">14.0</field>
+            <field name="slot_type">regular</field>
+        </record>
+        <record id="slot_class_wed_3" model="umti.timetable.slot">
+            <field name="day_of_week">2</field>
+            <field name="start_time">14.0</field>
+            <field name="end_time">17.0</field>
+            <field name="slot_type">regular</field>
+        </record>
+
+        <!-- THURSDAY CLASS SLOTS -->
+        <record id="slot_class_thu_1" model="umti.timetable.slot">
+            <field name="day_of_week">3</field> <!-- Thursday -->
+            <field name="start_time">8.0</field>
+            <field name="end_time">11.0</field>
+            <field name="slot_type">regular</field>
+        </record>
+        <record id="slot_class_thu_2" model="umti.timetable.slot">
+            <field name="day_of_week">3</field>
+            <field name="start_time">11.0</field>
+            <field name="end_time">14.0</field>
+            <field name="slot_type">regular</field>
+        </record>
+        <record id="slot_class_thu_3" model="umti.timetable.slot">
+            <field name="day_of_week">3</field>
+            <field name="start_time">14.0</field>
+            <field name="end_time">17.0</field>
+            <field name="slot_type">regular</field>
+        </record>
+
+        <!-- FRIDAY CLASS SLOTS -->
+        <record id="slot_class_fri_1" model="umti.timetable.slot">
+            <field name="day_of_week">4</field> <!-- Friday -->
+            <field name="start_time">8.0</field>
+            <field name="end_time">11.0</field>
+            <field name="slot_type">regular</field>
+        </record>
+        <record id="slot_class_fri_2" model="umti.timetable.slot">
+            <field name="day_of_week">4</field>
+            <field name="start_time">11.0</field>
+            <field name="end_time">14.0</field>
+            <field name="slot_type">regular</field>
+        </record>
+        <record id="slot_class_fri_3" model="umti.timetable.slot">
+            <field name="day_of_week">4</field>
+            <field name="start_time">14.0</field>
+            <field name="end_time">17.0</field>
+            <field name="slot_type">regular</field>
+        </record>
+
+        <!-- ================================================================= -->
+        <!-- EXAM TIMETABLE SLOTS (2 Hours Each)                               -->
+        <!-- ================================================================= -->
+
+        <!-- MONDAY EXAM SLOTS -->
+        <record id="slot_exam_mon_1" model="umti.timetable.slot">
+            <field name="day_of_week">0</field>
+            <field name="start_time">8.0</field>  <!-- 08:00 AM -->
+            <field name="end_time">10.0</field>  <!-- 10:00 AM -->
+            <field name="slot_type">exam</field>
+        </record>
+        <record id="slot_exam_mon_2" model="umti.timetable.slot">
+            <field name="day_of_week">0</field>
+            <field name="start_time">11.0</field> <!-- 11:00 AM -->
+            <field name="end_time">13.0</field>  <!-- 01:00 PM -->
+            <field name="slot_type">exam</field>
+        </record>
+        <record id="slot_exam_mon_3" model="umti.timetable.slot">
+            <field name="day_of_week">0</field>
+            <field name="start_time">14.0</field> <!-- 02:00 PM -->
+            <field name="end_time">16.0</field>  <!-- 04:00 PM -->
+            <field name="slot_type">exam</field>
+        </record>
+
+        <!-- TUESDAY EXAM SLOTS -->
+        <record id="slot_exam_tue_1" model="umti.timetable.slot">
+            <field name="day_of_week">1</field>
+            <field name="start_time">8.0</field>
+            <field name="end_time">10.0</field>
+            <field name="slot_type">exam</field>
+        </record>
+        <record id="slot_exam_tue_2" model="umti.timetable.slot">
+            <field name="day_of_week">1</field>
+            <field name="start_time">11.0</field>
+            <field name="end_time">13.0</field>
+            <field name="slot_type">exam</field>
+        </record>
+        <record id="slot_exam_tue_3" model="umti.timetable.slot">
+            <field name="day_of_week">1</field>
+            <field name="start_time">14.0</field>
+            <field name="end_time">16.0</field>
+            <field name="slot_type">exam</field>
+        </record>
+
+        <!-- WEDNESDAY EXAM SLOTS -->
+        <record id="slot_exam_wed_1" model="umti.timetable.slot">
+            <field name="day_of_week">2</field>
+            <field name="start_time">8.0</field>
+            <field name="end_time">10.0</field>
+            <field name="slot_type">exam</field>
+        </record>
+        <record id="slot_exam_wed_2" model="umti.timetable.slot">
+            <field name="day_of_week">2</field>
+            <field name="start_time">11.0</field>
+            <field name="end_time">13.0</field>
+            <field name="slot_type">exam</field>
+        </record>
+        <record id="slot_exam_wed_3" model="umti.timetable.slot">
+            <field name="day_of_week">2</field>
+            <field name="start_time">14.0</field>
+            <field name="end_time">16.0</field>
+            <field name="slot_type">exam</field>
+        </record>
+
+        <!-- THURSDAY EXAM SLOTS -->
+        <record id="slot_exam_thu_1" model="umti.timetable.slot">
+            <field name="day_of_week">3</field>
+            <field name="start_time">8.0</field>
+            <field name="end_time">10.0</field>
+            <field name="slot_type">exam</field>
+        </record>
+        <record id="slot_exam_thu_2" model="umti.timetable.slot">
+            <field name="day_of_week">3</field>
+            <field name="start_time">11.0</field>
+            <field name="end_time">13.0</field>
+            <field name="slot_type">exam</field>
+        </record>
+        <record id="slot_exam_thu_3" model="umti.timetable.slot">
+            <field name="day_of_week">3</field>
+            <field name="start_time">14.0</field>
+            <field name="end_time">16.0</field>
+            <field name="slot_type">exam</field>
+        </record>
+
+        <!-- FRIDAY EXAM SLOTS -->
+        <record id="slot_exam_fri_1" model="umti.timetable.slot">
+            <field name="day_of_week">4</field>
+            <field name="start_time">8.0</field>
+            <field name="end_time">10.0</field>
+            <field name="slot_type">exam</field>
+        </record>
+        <record id="slot_exam_fri_2" model="umti.timetable.slot">
+            <field name="day_of_week">4</field>
+            <field name="start_time">11.0</field>
+            <field name="end_time">13.0</field>
+            <field name="slot_type">exam</field>
+        </record>
+        <record id="slot_exam_fri_3" model="umti.timetable.slot">
+            <field name="day_of_week">4</field>
+            <field name="start_time">14.0</field>
+            <field name="end_time">16.0</field>
+            <field name="slot_type">exam</field>
+        </record>
+
+    </data>
+</odoo>

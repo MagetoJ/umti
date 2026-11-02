@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Student Semester Form -->
+    <record id="umti_student_semester_view_form" model="ir.ui.view">
+        <field name="name">umti.student.semester.form</field>
+        <field name="model">umti.student.semester</field>
+        <field name="arch" type="xml">
+            <form string="Student Semester">
+                <header>
+                    <button name="action_activate" string="Activate"
+                            type="object" class="btn-primary"
+                            invisible="state != 'draft'"/>
+                    <button name="action_mark_complete" string="Mark Complete"
+                            type="object" class="btn-primary"
+                            invisible="state != 'active'"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,active,complete"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="student_id"/>
+                            <field name="course_id"/>
+                            <field name="level_id"/>
+                        </group>
+                        <group>
+                            <field name="sequence"/>
+                            <field name="name"/>
+                            <field name="academic_year_id"/>
+                            <field name="academic_term_id"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Student Semester List -->
+    <record id="umti_student_semester_view_list" model="ir.ui.view">
+        <field name="name">umti.student.semester.list</field>
+        <field name="model">umti.student.semester</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="student_id"/>
+                <field name="course_id"/>
+                <field name="sequence"/>
+                <field name="name"/>
+                <field name="level_id"/>
+                <field name="academic_year_id"/>
+                <field name="state" widget="badge"
+                       decoration-muted="state == 'draft'"
+                       decoration-info="state == 'active'"
+                       decoration-success="state == 'complete'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Inherit student form: add the semesters notebook page -->
+    <record id="view_school_student_form_semester_inherit" model="ir.ui.view">
+        <field name="name">school.student.form.semester.inherit</field>
+        <field name="model">school.student</field>
+        <field name="inherit_id" ref="umti_students.school_student_view_form"/>
+        <field name="arch" type="xml">
+            <!-- Semesters are generated automatically from the application. -->
+            <!-- Add Semesters tab in the notebook -->
+            <xpath expr="//notebook/page[@name='documents']" position="after">
+                <page string="Semesters &amp; Progression" name="semesters">
+                    <group>
+                        <group string="Semesters">
+                            <field name="semester_ids" nolabel="1">
+                            <list>
+                                <field name="sequence" widget="handle"/>
+                                <field name="name"/>
+                                <field name="level_id"/>
+                                <field name="academic_term_id"/>
+                                <field name="academic_year_id"/>
+                                <field name="state" widget="badge"
+                                    decoration-muted="state == 'draft'"
+                                    decoration-info="state == 'active'"
+                                    decoration-success="state == 'complete'"/>
+                            </list>
+                        </field>
+                        </group>
+                        <group string="Course Units" name="student_units">
+                            <field name="unit_ids" nolabel="1">
+                                <list >
+                                    <field name="name"/>
+                                    <field name="code"/>
+                                    <field name="unit_type"/>
+                                    <field name="unit_level"/>
+                                    <field name="unit_semester"/>
+                                    <field name="credit_contribution"/>
+                                    </list>
+                            </field>
+                        </group>
+                    </group>
+                    
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

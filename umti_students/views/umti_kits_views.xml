@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Form View -->
+        <record id="umti_kits_form" model="ir.ui.view">
+            <field name="name">umti.kits.form</field>
+            <field name="model">umti.kits</field>
+            <field name="arch" type="xml">
+                <form string="Kits">
+                    <header>
+                        <field name="status" widget="statusbar" statusbar_visible="available,unavailable,lost"/>
+                    </header>
+                    <sheet>
+                    <div class="oe_button_box" name="button_box">
+                            <button name="view_all_lendings" type="object" string="Issuances" class="oe_stat_button" icon="fa-futbol-o ">
+                                <field name="lending_counts" widget="statinfo" string="Issuances"/>
+                            </button>
+                        </div>
+                        <group>
+                            <field name="name"/>
+                            <field name="internal_reference"/>
+                            <field name="related_product"/>
+                            <field name="description"/>
+                        </group>
+                        <group>
+                            <field name="date_acquired"/>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="purchase_price"/>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+        
+        <!-- List View -->
+        <record id="umti_kits_list" model="ir.ui.view">
+            <field name="name">umti.kits.list</field>
+            <field name="model">umti.kits</field>
+            <field name="arch" type="xml">
+                <list string="Kits">
+                    <field name="name"/>
+                    <field name="internal_reference"/>
+                    <field name="related_product"/>
+                    <field name="description"/>
+                    <field name="date_acquired"/>
+                    <field name="currency_id" invisible="1"/>
+                    <field name="purchase_price"/>
+                    <field name="status" widget="badge"
+                        decoration-success="status == 'available'"
+                        decoration-warning="status == 'unavailable'"
+                        decoration-danger="status == 'lost'"
+                    />
+                </list>
+            </field>
+        </record>
+        
+        <!-- Kanban View -->
+        <record id="umti_kits_kanban" model="ir.ui.view">
+            <field name="name">umti.kits.kanban</field>
+            <field name="model">umti.kits</field>
+            <field name="arch" type="xml">
+                <kanban default_group_by="status">
+                    <field name="status"/>
+                    <templates>
+                        <t t-name="card">
+                            <main>
+                                <field name="name" class="fw-bold fs-5"/>
+                                <field name="internal_reference" class="text-muted"/>
+                                <field name="related_product"/>
+                                <field name="date_acquired"/>
+                                <footer>
+                                    <field name="status" widget="badge"
+                                           decoration-success="status == 'available'"
+                                           decoration-warning="status == 'unavailable'"
+                                           decoration-danger="status == 'lost'"/>
+                                </footer>
+                            </main>
+                        </t>
+                    </templates>
+                </kanban>
+            </field>
+        </record>
+
+        <!-- Search View -->
+        <record id="umti_kits_search" model="ir.ui.view">
+            <field name="name">umti.kits.search</field>
+            <field name="model">umti.kits</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="name"/>
+                    <field name="internal_reference"/>
+                    <field name="related_product"/>
+                    <filter name="filter_available" string="Available" domain="[('status', '=', 'available')]"/>
+                    <filter name="filter_unavailable" string="Unavailable" domain="[('status', '=', 'unavailable')]"/>
+                    <filter name="filter_lost" string="Lost" domain="[('status', '=', 'lost')]"/>
+                    <group expand="0" string="Group By">
+                        <filter name="group_status" string="Status" context="{'group_by': 'status'}"/>
+                        <filter name="group_product" string="Related Product" context="{'group_by': 'related_product'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <!-- Action -->
+        <record id="action_umti_kits" model="ir.actions.act_window">
+            <field name="name">Kits</field>
+            <field name="res_model">umti.kits</field>
+            <field name="view_mode">kanban,list,form</field>
+            <field name="search_view_id" ref="umti_kits_search"/>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Create your first Kits!
+                </p>
+            </field>
+        </record>
+        
+      
+    </data>
+</odoo>

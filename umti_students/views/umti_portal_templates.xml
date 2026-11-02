@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="portal_portfolio" name="My Student Portfolio">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_searchbar" t-value="False"/>
+            <div class="container my-4">
+                <h2>My Portfolio</h2>
+                <t t-if="not student">
+                    <div class="alert alert-warning mt-3">
+                        No student record is linked to your account. Please contact the administration.
+                    </div>
+                </t>
+                <t t-else="">
+                    <h4 t-out="student.name"/>
+                    <div class="row my-3">
+                        <div class="col-md-4"><div class="card p-3">
+                            <div class="text-muted">Total Charged</div>
+                            <div class="fs-4" t-out="student.total_charged"
+                                 t-options='{"widget": "monetary", "display_currency": student.fee_currency_id}'/>
+                        </div></div>
+                        <div class="col-md-4"><div class="card p-3">
+                            <div class="text-muted">Total Paid</div>
+                            <div class="fs-4" t-out="student.total_paid"
+                                 t-options='{"widget": "monetary", "display_currency": student.fee_currency_id}'/>
+                        </div></div>
+                        <div class="col-md-4"><div class="card p-3 border-danger">
+                            <div class="text-muted">Outstanding Balance</div>
+                            <div class="fs-4 text-danger" t-out="student.balance"
+                                 t-options='{"widget": "monetary", "display_currency": student.fee_currency_id}'/>
+                        </div></div>
+                    </div>
+
+                    <h4 class="mt-4">Financial Chart</h4>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-striped">
+                            <thead><tr>
+                                <th>Date</th><th>Academic Year</th><th>Semester</th><th>University</th>
+                                <th>Course</th><th>Description</th><th>Charged</th><th>Paid</th>
+                                <th>Payment Type</th><th>Sponsorship</th><th>Reference</th><th>Receipt</th>
+                            </tr></thead>
+                            <tbody>
+                                <t t-foreach="fees" t-as="f">
+                                    <tr>
+                                        <td t-out="f.date"/>
+                                        <td t-out="f.academic_year_id.name"/>
+                                        <td t-out="f.semester_id.name"/>
+                                        <td t-out="f.company_id.name"/>
+                                        <td t-out="f.course_id.name"/>
+                                        <td t-out="f.description"/>
+                                        <td t-out="f.fee_amount"
+                                            t-options='{"widget": "monetary", "display_currency": f.currency_id}'/>
+                                        <td t-out="f.payment_amount"
+                                            t-options='{"widget": "monetary", "display_currency": f.currency_id}'/>
+                                        <td t-out="dict(f._fields['payment_type'].selection).get(f.payment_type, '')"/>
+                                        <td t-out="dict(f._fields['sponsorship'].selection).get(f.sponsorship, '')"/>
+                                        <td t-out="f.reference"/>
+                                        <td>
+                                            <t t-if="f.receipt_file">
+                                                <a t-attf-href="/my/portfolio/receipt/#{f.id}" t-out="f.receipt_no or 'Download'"/>
+                                            </t>
+                                            <t t-else="" t-out="f.receipt_no"/>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <h4 class="mt-4">Exam Records</h4>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-striped">
+                            <thead><tr>
+                                <th>Academic Year</th><th>Semester</th><th>Course</th><th>Unit</th>
+                                <th>Date</th><th>Marks</th><th>Grade</th><th>Result</th>
+                            </tr></thead>
+                            <tbody>
+                                <t t-foreach="exams" t-as="e">
+                                    <tr>
+                                        <td t-out="e.academic_year_id.name"/>
+                                        <td t-out="e.semester_id.name"/>
+                                        <td t-out="e.course_id.name"/>
+                                        <td><t t-out="e.unit_id.code"/> <t t-out="e.unit_id.name"/></td>
+                                        <td t-out="e.exam_date"/>
+                                        <td><t t-out="e.marks"/> / <t t-out="e.max_marks"/></td>
+                                        <td t-out="e.grade"/>
+                                        <td t-out="(e.result or '').title()"/>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </div>
+                </t>
+            </div>
+        </t>
+    </template>
+</odoo>

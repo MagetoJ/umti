@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Form View -->
+        <record id="umti_academic_year_form" model="ir.ui.view">
+            <field name="name">umti.academic.year.form</field>
+            <field name="model">umti.academic.year</field>
+            <field name="arch" type="xml">
+                <form string="Academic Year">
+                <header>
+                    <button name="activate_academic_year" type="object" string="Activate"
+                            class="btn-primary"
+                            invisible="status != 'draft'"/>
+                    <button name="close_academic_year" type="object" string="Close"
+                            class="btn-primary"
+                            invisible="status != 'running'"/>
+                    <field name="status" widget="statusbar" statusbar_visible="draft,running,ended"/>
+                </header>
+                    <sheet>
+                        <group>
+                            <field name="name"/>
+                            <field name="start_date"/>
+                            <field name="end_date"/>                            
+                        </group>
+                        <notebook>
+                            <page string="Semesters">
+                                <field name="academic_term_ids" nolabel="1">
+                                    <list>
+                                        <field name="name"/>
+                                        <field name="term_start_date"/>
+                                        <field name="term_end_date"/>
+                                        <field name="status"/>
+                                    </list>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <chatter/>
+                </form>
+            </field>
+        </record>
+        
+        <!-- List View -->
+        <record id="umti_academic_year_list" model="ir.ui.view">
+            <field name="name">umti.academic.year.list</field>
+            <field name="model">umti.academic.year</field>
+            <field name="arch" type="xml">
+                <list string="Academic Year">
+                    <field name="name"/>
+                    <field name="start_date" optional="hide"/>
+                    <field name="end_date" optional="hide"/>
+                </list>
+            </field>
+        </record>
+        
+        <!-- Kanban View -->
+        <record id="umti_academic_year_kanban" model="ir.ui.view">
+            <field name="name">umti.academic.year.kanban</field>
+            <field name="model">umti.academic.year</field>
+            <field name="arch" type="xml">
+                <kanban default_group_by="status">
+                    <field name="status"/>
+                    <templates>
+                        <t t-name="card">
+                            <main>
+                                <field name="name" class="fw-bold fs-5"/>
+                                <field name="start_date"/>
+                                <field name="end_date"/>
+                                <footer>
+                                    <field name="status" widget="badge"
+                                           decoration-info="status == 'draft'"
+                                           decoration-success="status == 'running'"
+                                           decoration-muted="status == 'ended'"/>
+                                </footer>
+                            </main>
+                        </t>
+                    </templates>
+                </kanban>
+            </field>
+        </record>
+
+        <!-- Search View -->
+        <record id="umti_academic_year_search" model="ir.ui.view">
+            <field name="name">umti.academic.year.search</field>
+            <field name="model">umti.academic.year</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="name"/>
+                    <filter name="filter_draft" string="Draft" domain="[('status', '=', 'draft')]"/>
+                    <filter name="filter_running" string="Running" domain="[('status', '=', 'running')]"/>
+                    <filter name="filter_ended" string="Ended" domain="[('status', '=', 'ended')]"/>
+                    <group expand="0" string="Group By">
+                        <filter name="group_status" string="Status" context="{'group_by': 'status'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <!-- Action -->
+        <record id="action_umti_academic_year" model="ir.actions.act_window">
+            <field name="name">Academic Year</field>
+            <field name="res_model">umti.academic.year</field>
+            <field name="view_mode">kanban,list,form</field>
+            <field name="search_view_id" ref="umti_academic_year_search"/>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Create your first umti academic_year!
+                </p>
+            </field>
+        </record>        
+       
+    </data>
+</odoo>

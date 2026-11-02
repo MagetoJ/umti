@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- One ladder for the module, plus two roles.
+             The user level also implies the umti_core read groups: fee records
+             and exam records pick courses, departments, academic years, terms
+             and fee structure lines, and those dropdowns raise an access
+             error without read access to them. -->
+        <record id="group_umti_students_user" model="res.groups">
+            <field name="name">User</field>
+            <field name="category_id" ref="module_category_umti_students"/>
+            <field name="implied_ids" eval="[
+                (4, ref('base.group_user')),
+                (4, ref('umti_core.group_umti_user')),
+                (4, ref('umti_core.group_umti_department_user')),
+                (4, ref('umti_core.group_umti_academic_year_user')),
+                (4, ref('umti_core.group_umti_fee_structure_user'))]"/>
+        </record>
+
+        <!-- Role: applications and intakes. -->
+        <record id="group_umti_students_admission_officer" model="res.groups">
+            <field name="name">Admission Officer</field>
+            <field name="category_id" ref="module_category_umti_students"/>
+            <field name="implied_ids" eval="[(4, ref('group_umti_students_user'))]"/>
+        </record>
+
+        <!-- Role: fees and exam records. -->
+        <record id="group_umti_students_portfolio_officer" model="res.groups">
+            <field name="name">Fees and Exams Officer</field>
+            <field name="category_id" ref="module_category_umti_students"/>
+            <field name="implied_ids" eval="[(4, ref('group_umti_students_user'))]"/>
+        </record>
+
+        <record id="group_umti_students_manager" model="res.groups">
+            <field name="name">Manager</field>
+            <field name="category_id" ref="module_category_umti_students"/>
+            <field name="implied_ids" eval="[
+                (4, ref('group_umti_students_user')),
+                (4, ref('group_umti_students_admission_officer')),
+                (4, ref('group_umti_students_portfolio_officer'))]"/>
+        </record>
+
+        <record id="group_umti_students_admin" model="res.groups">
+            <field name="name">Administrator</field>
+            <field name="category_id" ref="module_category_umti_students"/>
+            <field name="implied_ids" eval="[(4, ref('group_umti_students_manager'))]"/>
+            <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+        </record>
+
+    </data>
+
+    <record id="school_student_company_rule" model="ir.rule">
+        <field name="name">Student: multi-company</field>
+        <field name="model_id" ref="model_school_student"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+
+    <record id="school_admission_application_company_rule" model="ir.rule">
+        <field name="name">Admission application: multi-company</field>
+        <field name="model_id" ref="model_school_admission_application"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+
+    <record id="school_admission_intake_company_rule" model="ir.rule">
+        <field name="name">Admission intake: multi-company</field>
+        <field name="model_id" ref="model_school_admission_intake"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+
+    <record id="school_admission_document_company_rule" model="ir.rule">
+        <field name="name">Application document: multi-company</field>
+        <field name="model_id" ref="model_school_admission_document"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+
+    <record id="school_admission_requirement_company_rule" model="ir.rule">
+        <field name="name">Application requirement: multi-company</field>
+        <field name="model_id" ref="model_school_admission_requirement"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+
+
+    <record id="school_exam_record_company_rule" model="ir.rule">
+        <field name="name">Exam record: multi-company</field>
+        <field name="model_id" ref="model_umti_exam_record"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+
+    <record id="umti_student_semester_company_rule" model="ir.rule">
+        <field name="name">Student semester: multi-company</field>
+        <field name="model_id" ref="model_umti_student_semester"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+
+    
+</odoo>

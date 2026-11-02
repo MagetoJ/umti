@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Form View -->
+        <record id="umti_kits_issuances_form" model="ir.ui.view">
+            <field name="name">umti.kit.issuance.form</field>
+            <field name="model">umti.kit.issuance</field>
+            <field name="arch" type="xml">
+                <form string="Kit Issuance">
+                    <header>
+                        <button name="action_lease" type="object" string="Lease" class="oe_highlight" invisible="state != 'draft'"/>
+                        <button name="action_return" type="object" string="Return" class="oe_highlight" invisible="state != 'leased'"/>
+                        <button name="action_lost" type="object" string="Mark as Lost" class="oe_highlight" invisible="state != 'leased'"/>
+                        <field name="state" widget="statusbar" statusbar_visible="draft,leased,returned,overdue,lost"/>
+                    </header>
+                    <sheet>
+                        <!-- <div class="oe_button_box" name="button_box">
+                            <button name="action_view_kits" type="object" string="Kits" class="oe_stat_button" icon="fa-futbol-o ">
+                                <field name="kit_id" widget="statinfo" string="Kits"/>
+                                </button>
+                        </div> -->
+                        <group>
+                            <field name="student_id"/>
+                            <field name="kit_id"/>
+                            <field name="borrow_date"/>
+                            <field name="return_date"/>
+                            <field name="due_date"/>
+                            <field name="is_overdue"/>
+                            <field name="overdue_days" invisible="not is_overdue"/>
+                        </group>
+                        <group string="Invoice">
+                            <field name="invoice_id" readonly="1"/>
+                            <field name="invoice_payment_state" readonly="1"/>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+        
+        <!-- List View -->
+        <record id="umti_kits_issuances_list" model="ir.ui.view">
+            <field name="name">umti.kit.issuance.list</field>
+            <field name="model">umti.kit.issuance</field>
+            <field name="arch" type="xml">
+                <list string="Kit Issuance">
+                    <field name="student_id"/>
+                    <field name="kit_id"/>
+                    <field name="borrow_date"/>
+                    <field name="return_date"/>
+                    <field name="due_date"/>
+                    <field name="is_overdue"/>
+                    <field name="overdue_days" invisible="not is_overdue"/>
+                    <field name="state" widget="badge"
+                        decoration-success="state == 'leased'"
+                        decoration-warning="state == 'returned'"
+                        decoration-danger="state == 'overdue'"
+                        decoration-muted="state == 'draft'"/>
+                </list>
+            </field>
+        </record>
+        
+        <!-- Kanban View -->
+        <record id="umti_kits_issuances_kanban" model="ir.ui.view">
+            <field name="name">umti.kit.issuance.kanban</field>
+            <field name="model">umti.kit.issuance</field>
+            <field name="arch" type="xml">
+                <kanban default_group_by="state">
+                    <field name="state"/>
+                    <templates>
+                        <t t-name="card">
+                            <main>
+                                <field name="student_id" class="fw-bold fs-5"/>
+                                <field name="kit_id"/>
+                                <field name="borrow_date"/>
+                                <field name="due_date"/>
+                                <footer>
+                                    <field name="state" widget="badge"
+                                           decoration-success="state == 'leased'"
+                                           decoration-warning="state == 'returned'"
+                                           decoration-danger="state in ('overdue', 'lost')"
+                                           decoration-muted="state == 'draft'"/>
+                                </footer>
+                            </main>
+                        </t>
+                    </templates>
+                </kanban>
+            </field>
+        </record>
+
+        <!-- Search View -->
+        <record id="umti_kits_issuances_search" model="ir.ui.view">
+            <field name="name">umti.kit.issuance.search</field>
+            <field name="model">umti.kit.issuance</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="student_id"/>
+                    <field name="kit_id"/>
+                    <filter name="filter_draft" string="Draft" domain="[('state', '=', 'draft')]"/>
+                    <filter name="filter_leased" string="Leased" domain="[('state', '=', 'leased')]"/>
+                    <filter name="filter_returned" string="Returned" domain="[('state', '=', 'returned')]"/>
+                    <filter name="filter_lost" string="Lost" domain="[('state', '=', 'lost')]"/>
+                    <group expand="0" string="Group By">
+                        <filter name="group_state" string="Status" context="{'group_by': 'state'}"/>
+                        <filter name="group_student" string="Student" context="{'group_by': 'student_id'}"/>
+                        <filter name="group_kit" string="Kit" context="{'group_by': 'kit_id'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <!-- Action -->
+        <record id="action_umti_kits_issuances" model="ir.actions.act_window">
+            <field name="name">Kit Issuance</field>
+            <field name="res_model">umti.kit.issuance</field>
+            <field name="view_mode">kanban,list,form</field>
+            <field name="search_view_id" ref="umti_kits_issuances_search"/>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Create your first umti kits_issuances!
+                </p>
+            </field>
+        </record>
+        
+        
+    </data>
+</odoo>

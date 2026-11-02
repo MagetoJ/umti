@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- List View -->
+    <record id="umti_course_view_list" model="ir.ui.view">
+        <field name="name">umti_course.view.list</field>
+        <field name="model">umti.course</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="department_id"/>
+                <field name="course_level_id"/>
+                <field name="minimum_credits" optional="hide"/>
+                <field name="period_type" optional="hide"/>
+                <field name="period" optional="hide"/>
+                <field name="course_capacity"/>
+                <field name="status" widget="badge"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record id="umti_course_view_form" model="ir.ui.view">
+        <field name="name">umti_course.view.form</field>
+        <field name="model">umti.course</field>
+        <field name="arch" type="xml">
+            <form string="Form">
+                <header>
+                    <button name="activate_course" type="object" string="Activate" class="oe_highlight" invisible="status!='draft'"/>
+                    <button name="discontinue_course" type="object" string="Discontinue" class="oe_highlight" invisible="status!='active'"/>
+                    <field name="status" widget="statusbar" statusbar_visible="draft,active,discontinued"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group name="course_info" string="Course Info">
+                            <field name="name"/>
+                            <field name="code"/>
+                            <field name="course_quorum"/>
+                            <label for="course_capacity" string="Course Capacity"/>
+                            <div class="o_row">                                    
+                                <field name="course_capacity"/>
+                                <field name="quorum_progress" class="oe_inline" widget="progressbar"/>
+                            </div>
+
+                        </group >
+                        <group name="department_info" string="Department Info">
+                            <field name="department_id"/>
+                            <field name="course_level_id"/>
+                            <label for="minimum_credits" string="Minimum Credits"/>
+                            <div class="o_row">
+                                <field name="minimum_credits"/>
+                                <field name="totals_progress" class="oe_inline" widget="progressbar"/>
+                            </div>
+                            <label for="period" string="Period"/>
+                                <div class="o_row">
+                                    <field name="period"/>
+                                    <field name="period_type" class="oe_inline"/>
+                                </div>
+                        </group>
+                    </group>
+                    <notebook>
+                    <page string="Units">
+                        <field name="unit_ids" nolabel="1">
+                            <list>
+                                <field name="name"/>
+                                <field name="code"/>
+                                <field name="unit_type"/>
+                                <field name="unit_level"/>
+                                <field name="unit_semester"/>
+                                <field name="department_id"/>
+                                <field name="credit_contribution"/>
+                            </list>
+                        </field>
+                    </page>
+                    <page string="Required Documents">
+                        <field name="document_ids" nolabel="1">
+                            <list>
+                                <field name="name"/>
+                                <field name="code"/>
+                                <field name="description"/>
+                                <field name="waivable"/>
+
+                            </list>
+                        </field>
+                    </page>
+                        <page string="Qualifying Requirements">
+                        <field name="qualifying_requirement_ids" nolabel="1">
+                            <list>
+                                <field name="name"/>
+                                <field name="required_mark"/>
+                                <field name="description"/>
+                                <field name="waivable"/>
+
+                            </list>
+                        </field>
+                    </page>
+                    <page string="General Requirements">
+                        <field name="general_requirement_ids" nolabel="1">
+                            <list>
+                                <field name="name"/>
+                                <field name="description"/>
+                                <field name="waivable"/>
+                            </list>
+                        </field>
+                    </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- Kanban View -->
+    <record id="umti_course_view_kanban" model="ir.ui.view">
+        <field name="name">umti_course.view.kanban</field>
+        <field name="model">umti.course</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="status">
+                <field name="status"/>
+                <templates>
+                    <t t-name="card">
+                        <main>
+                            <field name="name" class="fw-bold fs-5"/>
+                            <field name="code" class="text-muted"/>
+                            <field name="department_id"/>
+                            <field name="course_level_id"/>
+                            <field name="unit_credit_totals"/>
+                            <footer>
+                                <field name="status" widget="badge"
+                                       decoration-info="status == 'draft'"
+                                       decoration-success="status == 'active'"
+                                       decoration-muted="status == 'discontinued'"/>
+                            </footer>
+                        </main>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- Calendar View -->
+    <!-- <record id="umti_course_view_calendar" model="ir.ui.view">
+        <field name="name">umti_course.view.calendar</field>
+        <field name="model">umti.course</field>
+        <field name="arch" type="xml">
+            <calendar string="Calendar" date_start="date">
+                <field name="name"/>
+            </calendar>
+        </field>
+    </record> -->
+
+    <!-- Pivot View -->
+    <!-- <record id="umti_course_view_pivot" model="ir.ui.view">
+        <field name="name">umti_course.view.pivot</field>
+        <field name="model">umti.course</field>
+        <field name="arch" type="xml">
+            <pivot>
+                <field name="state"/>
+                <field name="amount"/>
+            </pivot>
+        </field>
+    </record> -->
+
+    <!-- Search View -->
+    <record id="umti_course_view_search" model="ir.ui.view">
+        <field name="name">umti_course.view.search</field>
+        <field name="model">umti.course</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="department_id"/>
+                <field name="course_level_id"/>
+                <filter name="filter_draft" string="Draft" domain="[('status', '=', 'draft')]"/>
+                <filter name="filter_active" string="Active" domain="[('status', '=', 'active')]"/>
+                <filter name="filter_discontinued" string="Discontinued" domain="[('status', '=', 'discontinued')]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_status" string="Status" context="{'group_by': 'status'}"/>
+                    <filter name="group_department" string="Department" context="{'group_by': 'department_id'}"/>
+                    <filter name="group_level" string="Course Level" context="{'group_by': 'course_level_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_umti_course" model="ir.actions.act_window">
+        <field name="name">Course</field>
+        <field name="res_model">umti.course</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="search_view_id" ref="umti_course_view_search"/>
+    </record>
+
+    
+</odoo>

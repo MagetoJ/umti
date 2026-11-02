@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_umti_fee_record_kanban" model="ir.ui.view">
+        <field name="name">umti.fee.record.kanban</field>
+        <field name="model">umti.fee.record</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="academic_year_id" group_create="false">
+                <field name="currency_id"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="d-flex justify-content-between">
+                            <field name="student_id" class="fw-bold fs-5"/>
+                            <field name="record_type" widget="badge"
+                                   decoration-danger="record_type == 'charge'"
+                                   decoration-success="record_type == 'payment'"/>
+                        </div>
+                        <div class="text-muted">
+                            <field name="company_id"/> - <field name="semester_id"/>
+                        </div>
+                        <div class="text-muted small"><field name="course_id"/></div>
+                        <div t-if="record.description.raw_value"><field name="description"/></div>
+                        <hr class="my-1"/>
+                        <div class="d-flex justify-content-between">
+                            <span>Charged</span><field name="fee_amount" widget="monetary"/>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>Paid</span><field name="payment_amount" widget="monetary"/>
+                        </div>
+                        <div class="d-flex justify-content-between fw-bold">
+                            <span>Balance</span><field name="balance" widget="monetary"/>
+                        </div>
+                        <hr class="my-1"/>
+                        <div class="d-flex justify-content-between text-muted small">
+                            <field name="date"/><field name="payment_type"/>
+                        </div>
+                        <div class="d-flex justify-content-between small">
+                            <field name="sponsorship" widget="badge"
+                                   decoration-info="sponsorship == 'sponsored'"/>
+                            <span t-if="record.reference.raw_value">Ref: <field name="reference"/></span>
+                        </div>
+                        <div t-if="record.receipt_no.raw_value" class="small text-muted">
+                            Receipt: <field name="receipt_no"/>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="view_umti_fee_record_list" model="ir.ui.view">
+        <field name="name">umti.fee.record.list</field>
+        <field name="model">umti.fee.record</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="date"/>
+                <field name="student_id"/>
+                <field name="academic_year_id"/>
+                <field name="semester_id"/>
+                <field name="course_id"/>
+                <field name="company_id" optional="hide"/>
+                <field name="description"/>
+                <field name="fee_amount" sum="Total Charged"/>
+                <field name="payment_amount" sum="Total Paid"/>
+                <field name="balance" sum="Total Balance"/>
+                <field name="payment_type"/>
+                <field name="sponsorship"/>
+                <field name="reference"/>
+                <field name="receipt_no"/>
+                <field name="currency_id" column_invisible="True"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_umti_fee_record_form" model="ir.ui.view">
+        <field name="name">umti.fee.record.form</field>
+        <field name="model">umti.fee.record</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group string="Academic Details">
+                            <field name="student_id"/>
+                            <field name="academic_year_id"/>
+                            <field name="semester_id"/>
+                            <field name="course_id"/>
+                            <field name="department_id"/>
+                            <field name="fee_structure_line_id"/>
+                            <field name="date"/>
+                            <field name="description"/>
+                        </group>
+                        <group string="Amounts">
+                            <field name="currency_id" invisible="1"/>
+                            <field name="fee_amount"/>
+                            <field name="payment_amount"/>
+                            <field name="balance"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Payment">
+                            <field name="payment_type"/>
+                            <field name="sponsorship"/>
+                            <field name="sponsor_id" invisible="sponsorship != 'sponsored'"/>
+                            <field name="reference"/>
+                        </group>
+                        <group string="Receipt">
+                            <field name="receipt_no"/>
+                            <field name="receipt_file" filename="receipt_filename"/>
+                            <field name="receipt_filename" invisible="1"/>
+                        </group>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_umti_fee_record_search" model="ir.ui.view">
+        <field name="name">umti.fee.record.search</field>
+        <field name="model">umti.fee.record</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="student_id"/>
+                <field name="academic_year_id"/>
+                <field name="semester_id"/>
+                <field name="course_id"/>
+                <field name="reference"/>
+                <field name="receipt_no"/>
+                <filter name="f_charge" string="Charges" domain="[('record_type','=','charge')]"/>
+                <filter name="f_payment" string="Payments" domain="[('record_type','=','payment')]"/>
+                <filter name="f_sponsored" string="Sponsored" domain="[('sponsorship','=','sponsored')]"/>
+                <filter name="f_self" string="Self Sponsored" domain="[('sponsorship','=','self')]"/>
+                <filter name="f_archived" string="Archived" domain="[('active','=',False)]"/>
+                <group expand="0" string="Group By">
+                    <filter name="g_student" string="Student" context="{'group_by':'student_id'}"/>
+                    <filter name="g_year" string="Academic Year" context="{'group_by':'academic_year_id'}"/>
+                    <filter name="g_sem" string="Semester" context="{'group_by':'semester_id'}"/>
+                    <filter name="g_course" string="Course" context="{'group_by':'course_id'}"/>
+                    <filter name="g_dept" string="Department" context="{'group_by':'department_id'}"/>
+                    <filter name="g_ptype" string="Payment Type" context="{'group_by':'payment_type'}"/>
+                    <filter name="g_spons" string="Sponsorship" context="{'group_by':'sponsorship'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_umti_fee_record_graph" model="ir.ui.view">
+        <field name="name">umti.fee.record.graph</field>
+        <field name="model">umti.fee.record</field>
+        <field name="arch" type="xml">
+            <graph type="bar">
+                <field name="academic_year_id"/>
+                <field name="fee_amount" type="measure"/>
+                <field name="payment_amount" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="view_umti_fee_record_pivot" model="ir.ui.view">
+        <field name="name">umti.fee.record.pivot</field>
+        <field name="model">umti.fee.record</field>
+        <field name="arch" type="xml">
+            <pivot>
+                <field name="academic_year_id" type="row"/>
+                <field name="semester_id" type="col"/>
+                <field name="fee_amount" type="measure"/>
+                <field name="payment_amount" type="measure"/>
+                <field name="balance" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="action_umti_fee_record" model="ir.actions.act_window">
+        <field name="name">Fee Records</field>
+        <field name="res_model">umti.fee.record</field>
+        <field name="view_mode">kanban,list,form,graph,pivot</field>
+    </record>
+</odoo>

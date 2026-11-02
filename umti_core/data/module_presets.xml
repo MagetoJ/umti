@@ -1,0 +1,51 @@
+<odoo noupdate="1">
+
+    <record id="admission_structure_votehead" model="umti.structure.votehead">
+        <field name="name">Admission Fees</field>
+        <field name="code">ADMISSION</field>
+    </record>
+
+    <record id="leaving_certificate_preset" model="umti.course.required.documents">
+        <field name="name">Leaving Certificate</field>
+        <field name="code">leaving</field>
+        <field name="description">A certificate from former school confirming that you were a student at there.</field>
+        <field name="active">True</field>
+        <field name="waivable">False</field>
+    </record>
+
+    <record id="national_id_preset" model="umti.course.required.documents">
+        <field name="name">National ID</field>
+        <field name="code">national_id</field>
+        <field name="description">A valid national ID.</field>
+        <field name="active">True</field>
+        <field name="waivable">False</field>
+    </record>
+    <record id="kcpe_certificate_preset" model="umti.course.required.documents">
+        <field name="name">KCPE Certificate</field>
+        <field name="code">kcpe</field>
+        <field name="description">A certificate confirming that you have passed the KCPE.</field>
+        <field name="active">True</field>
+        <field name="waivable">False</field>
+    </record>
+    <record id="kcse_certificate_preset" model="umti.course.required.documents">
+        <field name="name">KCSE Certificate</field>
+        <field name="code">kcse</field>
+        <field name="description">A certificate confirming that you have passed the KCSE.</field>
+        <field name="active">True</field>
+        <field name="waivable">False</field>
+    </record>
+    <record id="passport_preset" model="umti.course.required.documents">
+        <field name="name">Passport</field>
+        <field name="code">passport</field>
+        <field name="description">A valid passport.</field>
+        <field name="active">True</field>
+        <field name="waivable">True</field>
+    </record>
+    <record id="birth_certificate_preset" model="umti.course.required.documents">
+        <field name="name">Birth Certificate</field>
+        <field name="code">birth_cert</field>
+        <field name="description">A valid birth certificate.</field>
+        <field name="active">True</field>
+        <field name="waivable">True</field>
+    </record>
+</odoo> 

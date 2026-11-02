@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates xml:space="preserve">
+
+    <t t-name="umti_exams.ExamOfficerDashboard">
+        <div class="o_umti_exam_dashboard o_content overflow-auto bg-100">
+
+            <!-- Top bar -->
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 px-4 py-3 border-bottom bg-view">
+                <div>
+                    <h1 class="h3 mb-0">Exam Officer Dashboard</h1>
+                    <div class="text-muted small">Assessments, marks and unit results at a glance</div>
+                </div>
+                <button type="button" class="btn btn-primary"
+                        t-on-click="load" t-att-disabled="state.loading">
+                    <i t-attf-class="fa fa-refresh me-1 #{state.loading ? 'fa-spin' : ''}"/>Refresh
+                </button>
+            </div>
+
+            <div class="p-4">
+                <!-- Error state: keep the Refresh button reachable to retry. -->
+                <div t-if="state.error" class="alert alert-danger d-flex align-items-center" role="alert">
+                    <i class="fa fa-exclamation-triangle me-2"/>
+                    <span t-out="state.error"/>
+                </div>
+
+                <!-- First load: nothing to show yet. -->
+                <div t-elif="!state.data" class="text-center text-muted py-5">
+                    <i class="fa fa-circle-o-notch fa-spin me-2"/>Loading dashboard…
+                </div>
+
+                <t t-else="">
+                    <!-- KPI cards -->
+                    <div class="row g-3 mb-4">
+                        <t t-foreach="kpis" t-as="kpi" t-key="kpi.id">
+                            <div class="col-12 col-sm-6 col-xl-3">
+                                <div t-attf-class="card h-100 shadow-sm border-0 border-start border-4 border-#{kpi.tone} cursor-pointer"
+                                     role="button" tabindex="0"
+                                     t-att-title="'Open ' + kpi.label"
+                                     t-on-click="kpi.open"
+                                     t-on-keydown="(ev) => this.onTileKeydown(ev, kpi.open)">
+                                    <div class="card-body d-flex align-items-center justify-content-between">
+                                        <div>
+                                            <div class="text-muted text-uppercase small fw-bold" t-out="kpi.label"/>
+                                            <div t-attf-class="display-5 fw-bold text-#{kpi.tone}" t-out="kpi.value"/>
+                                            <div class="text-muted small" t-out="kpi.hint"/>
+                                        </div>
+                                        <i t-attf-class="fa #{kpi.icon} fa-3x text-#{kpi.tone} opacity-50"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </t>
+                    </div>
+
+                    <!-- Departmental submission progress -->
+                    <div class="card shadow-sm border-0">
+                        <div class="card-header bg-view fw-bold">
+                            Departmental Exam Submission Progress
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Department</th>
+                                        <th class="text-end">Assessments</th>
+                                        <th class="text-end">Marks Submitted</th>
+                                        <th class="text-end">Approved</th>
+                                        <th class="text-end">Pending</th>
+                                        <th style="min-width: 180px;">Approval Progress</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr t-foreach="state.data.departments" t-as="dept" t-key="dept.id"
+                                        class="cursor-pointer" t-on-click="() => this.openDepartment(dept)">
+                                        <td class="fw-bold" t-out="dept.name"/>
+                                        <td class="text-end" t-out="dept.total_assessments"/>
+                                        <td class="text-end" t-out="dept.marks_submitted"/>
+                                        <td class="text-end" t-out="dept.marks_approved"/>
+                                        <td class="text-end">
+                                            <span t-attf-class="badge #{dept.marks_pending ? 'text-bg-warning' : 'text-bg-light'}"
+                                                  t-out="dept.marks_pending"/>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center gap-2">
+                                                <div class="progress flex-grow-1" style="height: 8px;"
+                                                     role="progressbar" aria-valuemin="0" aria-valuemax="100"
+                                                     t-att-aria-valuenow="dept.progress">
+                                                    <div t-attf-class="progress-bar #{dept.progress >= 100 ? 'bg-success' : 'bg-primary'}"
+                                                         t-attf-style="width: #{dept.progress}%;"/>
+                                                </div>
+                                                <span class="small text-muted text-nowrap" t-out="dept.progress + '%'"/>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr t-if="!state.data.departments.length">
+                                        <td colspan="6" class="text-center text-muted py-4">
+                                            No departments found.
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </t>
+            </div>
+        </div>
+    </t>
+
+</templates>

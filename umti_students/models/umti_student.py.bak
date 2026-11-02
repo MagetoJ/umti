@@ -1,0 +1,244 @@
+from dateutil.relativedelta import relativedelta
+
+from odoo import _, api, fields, models, Command
+from odoo.exceptions import UserError, ValidationError
+
+
+class SchoolStudent(models.Model):
+    """A student. The contact details live on the linked res.partner (_inherits)."""
+    _name = 'school.student'
+    _description = 'Student'
+    _inherit = ['mail.thread', 'mail.activity.mixin']
+    _order = 'admission_no desc, id desc'
+    _rec_names_search = ['name', 'admission_no']
+    _inherits = {'res.partner': 'partner_id'}
+
+    partner_id = fields.Many2one(
+        'res.partner', string='Contact', required=True,
+        ondelete='restrict', auto_join=True, index=True)
+
+    admission_no = fields.Char(
+        string='Admission No', required=True, copy=False, readonly=True,
+        index=True, default='New', tracking=True)
+    active = fields.Boolean(default=True, tracking=True)
+    company_id = fields.Many2one(
+        'res.company', required=True, default=lambda self: self.env.company)
+    # Use the student's company currency for fee-related monetary displays.
+    # This is a related field so it stays consistent with multi-company setup.
+    fee_currency_id = fields.Many2one(
+        'res.currency',
+        string='Fee Currency',
+        related='company_id.currency_id',
+        store=True,
+        readonly=True,
+    )
+    user_id = fields.Many2one(
+        'res.users', string='Related User', copy=False,
+        help='Portal or internal user used by the student to log in.')
+        
+    state = fields.Selection([
+        ('incomplete', 'Incomplete'),
+        ('active', 'Active'),
+        ('deferred', 'Deferred'),
+        ('suspended', 'Suspended'),
+        ('graduated', 'Graduated'),
+        ('discontinued', 'Discontinued'),
+    ], default='incomplete', required=True, tracking=True, copy=False)
+    fee_status = fields.Selection([
+        ('self', 'Self-paying'),
+        ('sponsored', 'Sponsored'),
+    ], string='Fee Status', default='self', required=True, tracking=True)
+    sponsor_id = fields.Many2one('res.partner', string='Sponsor')
+
+    gender = fields.Selection([
+        ('male', 'Male'), ('female', 'Female'), ('other', 'Other')])
+    date_of_birth = fields.Date(tracking=True)
+    age = fields.Integer(compute='_compute_age')
+    nationality_id = fields.Many2one('res.country', string='Nationality')
+
+    course_id = fields.Many2one(
+        'umti.course', string='Course', tracking=True, ondelete='restrict')
+    department_id = fields.Many2one(
+        related='course_id.department_id', store=True, readonly=True)
+
+    po_box = fields.Char(string='P.O. Box')
+    county = fields.Char()
+
+    medical_card_no = fields.Char(string='Medical Card No')
+    blood_group = fields.Selection([
+        ('a+', 'A+'), ('a-', 'A-'), ('b+', 'B+'), ('b-', 'B-'),
+        ('ab+', 'AB+'), ('ab-', 'AB-'), ('o+', 'O+'), ('o-', 'O-')])
+    medical_conditions = fields.Text()
+
+    guardian_ids = fields.One2many('school.student.guardian', 'student_id')
+    document_ids = fields.One2many('school.student.document', 'student_id')
+    lending_ids = fields.One2many('umti.library.lending', 'student_id')
+    kit_ids = fields.One2many("umti.kit.issuance", "student_id")
+    student_student_fee_record_ids = fields.Many2many('account.move', compute='_compute_fee_records')
+    student_payment_record_ids = fields.Many2many('account.payment', compute='_compute_fee_records')
+    invoices_count = fields.Integer(compute='_compute_fee_records')
+    payments_count = fields.Integer(compute='_compute_fee_records')
+    unpaid_lost_books_count = fields.Integer(compute='_compute_fee_records')
+    unpaid_lost_kits_count = fields.Integer(compute='_compute_fee_records')
+
+    _sql_constraints = [
+        ('admission_no_uniq', 'unique(admission_no)',
+         'The admission number must be unique.'),
+    ]
+
+    @api.depends('date_of_birth')
+    def _compute_age(self):
+        """Age in whole years today, 0 when the date of birth is unknown."""
+        today = fields.Date.context_today(self)
+        for rec in self:
+            rec.age = (relativedelta(today, rec.date_of_birth).years
+                       if rec.date_of_birth else 0)
+
+    @api.depends('name', 'admission_no')
+    def _compute_display_name(self):
+        """Show students as [ADM/2026/0001] Name once the number is assigned."""
+        for rec in self:
+            if rec.admission_no and rec.admission_no != 'New':
+                rec.display_name = f'[{rec.admission_no}] {rec.name or ""}'
+            else:
+                rec.display_name = rec.name or ''
+                
+    @api.depends('partner_id')
+    def _compute_fee_records(self):
+        for rec in self:
+            if rec.partner_id:
+                fee_records = self.env['account.move'].search([('partner_id', '=', rec.partner_id.id)])
+                payment_records = self.env['account.payment'].search([('partner_id', '=', rec.partner_id.id)])
+                unpaid_lost_books = self.env['umti.library.lending'].search([('student_id', '=', rec.id),('state', '=', 'lost')])
+                unpaid_lost_kits = self.env['umti.kit.issuance'].search([('student_id', '=', rec.id),('state', '=', 'lost')])
+                rec.unpaid_lost_books_count = len(unpaid_lost_books)
+                rec.unpaid_lost_kits_count = len(unpaid_lost_kits)
+                rec.invoices_count = len(fee_records)
+                rec.payments_count = len(payment_records)
+                rec.student_payment_record_ids = [Command.set(payment_records.ids)]
+                rec.student_student_fee_record_ids = [Command.set(fee_records.ids)]
+            else:
+                rec.invoices_count = 0
+                rec.payments_count = 0
+                rec.unpaid_lost_books_count = 0
+                rec.unpaid_lost_kits_count = 0
+                rec.student_payment_record_ids = [Command.clear()]
+                rec.student_student_fee_record_ids = [Command.clear()]
+
+
+    @api.constrains('date_of_birth')
+    def _check_date_of_birth(self):
+        """A student cannot be born in the future."""
+        today = fields.Date.context_today(self)
+        for rec in self:
+            if rec.date_of_birth and rec.date_of_birth > today:
+                raise ValidationError(_('Date of birth cannot be in the future.'))
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        """Give every new student the next admission number from the sequence."""
+        for vals in vals_list:
+            if vals.get('admission_no', 'New') == 'New':
+                vals['admission_no'] = (
+                    self.env['ir.sequence'].next_by_code('school.student') or 'New')
+        return super().create(vals_list)
+
+    def _check_ready_to_activate(self):
+        """Raise a UserError listing what is still missing before a student can be activated."""
+        for rec in self:
+            missing = []
+            if not rec.gender:
+                missing.append(_('Gender'))
+            if not rec.date_of_birth:
+                missing.append(_('Date of birth'))
+            if not rec.mobile:
+                missing.append(_('Mobile'))
+            if not rec.course_id:
+                missing.append(_('Course'))
+            if not rec.guardian_ids.filtered('is_emergency'):
+                missing.append(_('At least one emergency contact'))
+            if rec.fee_status == 'sponsored' and not rec.sponsor_id:
+                missing.append(_('Sponsor'))
+            if missing:
+                raise UserError(_(
+                    '%(student)s cannot be activated. Missing: %(fields)s',
+                    student=rec.name, fields=', '.join(missing)))
+
+    # Status changes ------------------------------------------------
+    def action_activate(self):
+        """Mark the student Active, after checking the profile is complete."""
+        self._check_ready_to_activate()
+        
+        portal_group = self.env.ref('base.group_portal')
+        
+        user =self.env['res.users'].create({
+            'name': self.name,
+            'login': self.email or self.name, 
+            'email': self.email,
+            'share': True,
+            'company_id': self.company_id.id,
+            'partner_id': self.partner_id.id,
+            'groups_id': [(6, 0, [portal_group.id])], 
+        })
+
+        #TODO: Trigger an invitation email to be sent after the user has been created
+        self.write({'user_id': user.id})        
+        self.write({'state': 'active'})
+
+    def action_view_invoices(self):
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Invoices',
+            'res_model': 'account.move',
+            'view_mode': 'list,form',
+            'domain': [('partner_id', '=', self.partner_id.id)],
+            'context': {'default_partner_id': self.partner_id.id},
+        }
+    def action_view_payments(self):
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Payments',
+            'res_model': 'account.payment',
+            'view_mode': 'list,form',
+            'domain': [('partner_id', '=', self.partner_id.id)],
+            'context': {'default_partner_id': self.partner_id.id},
+        }
+    def action_view_lost_books(self):
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Lost Books',
+            'res_model': 'umti.library.lending',
+            'view_mode': 'list,form',
+            'domain': [('state', '=', 'lost'),('student_id', '=', self.id)],
+            'context': {'default_student_id': self.id},
+        }
+    def action_view_lost_kits(self):
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Lost Kits',
+            'res_model': 'umti.kit.issuance',
+            'view_mode': 'list,form',
+            'domain': [('state', '=', 'lost'),('student_id', '=', self.id)],
+            'context': {'default_student_id': self.id},
+        }
+
+    def action_defer(self):
+        self.write({'state': 'deferred'})
+
+    def action_suspend(self):
+        self.write({'state': 'suspended'})
+
+    def action_graduate(self):
+        # Hook: graduation checks (minimum units, attendance, fee completion)
+        # belong to the enrollment, attendance and finance modules.
+        self.write({'state': 'graduated'})
+
+    def action_discontinue(self):
+        self.write({'state': 'discontinued'})
+
+    def action_set_incomplete(self):
+        self.write({'state': 'incomplete'})

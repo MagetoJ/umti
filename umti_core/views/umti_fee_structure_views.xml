@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Form View -->
+        <record id="umti_fee_structure_form" model="ir.ui.view">
+            <field name="name">umti.fee.structure.form</field>
+            <field name="model">umti.fee.structure</field>
+            <field name="arch" type="xml">
+                <form string="Fee Structure">
+                    <header>
+                        <button name="approve_fee_structure" type="object" string="Approve" invisible="status!='draft'" class="oe_highlight"/>
+                        <button name="close_fee_structure" type="object" string="Close" invisible="status!='approved'" class="oe_highlight"/>
+                        <field name="status" widget="statusbar" statusbar_visible="draft,approved,closed"/>
+                    </header>
+                    <sheet>
+                        <group>
+                            <field name="name"/>
+                            <field name="code"/>
+                        </group>
+                    <notebook>
+                        <page string="Structure Lines">
+                            <field name="structure_line_ids" nolabel="1">
+                                <list>
+                                    <field name="academic_year_id"/>
+                                    <!-- <field name="semester_id"/> -->
+                                    <field name="course_id"/>
+                                    <field name="votehead"/>
+                                    <field name="department_id"/>
+                                    <field name="amount"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                    </sheet>
+                    <chatter/>
+                </form>
+            </field>
+        </record>
+        
+        <!-- List View -->
+        <record id="umti_fee_structure_list" model="ir.ui.view">
+            <field name="name">umti.fee.structure.list</field>
+            <field name="model">umti.fee.structure</field>
+            <field name="arch" type="xml">
+                <list string="Fee Structure">
+                    <field name="name"/>
+                    <field name="code"/>
+                    <field name="status"/>
+                </list>
+            </field>
+        </record>
+        
+        <!-- Kanban View -->
+        <record id="umti_fee_structure_kanban" model="ir.ui.view">
+            <field name="name">umti.fee.structure.kanban</field>
+            <field name="model">umti.fee.structure</field>
+            <field name="arch" type="xml">
+                <kanban default_group_by="status">
+                    <field name="status"/>
+                    <templates>
+                        <t t-name="card">
+                            <main>
+                                <field name="name" class="fw-bold fs-5"/>
+                                <field name="code" class="text-muted"/>
+                                <footer>
+                                    <field name="status" widget="badge"
+                                           decoration-info="status == 'draft'"
+                                           decoration-success="status == 'approved'"
+                                           decoration-muted="status == 'closed'"/>
+                                </footer>
+                            </main>
+                        </t>
+                    </templates>
+                </kanban>
+            </field>
+        </record>
+
+        <!-- Search View -->
+        <record id="umti_fee_structure_search" model="ir.ui.view">
+            <field name="name">umti.fee.structure.search</field>
+            <field name="model">umti.fee.structure</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="name"/>
+                    <field name="code"/>
+                    <filter name="filter_draft" string="Draft" domain="[('status', '=', 'draft')]"/>
+                    <filter name="filter_approved" string="Approved" domain="[('status', '=', 'approved')]"/>
+                    <filter name="filter_closed" string="Closed" domain="[('status', '=', 'closed')]"/>
+                    <group expand="0" string="Group By">
+                        <filter name="group_status" string="Status" context="{'group_by': 'status'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <!-- Action -->
+        <record id="action_umti_fee_structure" model="ir.actions.act_window">
+            <field name="name">Fee Structure</field>
+            <field name="res_model">umti.fee.structure</field>
+            <field name="view_mode">kanban,list,form</field>
+            <field name="search_view_id" ref="umti_fee_structure_search"/>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Create your first umti fee_structure!
+                </p>
+            </field>
+        </record>
+    </data>
+</odoo>

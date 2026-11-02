@@ -1,0 +1,279 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Assessment Form View -->
+    <record id="view_umti_assessment_form" model="ir.ui.view">
+        <field name="name">umti.assessment.form</field>
+        <field name="model">umti.assessment</field>
+        <field name="arch" type="xml">
+            <form string="Course Assessment Record">
+                <header>
+                    <button name="action_schedule" string="Schedule" type="object" class="btn-primary"
+                            invisible="state != 'draft'"/>
+                    <button name="action_open" string="Open for Marking" type="object" class="btn-primary"
+                            invisible="state not in ('draft', 'scheduled')"/>
+                    <button name="action_close" string="Close &amp; Lock" type="object" class="btn-primary"
+                            invisible="state != 'open'"/>
+                    <button name="action_verify_all" string="Verify All" type="object"
+                            invisible="state != 'closed'"
+                            groups="umti_exams.group_umti_exams_manager,base.group_system"/>
+                    <button name="action_publish_all" string="Publish All" type="object"
+                            invisible="state != 'closed'"
+                            groups="umti_exams.group_umti_exams_manager,base.group_system"/>
+                    <button name="action_reset_all_draft" string="Reset All to Draft" type="object"
+                            invisible="state != 'closed'"
+                            groups="umti_exams.group_umti_exams_manager,base.group_system"/>
+                    <button name="action_cancel" string="Cancel" type="object"
+                            invisible="state not in ('draft', 'scheduled', 'open')"
+                            confirm="Cancel this assessment? Marks will be locked and ignored in unit results."
+                            groups="umti_exams.group_umti_exams_manager,base.group_system"/>
+                    <button name="action_reset_draft" string="Reset to Draft" type="object"
+                            invisible="state != 'cancelled'"
+                            groups="umti_exams.group_umti_exams_manager,base.group_system"/>
+                    <button name="action_open_unit_schedule_popup"
+                            string="Configure Unit Dates" type="object"
+                            class="btn-secondary" icon="fa-calendar"
+                            invisible="state != 'draft' or not course_id"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,scheduled,open,closed"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_marks" type="object" class="oe_stat_button" icon="fa-pencil-square-o">
+                            <field name="mark_count" widget="statinfo" string="Marks"/>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Cancelled" bg_color="text-bg-danger"
+                            invisible="state != 'cancelled'"/>
+                    <div class="oe_title">
+                        <h1><field name="name" placeholder="e.g. Term 1 Final Examinations"/></h1>
+                    </div>
+                    <group>
+                        <group string="Classification">
+                            <field name="code"/>
+                            <field name="assessment_type"/>
+                            <field name="learning_outcome_type" readonly="state != 'draft'"/>
+                            <field name="category"/>
+                            <field name="course_id" options="{'no_create': True}"/>
+                            <field name="course_unit_ids" invisible="1"/>
+                            <field name="unit_id" domain="[('id', 'in', course_unit_ids)]" options="{'no_create': True, 'no_open': True}"/>
+                            <field name="level_id" options="{'no_create': True}"/>
+                            <field name="academic_year_id" options="{'no_create': True}"/>
+                            <field name="semester_id" options="{'no_create': True}"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                        <group string="Schedule">
+                            <field name="date"/>
+                            <field name="start_time" widget="float_time"/>
+                            <field name="duration" widget="float_time" help="Default duration is 2 hours. Editable for multi-hour or multi-day practicals/CATs."/>
+                            <field name="end_time" widget="float_time"/>
+                        </group>
+                        <group string="Grading">
+                            <field name="max_marks"/>
+                            <field name="pass_marks"/>
+                            <field name="counts_toward_final"/>
+                            <field name="effective_weight" invisible="not counts_toward_final"/>
+                            <field name="pass_marks_warning" nolabel="1" colspan="2"
+                                   invisible="not pass_marks_warning" class="text-warning"/>
+                            <field name="pass_marks_manual" invisible="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Marks" name="marks">
+                            <field name="mark_ids">
+                                <list editable="bottom" create="1" delete="1">
+                                    <field name="student_id" readonly="state != 'draft'"/>
+                                    <field name="marks" readonly="state != 'draft'"/>
+                                    <field name="absent" readonly="state != 'draft'"/>
+                                    <field name="marked" readonly="state != 'draft'"/>
+                                    <field name="percentage" widget="float"/>
+                                    <field name="grade"/>
+                                    <field name="result" widget="badge"
+                                           decoration-success="result == 'pass'"
+                                           decoration-danger="result == 'fail'"
+                                           decoration-warning="result == 'absent'"/>
+                                    <field name="remarks" readonly="state != 'draft'"/>
+                                    <field name="state" widget="badge"
+                                           decoration-info="state == 'draft'"
+                                           decoration-warning="state == 'verified'"
+                                           decoration-success="state == 'published'"/>
+                                    <button name="action_verify" type="object" string="Verify" icon="fa-check"
+                                            invisible="state != 'draft' or parent.state != 'closed'"
+                                            groups="umti_exams.group_umti_exams_manager,base.group_system"/>
+                                    <button name="action_publish" type="object" string="Publish Marks" icon="fa-send"
+                                            invisible="state != 'verified'"
+                                            groups="umti_exams.group_umti_exams_manager,base.group_system"/>
+                                    <button name="action_reset_draft" type="object" string="Reset to Draft" icon="fa-undo"
+                                            invisible="state == 'draft'"
+                                            groups="umti_exams.group_umti_exams_manager,base.group_system"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Unit Schedule" name="unit_schedule">
+                            <field name="unit_schedule_ids">
+                                <list editable="bottom" create="false" delete="false">
+                                    <field name="unit_id" readonly="1" force_save="1" options="{'no_open': True}"/>
+                                    <field name="date" string="Exam Date"/>
+                                    <field name="start_time" widget="float_time"/>
+                                    <field name="duration" widget="float_time"/>
+                                    <field name="end_time" widget="float_time"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Notes" name="notes"><field name="note"/></page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- Assessment List View -->
+    <record id="view_umti_assessment_list" model="ir.ui.view">
+        <field name="name">umti.assessment.list</field>
+        <field name="model">umti.assessment</field>
+        <field name="arch" type="xml">
+            <list decoration-muted="state == 'cancelled'">
+                <field name="code"/>
+                <field name="name"/>
+                <field name="course_id"/>
+                <field name="unit_id"/>
+                <field name="semester_id"/>
+                <field name="assessment_type"/>
+                <field name="learning_outcome_type" optional="show"/>
+                <field name="category" optional="hide"/>
+                <field name="date"/>
+                <field name="duration" widget="float_time" optional="show"/>
+                <field name="effective_weight" optional="show"/>
+                <field name="max_marks" optional="hide"/>
+                <field name="company_id" groups="base.group_multi_company" optional="hide"/>
+                <field name="state" widget="badge"
+                       decoration-info="state == 'draft'"
+                       decoration-primary="state == 'scheduled'"
+                       decoration-warning="state == 'open'"
+                       decoration-success="state == 'closed'"
+                       decoration-danger="state == 'cancelled'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Assessment Kanban View -->
+    <record id="view_umti_assessment_kanban" model="ir.ui.view">
+        <field name="name">umti.assessment.kanban</field>
+        <field name="model">umti.assessment</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="state">
+                <field name="state"/>
+                <templates>
+                    <t t-name="card">
+                        <field name="name" class="fw-bold fs-5"/>
+                        <div class="text-muted"><field name="code"/> · <field name="assessment_type"/></div>
+                        <div><field name="unit_id"/></div>
+                        <div class="text-muted">
+                            <field name="date"/> 
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- Assessment Search View -->
+    <record id="view_umti_assessment_search" model="ir.ui.view">
+        <field name="name">umti.assessment.search</field>
+        <field name="model">umti.assessment</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name" filter_domain="['|', ('name', 'ilike', self), ('code', 'ilike', self)]" string="Assessment"/>
+                <field name="course_id"/>
+                <field name="unit_id"/>
+                <field name="semester_id"/>
+                <filter name="f_draft" string="Draft" domain="[('state', '=', 'draft')]"/>
+                <filter name="f_scheduled" string="Scheduled" domain="[('state', '=', 'scheduled')]"/>
+                <filter name="f_open" string="Marking" domain="[('state', '=', 'open')]"/>
+                <filter name="f_closed" string="Completed" domain="[('state', '=', 'closed')]"/>
+                <filter name="f_cancelled" string="Cancelled" domain="[('state', '=', 'cancelled')]"/>
+                <separator/>
+                <filter name="f_semester_exam" string="Semester Exams" domain="[('category', '=', 'semester_exam')]"/>
+                <filter name="f_periodic" string="Periodic Assessments" domain="[('category', '=', 'periodic')]"/>
+                <group expand="0" string="Group By">
+                    <filter name="g_course" string="Course" context="{'group_by': 'course_id'}"/>
+                    <filter name="g_unit" string="Unit" context="{'group_by': 'unit_id'}"/>
+                    <filter name="g_semester" string="Semester" context="{'group_by': 'semester_id'}"/>
+                    <filter name="g_type" string="Type" context="{'group_by': 'assessment_type'}"/>
+                    <filter name="g_state" string="Status" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Pivot View -->
+    <record id="view_umti_assessment_pivot" model="ir.ui.view">
+        <field name="name">umti.assessment.pivot</field>
+        <field name="model">umti.assessment</field>
+        <field name="arch" type="xml">
+            <pivot>
+                <field name="unit_id" type="row"/>
+                <field name="assessment_type" type="col"/>
+                <field name="max_marks" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- Graph View -->
+    <record id="view_umti_assessment_graph" model="ir.ui.view">
+        <field name="name">umti.assessment.graph</field>
+        <field name="model">umti.assessment</field>
+        <field name="arch" type="xml">
+            <graph type="bar">
+                <field name="assessment_type"/>
+                <field name="max_marks" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- Unit Schedule Modal Popup Form -->
+    <record id="view_umti_assessment_unit_schedule_popup" model="ir.ui.view">
+        <field name="name">umti.assessment.unit.schedule.popup</field>
+        <field name="model">umti.assessment</field>
+        <field name="arch" type="xml">
+            <form string="Configure Unit Exam Dates">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="course_id" readonly="1"/>
+                            <field name="semester_id" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="level_id" readonly="1"/>
+                            <field name="assessment_type" readonly="1"/>
+                        </group>
+                    </group>
+                    <field name="unit_schedule_ids">
+                        <list editable="bottom" create="false" delete="false">
+                            <field name="unit_id" readonly="1" force_save="1" options="{'no_open': True}"/>
+                            <field name="date" string="Exam Date" required="1"/>
+                            <field name="start_time" widget="float_time"/>
+                            <field name="duration" widget="float_time"/>
+                            <field name="end_time" widget="float_time"/>
+                        </list>
+                    </field>
+                </sheet>
+                <footer>
+                    <button string="Save &amp; Close" special="save" class="btn-primary"/>
+                    <button string="Discard" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Window Action -->
+    <record id="action_umti_assessment" model="ir.actions.act_window">
+        <field name="name">Assessments</field>
+        <field name="res_model">umti.assessment</field>
+        <field name="view_mode">list,kanban,form,pivot,graph</field>
+        <field name="search_view_id" ref="view_umti_assessment_search"/>
+    </record>
+
+</odoo>

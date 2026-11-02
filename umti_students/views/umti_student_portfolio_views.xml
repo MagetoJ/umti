@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    
+
+    <record id="view_umti_student_portfolio_form" model="ir.ui.view">
+        <field name="name">school.student.umti.portfolio.form</field>
+        <field name="model">school.student</field>
+        <field name="arch" type="xml">
+            <form create="false" delete="false">
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_exam_records" type="object"
+                                class="oe_stat_button" icon="fa-graduation-cap">
+                            <field name="exam_record_count" widget="statinfo" string="Exams"/>
+                        </button>
+                    </div>
+                    <h1><field name="name"/></h1>
+                    <group>
+                        <group>
+                            <field name="user_id" string="Portal / Login User"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Exam Records" name="exams">
+                            <field name="exam_record_ids">
+                                <list editable="bottom">
+                                    <field name="academic_year_id"/>
+                                    <field name="semester_id"/>
+                                    <field name="course_id"/>
+                                    <field name="course_unit_ids" column_invisible="True"/>
+                                    <field name="unit_id"/>
+                                    <field name="exam_date"/>
+                                    <field name="marks"/>
+                                    <field name="max_marks"/>
+                                    <field name="grade"/>
+                                    <field name="result"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_umti_student_portfolio" model="ir.actions.act_window">
+        <field name="name">Student Portfolios</field>
+        <field name="res_model">school.student</field>
+        <field name="view_mode">form</field>
+    </record>
+</odoo>

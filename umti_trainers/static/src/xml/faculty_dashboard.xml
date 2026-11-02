@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="umti_trainers.FacultyDashboardTemplate">
+        <div class="o_dashboard_container p-4 bg-100 overflow-auto" style="height: 100vh;">
+            <h2 class="mb-4 text-purple font-weight-bold" style="color: #6f42c1;">Faculty &amp; Workload Dashboard</h2>
+
+            <!-- KPI Cards -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-3">
+                    <div class="card shadow-sm border-start border-4 p-3 bg-white" style="border-color: #6f42c1 !important;">
+                        <div class="text-muted small fw-bold">TOTAL FACULTY</div>
+                        <div class="h3 mb-0 text-dark" t-esc="data.kpis.total_trainers"/>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card shadow-sm border-start border-primary border-4 p-3 bg-white">
+                        <div class="text-muted small fw-bold">APPROVED ALLOCATIONS</div>
+                        <div class="h3 mb-0 text-primary" t-esc="data.kpis.total_allocations"/>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card shadow-sm border-start border-warning border-4 p-3 bg-white">
+                        <div class="text-muted small fw-bold">PENDING SCHEMES OF WORK</div>
+                        <div class="h3 mb-0 text-warning" t-esc="data.kpis.schemes_pending"/>
+                        <div class="text-secondary small mt-1"><t t-esc="data.kpis.schemes_approved"/> Approved</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card shadow-sm border-start border-success border-4 p-3 bg-white">
+                        <div class="text-muted small fw-bold">WORK PLAN EXECUTION</div>
+                        <div class="h3 mb-0 text-success"><t t-esc="data.kpis.workplans_completion_rate"/>%</div>
+                        <div class="text-secondary small mt-1">Modules Completed</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts -->
+            <div class="row g-3">
+                <div class="col-12">
+                    <div class="card shadow-sm p-3 bg-white">
+                        <h5 class="card-title text-muted fw-bold border-bottom pb-2">Unit Workload Distribution per Faculty Member</h5>
+                        <div style="height: 320px;">
+                            <canvas t-ref="workloadChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>

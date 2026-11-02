@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Standalone menu for now. Once I see umti_menu_item_views.xml, these
+         can be re-parented under the existing UMTI menu tree. -->
+    <menuitem id="menu_umti_portfolio_root" name="Student Portfolio" sequence="30"
+              web_icon="umti_students,static/description/icon_portfolio.png"/>
+    <menuitem id="menu_umti_portfolio_students" name="Portfolios"
+              parent="menu_umti_portfolio_root"
+              action="action_umti_student_portfolio" sequence="10"/>
+    <menuitem id="menu_umti_portfolio_fees" name="Fee Records"
+              parent="menu_umti_portfolio_root"
+              action="action_umti_fee_record" sequence="20"/>
+    <menuitem id="menu_umti_portfolio_exams" name="Exam Records"
+              parent="menu_umti_portfolio_root"
+              action="action_umti_exam_record" sequence="30"/>
+</odoo>

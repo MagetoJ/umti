@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Facility Form -->
+    <record id="umti_facility_view_form" model="ir.ui.view">
+        <field name="name">umti.facility.form</field>
+        <field name="model">umti.facility</field>
+        <field name="arch" type="xml">
+            <form string="Facility">
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="e.g. Room 101"/></h1>
+                    </div>
+                    <group>
+                        <group string="Location">
+                            <field name="code"/>
+                            <field name="building_name"/>
+                            <field name="floor_level"/>
+                            <field name="department_id"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                        <group string="Details">
+                            <field name="facility_type"/>
+                            <field name="capacity"/>
+                            <field name="status" widget="selection"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Equipment" name="equipment">
+                            <field name="equipment_ids">
+                                <list editable="bottom">
+                                    <field name="name"/>
+                                    <field name="serial_number"/>
+                                    <field name="quantity"/>
+                                    <field name="condition" widget="badge"
+                                           decoration-success="condition == 'functional'"
+                                           decoration-warning="condition == 'repair_needed'"
+                                           decoration-danger="condition == 'broken'"/>
+                                    <field name="remarks"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Unavailability" name="unavailability">
+                            <field name="unavailability_ids">
+                                <list editable="bottom">
+                                    <field name="day_of_week"/>
+                                    <field name="slot_id"/>
+                                    <field name="reason"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Notes" name="notes">
+                            <field name="remarks" placeholder="Additional remarks..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Facility List -->
+    <record id="umti_facility_view_list" model="ir.ui.view">
+        <field name="name">umti.facility.list</field>
+        <field name="model">umti.facility</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="code"/>
+                <field name="name"/>
+                <field name="building_name"/>
+                <field name="floor_level" optional="show"/>
+                <field name="department_id" optional="show"/>
+                <field name="facility_type"/>
+                <field name="capacity"/>
+                <field name="status" widget="badge"
+                       decoration-success="status == 'available'"
+                       decoration-warning="status == 'maintenance'"
+                       decoration-info="status == 'reserved'"
+                       decoration-danger="status == 'decommissioned'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Facility Search -->
+    <record id="umti_facility_view_search" model="ir.ui.view">
+        <field name="name">umti.facility.search</field>
+        <field name="model">umti.facility</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name" filter_domain="['|', ('name', 'ilike', self), ('code', 'ilike', self)]" string="Room"/>
+                <field name="building_name"/>
+                <field name="department_id"/>
+                <filter name="f_available" string="Available" domain="[('status', '=', 'available')]"/>
+                <filter name="f_maintenance" string="Maintenance" domain="[('status', '=', 'maintenance')]"/>
+                <separator/>
+                <group expand="0" string="Group By">
+                    <filter name="g_building" string="Building" context="{'group_by': 'building_name'}"/>
+                    <filter name="g_type" string="Type" context="{'group_by': 'facility_type'}"/>
+                    <filter name="g_department" string="Department" context="{'group_by': 'department_id'}"/>
+                    <filter name="g_status" string="Status" context="{'group_by': 'status'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Facility Action -->
+    <record id="action_umti_facility" model="ir.actions.act_window">
+        <field name="name">Facilities &amp; Rooms</field>
+        <field name="res_model">umti.facility</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="umti_facility_view_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Add your first facility</p>
+            <p>Manage classrooms, labs, lecture halls, and other campus rooms.</p>
+        </field>
+    </record>
+
+</odoo>

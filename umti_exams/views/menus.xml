@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_umti_exams_root" name="Exams and Assessment" sequence="40"
+              web_icon="umti_exams,static/description/icon.png"/>
+
+    <!-- Exam Officer dashboard: OWL client action registered as
+         "action_exam_officer_dashboard" in static/src/js/exam_officer_dashboard.js -->
+    <record id="action_exam_officer_dashboard" model="ir.actions.client">
+        <field name="name">Exam Officer Dashboard</field>
+        <field name="tag">action_exam_officer_dashboard</field>
+    </record>
+
+    <menuitem id="menu_umti_exam_officer_dashboard" name="Dashboard"
+              parent="menu_umti_exams_root"
+              action="action_exam_officer_dashboard" sequence="1"
+              groups="umti_exams.group_umti_exams_user,umti_exams.group_umti_exams_manager,base.group_system"/>
+
+    <menuitem id="menu_umti_assessment" name="Assessments" parent="menu_umti_exams_root"
+              action="action_umti_assessment" sequence="10"/>
+
+    <menuitem id="menu_umti_assessment_plan" name="Assessment Plans" parent="menu_umti_exams_root"
+              action="action_umti_assessment_plan" sequence="5"
+              groups="umti_exams.group_umti_exams_hod,umti_exams.group_umti_exams_manager,base.group_system"/>
+
+    <menuitem id="menu_umti_assessment_mark" name="Marks" parent="menu_umti_exams_root"
+              action="action_umti_assessment_mark" sequence="20"/>
+
+    <menuitem id="menu_umti_unit_result" name="Unit Results" parent="menu_umti_exams_root"
+              action="action_umti_unit_result" sequence="30"/>
+
+    <menuitem id="menu_umti_exams_config" name="Configuration" parent="menu_umti_exams_root" sequence="90"
+              groups="umti_exams.group_umti_exams_manager,base.group_system"/>
+
+    <menuitem id="menu_umti_grade_scale" name="Grade Scales" parent="menu_umti_exams_config"
+              action="action_umti_grade_scale" sequence="10"/>
+</odoo>

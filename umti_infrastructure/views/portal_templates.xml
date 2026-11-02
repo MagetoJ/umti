@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Weekly timetable, one block per day. Call with `schedules`,
+         `show_trainer` and `show_students` set. -->
+    <template id="portal_timetable_table" name="Portal: weekly timetable">
+        <t t-if="not schedules">
+            <p class="text-muted">No classes have been scheduled yet.</p>
+        </t>
+        <t t-foreach="['0', '1', '2', '3', '4', '5', '6']" t-as="day">
+            <t t-set="rows" t-value="schedules.filtered(lambda s: s.day_of_week == day).sorted('start_time')"/>
+            <t t-if="rows">
+                <h6 class="mt-3 mb-1" t-out="rows[0].day_label"/>
+                <div class="table-responsive">
+                    <table class="table table-sm table-striped">
+                        <thead><tr>
+                            <th style="width: 18%">Time</th>
+                            <th>Unit</th>
+                            <th>Course</th>
+                            <th>Room</th>
+                            <th t-if="show_trainer">Trainer</th>
+                            <th t-if="show_students" class="text-end">Students</th>
+                        </tr></thead>
+                        <tbody>
+                            <t t-foreach="rows" t-as="row">
+                                <tr>
+                                    <td class="text-nowrap" t-out="row.time_range"/>
+                                    <td><t t-out="row.unit_id.code"/> <t t-out="row.unit_id.name"/></td>
+                                    <td t-out="row.course_id.name"/>
+                                    <td t-out="row.facility_id.display_name"/>
+                                    <td t-if="show_trainer" t-out="row.trainer_id.name"/>
+                                    <td t-if="show_students" class="text-end" t-out="row.student_count"/>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                </div>
+            </t>
+        </t>
+    </template>
+
+    <template id="portal_exam_table" name="Portal: exam timetable">
+        <t t-if="exams">
+            <div class="table-responsive">
+                <table class="table table-sm table-striped">
+                    <thead><tr>
+                        <th>Date</th><th>Time</th><th>Unit</th><th>Hall</th>
+                    </tr></thead>
+                    <tbody>
+                        <t t-foreach="exams" t-as="exam">
+                            <tr>
+                                <td t-out="exam.exam_date"/>
+                                <td t-out="exam.slot_id.display_name"/>
+                                <td><t t-out="exam.unit_id.code"/> <t t-out="exam.unit_id.name"/></td>
+                                <td t-out="exam.facility_id.display_name"/>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+            </div>
+        </t>
+        <t t-else="">
+            <p class="text-muted">No exams have been published yet.</p>
+        </t>
+    </template>
+
+    <!-- Standalone page: /my/timetable (students and trainers) -->
+    <template id="portal_my_timetable" name="My Timetable">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_searchbar" t-value="False"/>
+            <div class="container my-4">
+                <h2>My Timetable</h2>
+                <t t-if="not student and not trainer_schedules and not invigilation">
+                    <div class="alert alert-info mt-3">
+                        There is no timetable for your account yet. Students
+                        see their classes once they are enrolled in units
+                        that have been scheduled; trainers see the classes
+                        assigned to them.
+                    </div>
+                </t>
+                <t t-if="student">
+                    <h4 class="mt-4">Class Timetable</h4>
+                    <t t-call="umti_infrastructure.portal_timetable_table">
+                        <t t-set="schedules" t-value="student_schedules"/>
+                        <t t-set="show_trainer" t-value="True"/>
+                        <t t-set="show_students" t-value="False"/>
+                    </t>
+                    <h4 class="mt-4">Exam Timetable</h4>
+                    <t t-call="umti_infrastructure.portal_exam_table">
+                        <t t-set="exams" t-value="student_exams"/>
+                    </t>
+                </t>
+                <t t-if="trainer_schedules">
+                    <h4 class="mt-4">My Teaching Timetable</h4>
+                    <t t-call="umti_infrastructure.portal_timetable_table">
+                        <t t-set="schedules" t-value="trainer_schedules"/>
+                        <t t-set="show_trainer" t-value="False"/>
+                        <t t-set="show_students" t-value="True"/>
+                    </t>
+                </t>
+                <t t-if="invigilation">
+                    <h4 class="mt-4">Invigilation Duties</h4>
+                    <t t-call="umti_infrastructure.portal_exam_table">
+                        <t t-set="exams" t-value="invigilation"/>
+                    </t>
+                </t>
+            </div>
+        </t>
+    </template>
+
+    <!-- Card on the portal home page -->
+    <template id="portal_my_home_timetable" inherit_id="portal.portal_my_home"
+              name="Portal: My Timetable card">
+        <xpath expr="//div[@id='portal_common_category']" position="inside">
+            <t t-call="portal.portal_docs_entry">
+                <t t-set="title">My Timetable</t>
+                <t t-set="text">Classes, rooms and times</t>
+                <t t-set="url" t-value="'/my/timetable'"/>
+                <t t-set="config_card" t-value="True"/>
+            </t>
+        </xpath>
+    </template>
+
+    <!-- Student portfolio page: timetable section -->
+    <template id="portal_portfolio_timetable" inherit_id="umti_students.portal_portfolio"
+              name="Portal portfolio: timetable">
+        <xpath expr="//h4[hasclass('mt-4')][1]" position="before">
+            <h4 class="mt-4">My Timetable</h4>
+            <t t-call="umti_infrastructure.portal_timetable_table">
+                <t t-set="schedules" t-value="student.class_schedule_ids"/>
+                <t t-set="show_trainer" t-value="True"/>
+                <t t-set="show_students" t-value="False"/>
+            </t>
+        </xpath>
+    </template>
+
+</odoo>

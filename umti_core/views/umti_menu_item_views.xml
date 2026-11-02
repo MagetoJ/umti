@@ -1,0 +1,65 @@
+<odoo>
+    <!--1. Course Menu Items-->
+    <menuitem id="menu_umti_institute_parent"
+              name="The Institute"
+              sequence="10"/>
+    
+    <menuitem id="menu_umti_institute"
+              name="Courses"
+              parent="menu_umti_institute_parent"
+              sequence="1"/>
+
+    <menuitem id="menu_umti_institute_courses"
+              name="Courses"
+              parent="menu_umti_institute"
+              action="action_umti_course"
+              sequence="1"/>
+
+
+    <menuitem id="menu_umti_course_units"
+                  name="Units"
+                  parent="menu_umti_institute"
+                  action="action_umti_course_units"
+                  sequence="4"/>
+
+    <menuitem id="menu_umti_department"
+              name="Departments"
+              action="action_umti_department"
+              parent="menu_umti_institute_parent"
+              sequence="15"/>
+
+    <menuitem id="menu_umti_config"
+              name="Configuration"
+              parent="menu_umti_institute_parent"
+              sequence="99"/>
+
+   <menuitem id="menu_umti_config_settings"
+                  parent="menu_umti_config"
+                  name="Settings"
+                  action="action_umti_core_configuration"
+                  sequence="2"/>
+    
+    <menuitem id="menu_umti_course_level"
+                  name="Course Levels"
+                  parent="menu_umti_config"
+                  action="action_umti_course_level"
+                  sequence="3"/>
+
+    <menuitem id="menu_umti_academic_year"
+                  name="Academic Years"
+                  parent="menu_umti_config"
+                  action="action_umti_academic_year"
+                  sequence="5"/>
+                  
+    <!-- <menuitem id="menu_umti_academic_term"
+              name="Semesters"
+              parent="menu_umti_config"
+              action="action_umti_academic_term"
+              sequence="6"/> -->
+
+    <menuitem id="menu_umti_fee_structure"
+                  name="Fee Structure"
+                  parent="menu_umti_config"
+                  action="action_umti_fee_structure"
+                  sequence="7"/>
+</odoo>

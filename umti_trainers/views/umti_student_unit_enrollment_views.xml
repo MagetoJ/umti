@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- List View -->
+    <record id="umti_student_unit_enrollment_view_list" model="ir.ui.view">
+        <field name="name">umti.student.unit.enrollment.list</field>
+        <field name="model">umti.student.unit.enrollment</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="student_id"/>
+                <field name="course_id" optional="hide"/>
+                <field name="unit_id"/>
+                <field name="academic_term_id"/>
+                <field name="trainer_id"/>
+                <field name="state" widget="badge"
+                       decoration-muted="state == 'draft'"
+                       decoration-success="state == 'enrolled'"
+                       decoration-info="state == 'completed'"
+                       decoration-danger="state == 'dropped'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record id="umti_student_unit_enrollment_view_form" model="ir.ui.view">
+        <field name="name">umti.student.unit.enrollment.form</field>
+        <field name="model">umti.student.unit.enrollment</field>
+        <field name="arch" type="xml">
+            <form string="Unit Enrollment">
+                <header>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,enrolled,completed"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="student_id"/>
+                            <field name="course_id"/>
+                        </group>
+                        <group>
+                            <field name="unit_id"/>
+                            <field name="academic_term_id"/>
+                            <field name="mapping_id" readonly="1"/>
+                            <field name="trainer_id"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Search View -->
+    <record id="umti_student_unit_enrollment_view_search" model="ir.ui.view">
+        <field name="name">umti.student.unit.enrollment.search</field>
+        <field name="model">umti.student.unit.enrollment</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="student_id"/>
+                <field name="course_id"/>
+                <field name="unit_id"/>
+                <field name="academic_term_id"/>
+                <field name="trainer_id"/>
+                <filter name="filter_enrolled" string="Enrolled" domain="[('state', '=', 'enrolled')]"/>
+                <filter name="filter_completed" string="Completed" domain="[('state', '=', 'completed')]"/>
+                <filter name="filter_dropped" string="Dropped" domain="[('state', '=', 'dropped')]"/>
+                <separator/>
+                <filter name="filter_unassigned" string="No Trainer"
+                        domain="[('trainer_id', '=', False)]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_student" string="Student" context="{'group_by': 'student_id'}"/>
+                    <filter name="group_course" string="Course" context="{'group_by': 'course_id'}"/>
+                    <filter name="group_unit" string="Unit" context="{'group_by': 'unit_id'}"/>
+                    <filter name="group_trainer" string="Trainer" context="{'group_by': 'trainer_id'}"/>
+                    <filter name="group_term" string="Semester" context="{'group_by': 'academic_term_id'}"/>
+                    <filter name="group_state" string="State" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Kanban View -->
+    <record id="umti_student_unit_enrollment_view_kanban" model="ir.ui.view">
+        <field name="name">umti.student.unit.enrollment.kanban</field>
+        <field name="model">umti.student.unit.enrollment</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="state" class="o_kanban_small_column"
+                    quick_create="false" records_draggable="false" group_create="false">
+                <field name="student_id"/>
+                <field name="unit_id"/>
+                <field name="course_id"/>
+                <field name="academic_term_id"/>
+                <field name="trainer_id"/>
+                <field name="state"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="oe_kanban_global_click p-2">
+                            <div class="o_kanban_record_top mb-1">
+                                <div class="o_kanban_record_headings">
+                                    <strong class="o_kanban_record_title fs-6">
+                                        <field name="student_id"/>
+                                    </strong>
+                                </div>
+                            </div>
+                            <div class="o_kanban_record_body text-muted small mb-2">
+                                <div><i class="fa fa-book me-1"/> <field name="unit_id"/></div>
+                                <div><i class="fa fa-graduation-cap me-1"/> <field name="course_id"/></div>
+                                <div><i class="fa fa-calendar me-1"/> <field name="academic_term_id"/></div>
+                            </div>
+                            <div class="o_kanban_record_bottom border-top pt-2 mt-1 d-flex justify-content-between align-items-center">
+                                <div class="oe_kanban_bottom_left">
+                                    <field name="state" widget="badge"
+                                           decoration-info="state == 'draft'"
+                                           decoration-success="state == 'enrolled'"
+                                           decoration-primary="state == 'completed'"
+                                           decoration-danger="state == 'dropped'"/>
+                                </div>
+                                <div class="oe_kanban_bottom_right">
+                                    <field name="trainer_id" widget="many2one_avatar_employee"/>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- Trainer workspace: the students they are taking -->
+    <record id="umti_student_unit_enrollment_action_my_students" model="ir.actions.act_window">
+        <field name="name">My Students</field>
+        <field name="res_model">umti.student.unit.enrollment</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="domain">[('trainer_id.user_id', '=', uid)]</field>
+        <field name="context">{'search_default_group_unit': 1}</field>
+        <field name="search_view_id" ref="umti_student_unit_enrollment_view_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No students assigned yet</p>
+            <p>Students show up here once the department assigns you to the units they take.</p>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="umti_student_unit_enrollment_action" model="ir.actions.act_window">
+        <field name="name">Unit Enrollments</field>
+        <field name="res_model">umti.student.unit.enrollment</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="search_view_id" ref="umti_student_unit_enrollment_view_search"/>
+        <field name="context">{'search_default_group_term': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No unit enrollments yet</p>
+            <p>One line per student and unit; the trainer comes from the unit
+               trainer assignment of the semester.</p>
+        </field>
+    </record>
+
+</odoo>

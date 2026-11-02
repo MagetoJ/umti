@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="portal_assessment_marks" name="Portal: assessment marks">
+        <h4 class="mt-4">Assessment marks</h4>
+        <div class="table-responsive">
+            <table class="table table-sm table-striped">
+                <thead><tr>
+                    <th>Assessment</th><th>Type</th><th>Unit</th><th>Date</th>
+                    <th>Marks</th><th>Grade</th><th>Result</th>
+                </tr></thead>
+                <tbody>
+                    <t t-foreach="student.published_mark_ids" t-as="m">
+                        <tr>
+                            <td t-out="m.assessment_id.name"/>
+                            <td t-out="dict(m.assessment_id._fields['assessment_type'].selection).get(m.assessment_id.assessment_type, '')"/>
+                            <td><t t-out="m.unit_id.code"/> <t t-out="m.unit_id.name"/></td>
+                            <td t-out="m.assessment_id.date"/>
+                            <td><t t-out="m.marks"/> / <t t-out="m.max_marks"/></td>
+                            <td t-out="m.grade"/>
+                            <td t-out="(m.result or '').title()"/>
+                        </tr>
+                    </t>
+                </tbody>
+            </table>
+        </div>
+    </template>
+
+    <template id="portal_portfolio_assessment_marks" inherit_id="umti_students.portal_portfolio">
+        <xpath expr="(//div[hasclass('table-responsive')])[last()]" position="after">
+            <t t-call="umti_exams.portal_assessment_marks"/>
+        </xpath>
+    </template>
+</odoo>

@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_umti_assessment_mark_list" model="ir.ui.view">
+        <field name="name">umti.assessment.mark.list</field>
+        <field name="model">umti.assessment.mark</field>
+        <field name="arch" type="xml">
+            <list create="0">
+                <field name="assessment_id"/>
+                <field name="student_id"/>
+                <field name="unit_id" optional="show"/>
+                <field name="marks"/>
+                <field name="max_marks" optional="show"/>
+                <field name="percentage" widget="float"/>
+                <field name="grade"/>
+                <field name="result" widget="badge"
+                       decoration-success="result == 'pass'"
+                       decoration-danger="result == 'fail'"
+                       decoration-warning="result == 'absent'"/>
+                <field name="state" widget="badge"
+                       decoration-info="state == 'draft'"
+                       decoration-warning="state == 'verified'"
+                       decoration-success="state == 'published'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_umti_assessment_mark_form" model="ir.ui.view">
+        <field name="name">umti.assessment.mark.form</field>
+        <field name="model">umti.assessment.mark</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_verify" string="Verify" type="object" class="btn-primary"
+                            invisible="state != 'draft'"
+                            groups="umti_exams.group_umti_exams_manager,base.group_system"/>
+                    <button name="action_publish" string="Publish Marks" type="object" class="btn-primary"
+                            invisible="state != 'verified'"
+                            groups="umti_exams.group_umti_exams_manager,base.group_system"/>
+                    <button name="action_reset_draft" string="Reset to Draft" type="object"
+                            invisible="state == 'draft'"
+                            groups="umti_exams.group_umti_exams_manager,base.group_system"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="assessment_id" readonly="state != 'draft'"/>
+                            <field name="student_id" readonly="state != 'draft'"/>
+                            <field name="unit_id"/>
+                            <field name="semester_id"/>
+                        </group>
+                        <group>
+                            <field name="marks" readonly="state != 'draft'"/>
+                            <field name="absent" readonly="state != 'draft'"/>
+                            <field name="marked" readonly="state != 'draft'"/>
+                            <field name="max_marks"/>
+                            <field name="pass_marks"/>
+                            <field name="percentage"/>
+                            <field name="grade"/>
+                            <field name="result"/>
+                        </group>
+                    </group>
+                    <field name="remarks" placeholder="Remarks" readonly="state != 'draft'"/>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_umti_assessment_mark_search" model="ir.ui.view">
+        <field name="name">umti.assessment.mark.search</field>
+        <field name="model">umti.assessment.mark</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="student_id"/>
+                <field name="assessment_id"/>
+                <field name="unit_id"/>
+                <filter name="f_pass" string="Pass" domain="[('result', '=', 'pass')]"/>
+                <filter name="f_fail" string="Fail" domain="[('result', '=', 'fail')]"/>
+                <filter name="f_absent" string="Absent" domain="[('result', '=', 'absent')]"/>
+                <separator/>
+                <filter name="f_draft" string="Draft" domain="[('state', '=', 'draft')]"/>
+                <filter name="f_verified" string="Verified" domain="[('state', '=', 'verified')]"/>
+                <filter name="f_published" string="Published" domain="[('state', '=', 'published')]"/>
+                <group expand="0" string="Group By">
+                    <filter name="g_assessment" string="Assessment" context="{'group_by': 'assessment_id'}"/>
+                    <filter name="g_student" string="Student" context="{'group_by': 'student_id'}"/>
+                    <filter name="g_result" string="Result" context="{'group_by': 'result'}"/>
+                    <filter name="g_state" string="Status" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_umti_assessment_mark_pivot" model="ir.ui.view">
+        <field name="name">umti.assessment.mark.pivot</field>
+        <field name="model">umti.assessment.mark</field>
+        <field name="arch" type="xml">
+            <pivot>
+                <field name="unit_id" type="row"/>
+                <field name="result" type="col"/>
+                <field name="percentage" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="view_umti_assessment_mark_graph" model="ir.ui.view">
+        <field name="name">umti.assessment.mark.graph</field>
+        <field name="model">umti.assessment.mark</field>
+        <field name="arch" type="xml">
+            <graph type="bar">
+                <field name="assessment_id"/>
+                <field name="percentage" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="action_umti_assessment_mark" model="ir.actions.act_window">
+        <field name="name">Marks</field>
+        <field name="res_model">umti.assessment.mark</field>
+        <field name="view_mode">list,form,pivot,graph</field>
+        <field name="search_view_id" ref="view_umti_assessment_mark_search"/>
+    </record>
+</odoo>

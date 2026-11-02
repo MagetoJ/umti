@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates xml:space="preserve">
+
+    <t t-name="umti_core.UmtiDashboard">
+        <div class="o_umti_dashboard o_content">
+
+            <header class="umti-dash__header">
+                <div>
+                    <h1 class="umti-dash__title" t-out="title"/>
+                    <p class="umti-dash__subtitle" t-if="subtitle" t-out="subtitle"/>
+                </div>
+                <button type="button" class="btn btn-primary umti-dash__refresh"
+                        t-on-click="load" t-att-disabled="state.loading">
+                    <i class="fa fa-refresh me-1"/>Refresh
+                </button>
+            </header>
+
+            <div t-if="state.loading" class="umti-dash__state">
+                <i class="fa fa-circle-o-notch fa-spin me-2"/>Loading statistics…
+            </div>
+
+            <div t-elif="state.error" class="umti-dash__state umti-dash__state--error">
+                <i class="fa fa-exclamation-triangle me-2"/><t t-out="state.error"/>
+            </div>
+
+            <t t-else="">
+                <!-- The setup guide disappears once every step is done: it is
+                     only there to get a school started. -->
+                <section t-if="onboarding and !onboarding.complete"
+                         t-attf-class="umti-onboard#{state.onboardOpen ? ' umti-onboard--open' : ''}">
+                    <div class="umti-onboard__head" role="button" tabindex="0"
+                         t-att-aria-expanded="state.onboardOpen"
+                         t-att-title="state.onboardOpen ? 'Hide setup steps' : 'Show setup steps'"
+                         t-on-click="toggleOnboard"
+                         t-on-keydown="onOnboardKeydown">
+                        <div class="umti-onboard__intro">
+                            <p class="umti-onboard__eyebrow">Getting started</p>
+                            <h2 class="umti-onboard__title">Finish setting up your school</h2>
+                        </div>
+                        <div class="umti-onboard__aside">
+                            <span class="umti-onboard__pct"
+                                  t-out="onboarding.percent + '%'"/>
+                            <i t-attf-class="fa umti-onboard__chevron #{state.onboardOpen ? 'fa-angle-up' : 'fa-angle-down'}"/>
+                        </div>
+                    </div>
+                    <t t-if="state.onboardOpen">
+                        <p class="umti-onboard__sub">
+                            <strong t-out="onboarding.done + ' of ' + onboarding.total"/>
+                            steps done — work down the list, each step unlocks
+                            the next part of the school.
+                        </p>
+                        <div class="umti-onboard__track" role="progressbar"
+                             t-att-aria-valuenow="onboarding.percent"
+                             aria-valuemin="0" aria-valuemax="100"
+                             t-att-title="onboarding.percent + '% of the setup is done'">
+                            <div class="umti-onboard__fill"
+                                 t-attf-style="width: #{onboarding.percent}%"/>
+                        </div>
+                        <ol class="umti-onboard__steps">
+                            <t t-foreach="onboarding.steps" t-as="step" t-key="step.key">
+                                <li t-attf-class="umti-onboard__step#{step.done ? ' umti-onboard__step--done' : ''}">
+                                    <span class="umti-onboard__marker">
+                                        <i t-if="step.done" class="fa fa-check"/>
+                                        <t t-else="" t-out="step.index"/>
+                                    </span>
+                                    <div class="umti-onboard__body">
+                                        <span class="umti-onboard__label"
+                                              t-out="step.label"/>
+                                        <span class="umti-onboard__hint"
+                                              t-out="step.hint"/>
+                                    </div>
+                                    <button t-if="!step.done and step.cta" type="button"
+                                            t-attf-class="btn btn-sm #{step.remedy ? 'btn-primary' : 'btn-secondary'} umti-onboard__cta"
+                                            t-on-click="() => this.runStep(step)"
+                                            t-out="step.cta"/>
+                                </li>
+                            </t>
+                        </ol>
+                    </t>
+                </section>
+
+                <section class="umti-dash__alert" t-if="term and !term.ok and !term.suppressed">
+                    <div class="umti-dash__alert-body">
+                        <i class="fa fa-exclamation-triangle umti-dash__alert-icon"/>
+                        <div>
+                            <strong t-if="term.reason === 'not_in_progress'">
+                                Term not in progress
+                            </strong>
+                            <strong t-else="">No running term</strong>
+                            <p class="umti-dash__alert-text" t-out="term.message"/>
+                        </div>
+                    </div>
+                    <div class="umti-dash__alert-actions">
+                        <button type="button" class="btn btn-secondary"
+                                t-on-click="editTermDates">
+                            <i class="fa fa-pencil me-1"/>Edit term dates
+                        </button>
+                        <button type="button" class="btn btn-primary"
+                                t-on-click="openNextTerm">
+                            <i class="fa fa-play me-1"/>Activate next term
+                        </button>
+                    </div>
+                </section>
+
+                <section class="umti-dash__kpis" t-if="kpis.length">
+                    <t t-foreach="kpis" t-as="kpi" t-key="kpi.key">
+                        <article t-attf-class="umti-kpi umti-kpi--#{kpi.accent}#{kpi.model ? ' umti-kpi--clickable' : ''}"
+                                 t-att-role="kpi.model ? 'button' : null"
+                                 t-att-tabindex="kpi.model ? 0 : null"
+                                 t-att-title="kpi.model ? 'Open records' : null"
+                                 t-on-click="() => this.openKpi(kpi)"
+                                 t-on-keydown="(ev) => this.onKpiKeydown(ev, kpi)">
+                            <div class="umti-kpi__head">
+                                <span class="umti-kpi__dot"/>
+                                <span class="umti-kpi__label" t-out="kpi.label"/>
+                                <i t-attf-class="fa #{kpi.icon} umti-kpi__icon"/>
+                            </div>
+                            <div class="umti-kpi__value" t-out="format(kpi.value)"/>
+                            <div class="umti-kpi__hint" t-if="kpi.hint"
+                                 t-out="kpi.hint"/>
+                        </article>
+                    </t>
+                </section>
+
+                <section class="umti-dash__grid" t-if="charts.length">
+                    <t t-foreach="charts" t-as="chart" t-key="chart.key">
+                        <article class="umti-card">
+                            <h2 class="umti-card__title" t-out="chart.title"/>
+
+                            <div t-if="chart.type === 'bars'" class="umti-bars">
+                                <t t-foreach="chart.items" t-as="item" t-key="item.label">
+                                    <div t-attf-class="umti-bar#{item.model ? ' umti-bar--clickable' : ''}"
+                                         t-att-title="item.model ? 'Open records' : null"
+                                         t-on-click="() => this.openItem(item, chart.title)">
+                                        <div class="umti-bar__head">
+                                            <span class="umti-bar__label"
+                                                  t-out="item.label"/>
+                                            <span class="umti-bar__value"
+                                                  t-out="format(item.value)"/>
+                                        </div>
+                                        <div class="umti-bar__track">
+                                            <div class="umti-bar__fill"
+                                                 t-attf-style="width: #{barWidth(chart, item)}%"/>
+                                        </div>
+                                    </div>
+                                </t>
+                                <div class="umti-card__more" t-if="chart.more">
+                                    +<t t-out="chart.more"/> more
+                                </div>
+                            </div>
+
+                            <div t-elif="chart.type === 'donut'" class="umti-donut">
+                                <div class="umti-donut__ring" t-att-style="donutStyle(chart)"/>
+                                <ul class="umti-donut__legend">
+                                    <t t-foreach="chart.items" t-as="item" t-key="item.label">
+                                        <li t-attf-class="#{item.model ? 'umti-donut__legend-item--clickable' : ''}"
+                                            t-att-title="item.model ? 'Open records' : null"
+                                            t-on-click="() => this.openItem(item, chart.title)">
+                                            <span class="umti-donut__dot"
+                                                  t-attf-style="background: #{donutColor(item_index)}"/>
+                                            <span class="umti-donut__label"
+                                                  t-out="item.label"/>
+                                            <span class="umti-donut__value">
+                                                <t t-out="format(item.value)"/>
+                                                <span class="umti-donut__pct">
+                                                    (<t t-out="percent(chart, item)"/>%)
+                                                </span>
+                                            </span>
+                                        </li>
+                                    </t>
+                                </ul>
+                            </div>
+                        </article>
+                    </t>
+                </section>
+
+                <section class="umti-dash__lists" t-if="lists.length">
+                    <t t-foreach="lists" t-as="list" t-key="list.key">
+                        <article class="umti-card">
+                            <h2 class="umti-card__title" t-out="list.title"/>
+                            <ul class="umti-list">
+                                <t t-foreach="list.rows" t-as="row" t-key="row_index">
+                                    <li t-attf-class="umti-list__row#{row.res_id ? ' umti-list__row--clickable' : ''}"
+                                        t-on-click="() => this.openRow(row)">
+                                        <div class="umti-list__main">
+                                            <span class="umti-list__label"
+                                                  t-out="row.label"/>
+                                            <span class="umti-list__meta"
+                                                  t-if="row.meta" t-out="row.meta"/>
+                                        </div>
+                                        <span t-attf-class="umti-list__badge#{row.tone ? ' umti-list__badge--' + row.tone : ''}"
+                                              t-if="row.badge" t-out="row.badge"/>
+                                    </li>
+                                </t>
+                            </ul>
+                        </article>
+                    </t>
+                </section>
+            </t>
+        </div>
+    </t>
+
+</templates>

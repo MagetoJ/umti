@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_school_student_form_umti_portfolio_inherit" model="ir.ui.view">
+        <field name="name">school.student.form.umti.portfolio.inherit</field>
+        <field name="model">school.student</field>
+        <field name="inherit_id" ref="school_student_view_form"/>
+        <field name="arch" type="xml">
+
+            <!-- Insert fee summary before the notebook -->
+            <xpath expr="//notebook" position="before">
+                <field name="fee_currency_id" invisible="1"/>
+                <group string="Fee Summary">
+                    <group>
+                        <field name="total_charged"/>
+                        <field name="total_paid"/>
+                        <field name="balance" class="fw-bold text-danger"/>
+                    </group>
+                </group>
+            </xpath>
+
+            <!-- Add a Fee Ledger page after the existing Financial Chart page -->
+            <xpath expr="//page[@name='umti_portfolio_fees']" position="after">
+                <page string="Fee Ledger" name="umti_fee_ledger">
+                    <field name="fee_record_ids">
+                        <list editable="bottom">
+                            <field name="date"/>
+                            <field name="academic_year_id"/>
+                            <field name="semester_id"/>
+                            <field name="course_id"/>
+                            <field name="description"/>
+                            <field name="fee_amount" sum="Charged"/>
+                            <field name="payment_amount" sum="Paid"/>
+                            <field name="balance" sum="Balance"/>
+                            <field name="payment_type"/>
+                            <field name="sponsorship"/>
+                            <field name="reference"/>
+                            <field name="receipt_no"/>
+                            <field name="receipt_file" filename="receipt_filename"/>
+                            <field name="receipt_filename" column_invisible="True"/>
+                            <field name="currency_id" column_invisible="True"/>
+                        </list>
+                    </field>
+                </page>
+            </xpath>
+
+        </field>
+    </record>
+</odoo>

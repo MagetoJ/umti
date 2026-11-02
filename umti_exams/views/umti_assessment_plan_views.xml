@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_umti_assessment_plan_form" model="ir.ui.view">
+        <field name="name">umti.assessment.plan.form</field>
+        <field name="model">umti.assessment.plan</field>
+        <field name="arch" type="xml">
+            <form string="Assessment Plan">
+                <header>
+                    <button name="action_confirm" type="object" string="Confirm Plan"
+                            class="btn-primary" invisible="state != 'draft'"
+                            confirm="Confirm this plan? It will be locked for the rest of the semester."/>
+                    <button name="action_reset_draft" type="object" string="Reset to Draft"
+                            invisible="state != 'confirmed'"
+                            groups="umti_exams.group_umti_exams_manager,base.group_system"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,confirmed"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="semester_id" readonly="id" options="{'no_create': True}"/>
+                            <field name="department_id" readonly="id" options="{'no_create': True}"/>
+                        </group>
+                        <group>
+                            <field name="hod_id"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                    <div class="alert alert-info" role="alert">
+                        <strong>CAT, Assignment and Final Exam</strong> are always used to compute the
+                        final mark of every unit, and their weights must total 100%.
+                        Other assessment types can be enabled below; they are recorded but do not
+                        count towards the final mark.
+                    </div>
+                    <div class="alert alert-warning" role="alert"
+                         invisible="core_weight_total == 100">
+                        The CAT, Assignment and Final Exam weights total
+                        <field name="core_weight_total" readonly="1" class="oe_inline"/>%, not 100%.
+                    </div>
+                    <field name="line_ids">
+                        <list editable="bottom" create="0" delete="0">
+                            <field name="assessment_type" readonly="1" force_save="1"/>
+                            <field name="is_core" string="Counts to Final Mark" readonly="1"/>
+                            <field name="enabled" readonly="is_core or parent.state != 'draft'"/>
+                            <field name="weight" readonly="not is_core or parent.state != 'draft'"/>
+                        </list>
+                    </field>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_umti_assessment_plan_list" model="ir.ui.view">
+        <field name="name">umti.assessment.plan.list</field>
+        <field name="model">umti.assessment.plan</field>
+        <field name="arch" type="xml">
+            <list decoration-success="state == 'confirmed'">
+                <field name="semester_id"/>
+                <field name="department_id"/>
+                <field name="hod_id"/>
+                <field name="core_weight_total" string="Final Mark Weights (%)"/>
+                <field name="state" widget="badge"
+                       decoration-info="state == 'draft'" decoration-success="state == 'confirmed'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_umti_assessment_plan_search" model="ir.ui.view">
+        <field name="name">umti.assessment.plan.search</field>
+        <field name="model">umti.assessment.plan</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="department_id"/>
+                <field name="semester_id"/>
+                <filter name="my_departments" string="My Departments"
+                        domain="[('department_id.manager_id', '=', uid)]"/>
+                <filter name="draft" string="Draft" domain="[('state', '=', 'draft')]"/>
+                <filter name="confirmed" string="Confirmed" domain="[('state', '=', 'confirmed')]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_semester" string="Semester" context="{'group_by': 'semester_id'}"/>
+                    <filter name="group_department" string="Department" context="{'group_by': 'department_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_umti_assessment_plan" model="ir.actions.act_window">
+        <field name="name">Assessment Plans</field>
+        <field name="res_model">umti.assessment.plan</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_umti_assessment_plan_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No assessment plans yet</p>
+            <p>A plan is created for every department when a semester is created. CAT,
+               Assignment and Final Exam are always on; the Head of Department can
+               enable other assessment types before the semester starts.</p>
+        </field>
+    </record>
+</odoo>

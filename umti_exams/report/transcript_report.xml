@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_umti_mark_sheet_document">
+        <t t-call="web.external_layout">
+            <div class="page" style="font-family: Arial, sans-serif; font-size: 11px;">
+                <!-- Header Info Section -->
+                <div class="row mb-3">
+                    <div class="col-12 text-center">
+                        <h3 style="font-weight: bold;">Ujuzi Manyattani Training Institute</h3>
+                        <h4>MARK SHEET</h4>
+                    </div>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-6">
+                        <p><strong>CENTER NAME:</strong> <span t-esc="doc_args.get('center_name', '')"/></p>
+                        <p><strong>PROGRAMME NAME:</strong> <span t-esc="doc_args.get('programme_name', '')"/></p>
+                        <p><strong>UNIT NAME:</strong> <span t-esc="doc_args.get('unit_name', '')"/></p>
+                    </div>
+                    <div class="col-6">
+                        <p><strong>PROGRAMME CODE:</strong> <span t-esc="doc_args.get('programme_code', '')"/></p>
+                        <p><strong>UNIT CODE:</strong> <span t-esc="doc_args.get('unit_code', '')"/></p>
+                    </div>
+                </div>
+
+                <!-- Mark Sheet Grid Table -->
+                <table class="table table-bordered text-center align-middle" style="width: 100%; border: 1px solid black;">
+                    <thead>
+                        <tr style="background-color: #f2f2f2;">
+                            <th style="width: 5%;">S/N</th>
+                            <th style="width: 10%;">ADM NO</th>
+                            <th style="width: 25%;">NAME</th>
+                            <th style="width: 7%;">LO1-T</th>
+                            <th style="width: 7%;">LO1-P</th>
+                            <th style="width: 7%;">LO2-T</th>
+                            <th style="width: 7%;">LO2-P</th>
+                            <th style="width: 7%;">LO3-T</th>
+                            <th style="width: 7%;">LO3-P</th>
+                            <th style="width: 7%;">LO4-T</th>
+                            <th style="width: 7%;">LO4-P</th>
+                            <th style="width: 12%;">REMARKS</th>
+                        </tr>
+                        <tr>
+                            <td colspan="3" class="text-end"><strong>Formula:</strong></td>
+                            <td colspan="8"><strong>(x/y) × 100</strong></td>
+                            <td></td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-set="sn" t-value="1"/>
+                        <t t-foreach="docs" t-as="line">
+                            <tr>
+                                <td><t t-esc="sn"/></td>
+                                <td><span t-field="line.adm_no"/></td>
+                                <td class="text-start"><span t-field="line.student_id.name"/></td>
+                                <td><span t-field="line.lo1_t"/></td>
+                                <td><span t-field="line.lo1_p"/></td>
+                                <td><span t-field="line.lo2_t"/></td>
+                                <td><span t-field="line.lo2_p"/></td>
+                                <td><span t-field="line.lo3_t"/></td>
+                                <td><span t-field="line.lo3_p"/></td>
+                                <td><span t-field="line.lo4_t"/></td>
+                                <td><span t-field="line.lo4_p"/></td>
+                                <td>
+                                    <span t-if="line.remarks == 'competent'" class="badge bg-success">Competent</span>
+                                    <span t-if="line.remarks == 'not_yet_competent'" class="badge bg-danger">Not Yet Competent</span>
+                                </td>
+                            </tr>
+                            <t t-set="sn" t-value="sn + 1"/>
+                        </t>
+                    </tbody>
+                </table>
+
+                <!-- Sign-off Block (Image 3) -->
+                <div class="row mt-5" style="page-break-inside: avoid;">
+                    <div class="col-6">
+                        <p><strong>Prepared by:</strong> ...................................................</p>
+                        <p><strong>Trainer's name:</strong> ...................................................</p>
+                        <p><strong>Sign:</strong> ............................. <strong>Date:</strong> ..................</p>
+                    </div>
+                    <div class="col-6">
+                        <p><strong>Approved by:</strong> ...................................................</p>
+                        <p><strong>Head of Department:</strong> ...................................................</p>
+                        <p><strong>Sign and stamp:</strong> ............................. <strong>Date:</strong> ..................</p>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+</odoo>

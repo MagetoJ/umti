@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="portal_attendance" name="Portal: attendance">
+        <t t-if="student">
+        <t t-set="att" t-value="student._get_attendance_summary()"/>
+        <h4 class="mt-4">Attendance</h4>
+        <t t-if="att['sessions']">
+            <p>
+                Overall attendance: <strong><t t-out="att['rate']"/>%</strong>
+                (<t t-out="att['present']"/> present, <t t-out="att['absent']"/> absent,
+                <t t-out="att['excused']"/> excused).
+                <span t-if="att['state'] == 'at_risk'" class="badge text-bg-danger ms-2">
+                    Below the <t t-out="int(att['threshold'])"/>% requirement
+                </span>
+            </p>
+            <div class="table-responsive">
+                <table class="table table-sm table-striped">
+                    <thead><tr>
+                        <th>Term</th><th>Unit</th><th>Sessions</th>
+                        <th>Present</th><th>Absent</th><th>Excused</th><th>Rate</th>
+                    </tr></thead>
+                    <tbody>
+                        <t t-foreach="att['units']" t-as="u">
+                            <tr>
+                                <td t-out="u['term']"/>
+                                <td t-out="u['unit']"/>
+                                <td t-out="u['sessions']"/>
+                                <td t-out="u['present']"/>
+                                <td t-out="u['absent']"/>
+                                <td t-out="u['excused']"/>
+                                <td><t t-out="u['rate']"/>%</td>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+            </div>
+        </t>
+        <p t-else="" class="text-muted">No attendance has been recorded yet.</p>
+        </t>
+    </template>
+
+    <template id="portal_portfolio_attendance" inherit_id="umti_students.portal_portfolio">
+        <xpath expr="(//div[hasclass('table-responsive')])[last()]" position="after">
+            <t t-call="umti_trainers.portal_attendance"/>
+        </xpath>
+    </template>
+</odoo>

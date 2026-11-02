@@ -1,0 +1,360 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ==================== TIME SLOT VIEWS ==================== -->
+
+    <!-- Slot Form (modal) -->
+    <record id="umti_timetable_slot_view_form" model="ir.ui.view">
+        <field name="name">umti.timetable.slot.form</field>
+        <field name="model">umti.timetable.slot</field>
+        <field name="arch" type="xml">
+            <form string="Create Time Slot">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="day_of_week"/>
+                            <field name="slot_type"/>
+                            <field name="template_id"/>
+                        </group>
+                        <group>
+                            <field name="start_time" widget="float_time"/>
+                            <field name="end_time" widget="float_time"/>
+                        </group>
+                    </group>
+                </sheet>
+                <footer>
+                    <button string="Save &amp; Close" special="save" class="btn-primary"/>
+                    <button string="Discard" special="cancel" class="btn-secondary"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Slot List View with Generate Slots header button -->
+    <record id="umti_timetable_slot_view_list" model="ir.ui.view">
+        <field name="name">umti.timetable.slot.list</field>
+        <field name="model">umti.timetable.slot</field>
+        <field name="arch" type="xml">
+            <list>
+                <header>
+                    <button name="%(action_umti_slot_generator_wizard)d"
+                            string="Generate Slots" type="action"
+                            class="btn-primary"/>
+                </header>
+                <field name="day_of_week"/>
+                <field name="start_time" widget="float_time"/>
+                <field name="end_time" widget="float_time"/>
+                <field name="slot_type" widget="badge"
+                       decoration-info="slot_type == 'regular'"
+                       decoration-warning="slot_type == 'exam'"
+                       decoration-success="slot_type == 'both'"/>
+                <field name="template_id" optional="show"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Slot Kanban View (Req 5) -->
+    <record id="umti_timetable_slot_view_kanban" model="ir.ui.view">
+        <field name="name">umti.timetable.slot.kanban</field>
+        <field name="model">umti.timetable.slot</field>
+        <field name="arch" type="xml">
+            <kanban class="o_kanban_small_column">
+                <field name="day_of_week"/>
+                <field name="start_time"/>
+                <field name="end_time"/>
+                <field name="slot_type"/>
+                <field name="color"/>
+                <templates>
+                    <t t-name="card">
+                        <div t-attf-class="oe_kanban_color_#{kanban_getcolor(record.color.raw_value)}">
+                            <div class="oe_kanban_details">
+                                <strong>
+                                    <field name="display_name"/>
+                                </strong>
+                                <div class="mt-1">
+                                    <field name="slot_type" widget="badge"
+                                           decoration-info="slot_type == 'regular'"
+                                           decoration-warning="slot_type == 'exam'"
+                                           decoration-success="slot_type == 'both'"/>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- Slot Search View -->
+    <record id="umti_timetable_slot_view_search" model="ir.ui.view">
+        <field name="name">umti.timetable.slot.search</field>
+        <field name="model">umti.timetable.slot</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="day_of_week"/>
+                <field name="slot_type"/>
+                <field name="template_id"/>
+                <filter name="f_regular" string="Regular" domain="[('slot_type', '=', 'regular')]"/>
+                <filter name="f_exam" string="Exam" domain="[('slot_type', '=', 'exam')]"/>
+                <filter name="f_both" string="Both" domain="[('slot_type', '=', 'both')]"/>
+                <separator/>
+                <group expand="0" string="Group By">
+                    <filter name="g_day" string="Day" context="{'group_by': 'day_of_week'}"/>
+                    <filter name="g_type" string="Slot Type" context="{'group_by': 'slot_type'}"/>
+                    <filter name="g_template" string="Template" context="{'group_by': 'template_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Slot Action (list + kanban + form) -->
+    <record id="action_umti_timetable_slot" model="ir.actions.act_window">
+        <field name="name">Time Slots</field>
+        <field name="res_model">umti.timetable.slot</field>
+        <field name="view_mode">list,kanban,form</field>
+        <field name="search_view_id" ref="umti_timetable_slot_view_search"/>
+        <field name="target">current</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Create your first time slot</p>
+            <p>Define reusable weekly time slots for classes and exams.</p>
+        </field>
+    </record>
+
+    <record id="action_umti_timetable_slot_view_list" model="ir.actions.act_window.view">
+        <field name="sequence" eval="1"/>
+        <field name="view_mode">list</field>
+        <field name="view_id" ref="umti_timetable_slot_view_list"/>
+        <field name="act_window_id" ref="action_umti_timetable_slot"/>
+    </record>
+
+    <record id="action_umti_timetable_slot_view_kanban" model="ir.actions.act_window.view">
+        <field name="sequence" eval="2"/>
+        <field name="view_mode">kanban</field>
+        <field name="view_id" ref="umti_timetable_slot_view_kanban"/>
+        <field name="act_window_id" ref="action_umti_timetable_slot"/>
+    </record>
+
+    <record id="action_umti_timetable_slot_view_form" model="ir.actions.act_window.view">
+        <field name="sequence" eval="3"/>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="umti_timetable_slot_view_form"/>
+        <field name="act_window_id" ref="action_umti_timetable_slot"/>
+    </record>
+
+    <!-- ==================== CLASS SCHEDULE ==================== -->
+
+    <record id="umti_class_schedule_view_form" model="ir.ui.view">
+        <field name="name">umti.class.schedule.form</field>
+        <field name="model">umti.class.schedule</field>
+        <field name="arch" type="xml">
+            <form string="Class Schedule">
+                <sheet>
+                    <group>
+                        <group string="Academic Context">
+                            <field name="academic_term_id" options="{'no_create': True}"/>
+                            <field name="course_id" options="{'no_create': True}"/>
+                            <field name="department_id"/>
+                            <field name="level_id" options="{'no_create': True}"/>
+                            <field name="course_unit_ids" invisible="1"/>
+                            <field name="unit_id" domain="[('id', 'in', course_unit_ids)]"
+                                   options="{'no_create': True, 'no_open': True}"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                        <group string="Assignment">
+                            <field name="trainer_user_ids" invisible="1"/>
+                            <field name="trainer_id" options="{'no_create': True}"/>
+                            <field name="facility_id"
+                                   domain="[('status', '=', 'available')]"
+                                   options="{'no_create': True}"/>
+                            <field name="slot_id"
+                                   domain="[('slot_type', 'in', ['regular', 'both'])]"
+                                   placeholder="Select a time slot..."/>
+                            <field name="student_count"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="umti_class_schedule_view_list" model="ir.ui.view">
+        <field name="name">umti.class.schedule.list</field>
+        <field name="model">umti.class.schedule</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="academic_term_id"/>
+                <field name="course_id"/>
+                <field name="department_id" optional="show"/>
+                <field name="level_id" optional="show"/>
+                <field name="unit_id"/>
+                <field name="day_of_week" optional="hide"/>
+                <field name="slot_id"/>
+                <field name="facility_id"/>
+                <field name="trainer_id"/>
+                <field name="student_count" optional="show"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="umti_class_schedule_view_search" model="ir.ui.view">
+        <field name="name">umti.class.schedule.search</field>
+        <field name="model">umti.class.schedule</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="course_id"/>
+                <field name="unit_id"/>
+                <field name="trainer_id"/>
+                <field name="facility_id"/>
+                <field name="academic_term_id"/>
+                <filter name="filter_my_classes" string="My Classes"
+                        domain="[('trainer_id', '=', uid)]"/>
+                <group expand="0" string="Group By">
+                    <filter name="g_day" string="Day"
+                            context="{'group_by': 'day_of_week'}"/>
+                    <filter name="g_term" string="Term"
+                            context="{'group_by': 'academic_term_id'}"/>
+                    <filter name="g_course" string="Course"
+                            context="{'group_by': 'course_id'}"/>
+                    <filter name="g_department" string="Department"
+                            context="{'group_by': 'department_id'}"/>
+                    <filter name="g_trainer" string="Trainer"
+                            context="{'group_by': 'trainer_id'}"/>
+                    <filter name="g_room" string="Room"
+                            context="{'group_by': 'facility_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_umti_class_schedule" model="ir.actions.act_window">
+        <field name="name">Class Timetable</field>
+        <field name="res_model">umti.class.schedule</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="umti_class_schedule_view_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Schedule your first class</p>
+            <p>Assign courses, trainers, and rooms to weekly time slots.</p>
+        </field>
+    </record>
+
+    <!-- ==================== EXAM SCHEDULE ==================== -->
+
+    <record id="umti_exam_schedule_view_form" model="ir.ui.view">
+        <field name="name">umti.exam.schedule.form</field>
+        <field name="model">umti.exam.schedule</field>
+        <field name="arch" type="xml">
+            <form string="Exam Schedule">
+                <header>
+                    <button name="action_confirm" string="Confirm" type="object"
+                            class="btn-primary" invisible="status != 'draft'"/>
+                    <button name="action_publish" string="Publish" type="object"
+                            class="btn-primary" invisible="status != 'confirmed'"/>
+                    <button name="action_reset_draft" string="Reset to Draft" type="object"
+                            invisible="status == 'draft'"/>
+                    <field name="status" widget="statusbar"
+                           statusbar_visible="draft,confirmed,published"/>
+                </header>
+                <sheet>
+                    <div class="alert alert-info" role="alert" invisible="not schedule_note">
+                        <field name="schedule_note" readonly="1"/>
+                    </div>
+                    <group>
+                        <group string="Assessment">
+                            <field name="assessment_id" options="{'no_create': True}"/>
+                            <field name="exam_date"/>
+                            <field name="academic_term_id" options="{'no_create': True}"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                        <group string="Academic Context">
+                            <field name="course_id" options="{'no_create': True}"/>
+                            <field name="department_id"/>
+                            <field name="level_id" options="{'no_create': True}"/>
+                            <field name="course_unit_ids" invisible="1"/>
+                            <field name="unit_id"
+                                   domain="[('id', 'in', course_unit_ids)]"
+                                   options="{'no_create': True, 'no_open': True}"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Venue &amp; Time">
+                            <field name="facility_id"
+                                   domain="[('status', '=', 'available')]"
+                                   options="{'no_create': True}"/>
+                            <field name="slot_id"
+                                   domain="[('slot_type', 'in', ['exam', 'both'])]"
+                                   placeholder="Select a time slot..."/>
+                        </group>
+                        <group string="Invigilation">
+                            <field name="invigilator_id" options="{'no_create': True}"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="umti_exam_schedule_view_list" model="ir.ui.view">
+        <field name="name">umti.exam.schedule.list</field>
+        <field name="model">umti.exam.schedule</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="assessment_id"/>
+                <field name="exam_date"/>
+                <field name="course_id"/>
+                <field name="unit_id"/>
+                <field name="facility_id"/>
+                <field name="slot_id"/>
+                <field name="invigilator_id" optional="show"/>
+                <field name="status" widget="badge"
+                       decoration-info="status == 'draft'"
+                       decoration-warning="status == 'confirmed'"
+                       decoration-success="status == 'published'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="umti_exam_schedule_view_search" model="ir.ui.view">
+        <field name="name">umti.exam.schedule.search</field>
+        <field name="model">umti.exam.schedule</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="assessment_id"/>
+                <field name="course_id"/>
+                <field name="unit_id"/>
+                <field name="facility_id"/>
+                <field name="invigilator_id"/>
+                <filter name="f_draft" string="Draft"
+                        domain="[('status', '=', 'draft')]"/>
+                <filter name="f_confirmed" string="Confirmed"
+                        domain="[('status', '=', 'confirmed')]"/>
+                <filter name="f_published" string="Published"
+                        domain="[('status', '=', 'published')]"/>
+                <separator/>
+                <group expand="0" string="Group By">
+                    <filter name="g_date" string="Exam Date"
+                            context="{'group_by': 'exam_date'}"/>
+                    <filter name="g_course" string="Course"
+                            context="{'group_by': 'course_id'}"/>
+                    <filter name="g_department" string="Department"
+                            context="{'group_by': 'department_id'}"/>
+                    <filter name="g_room" string="Room"
+                            context="{'group_by': 'facility_id'}"/>
+                    <filter name="g_status" string="Status"
+                            context="{'group_by': 'status'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_umti_exam_schedule" model="ir.actions.act_window">
+        <field name="name">Exam Timetable</field>
+        <field name="res_model">umti.exam.schedule</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="umti_exam_schedule_view_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Schedule your first exam</p>
+            <p>Assign assessments to exam halls, time slots, and invigilators.</p>
+        </field>
+    </record>
+
+</odoo>

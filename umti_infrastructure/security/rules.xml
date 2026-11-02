@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- System admin bypass rules -->
+    <record id="rule_facility_admin" model="ir.rule">
+        <field name="name">Facility: System Admin Bypass</field>
+        <field name="model_id" ref="model_umti_facility"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('base.group_system'))]"/>
+    </record>
+
+    <record id="rule_facility_equipment_admin" model="ir.rule">
+        <field name="name">Facility Equipment: System Admin Bypass</field>
+        <field name="model_id" ref="model_umti_facility_equipment"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('base.group_system'))]"/>
+    </record>
+
+    <record id="rule_timetable_slot_admin" model="ir.rule">
+        <field name="name">Timetable Slot: System Admin Bypass</field>
+        <field name="model_id" ref="model_umti_timetable_slot"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('base.group_system'))]"/>
+    </record>
+
+    <record id="rule_class_schedule_admin" model="ir.rule">
+        <field name="name">Class Schedule: System Admin Bypass</field>
+        <field name="model_id" ref="model_umti_class_schedule"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('base.group_system'))]"/>
+    </record>
+
+    <record id="rule_exam_schedule_admin" model="ir.rule">
+        <field name="name">Exam Schedule: System Admin Bypass</field>
+        <field name="model_id" ref="model_umti_exam_schedule"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('base.group_system'))]"/>
+    </record>
+
+    <record id="rule_slot_template_admin" model="ir.rule">
+        <field name="name">Slot Template: System Admin Bypass</field>
+        <field name="model_id" ref="model_umti_timetable_slot_template"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('base.group_system'))]"/>
+    </record>
+
+    <record id="rule_facility_unavailability_admin" model="ir.rule">
+        <field name="name">Facility Unavailability: System Admin Bypass</field>
+        <field name="model_id" ref="model_umti_facility_unavailability"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('base.group_system'))]"/>
+    </record>
+
+    <!-- Multi-company rules -->
+    <record id="rule_facility_company" model="ir.rule">
+        <field name="name">Facility: Multi-Company</field>
+        <field name="model_id" ref="model_umti_facility"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+
+    <record id="rule_class_schedule_company" model="ir.rule">
+        <field name="name">Class Schedule: Multi-Company</field>
+        <field name="model_id" ref="model_umti_class_schedule"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+
+    <record id="rule_exam_schedule_company" model="ir.rule">
+        <field name="name">Exam Schedule: Multi-Company</field>
+        <field name="model_id" ref="model_umti_exam_schedule"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+
+</odoo>

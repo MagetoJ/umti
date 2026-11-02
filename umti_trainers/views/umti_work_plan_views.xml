@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Kanban View -->
+    <record id="umti_work_plan_view_kanban" model="ir.ui.view">
+        <field name="name">umti.work.plan.kanban</field>
+        <field name="model">umti.work.plan</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="state" class="o_kanban_small_column" quick_create="false">
+                <field name="name"/>
+                <field name="trainer_id"/>
+                <field name="department_id"/>
+                <field name="course_unit_id"/>
+                <field name="academic_term_id"/>
+                <field name="state"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="oe_kanban_global_click p-2">
+                            <div class="o_kanban_record_top mb-1">
+                                <div class="o_kanban_record_headings">
+                                    <strong class="o_kanban_record_title fs-6">
+                                        <field name="name"/>
+                                    </strong>
+                                </div>
+                            </div>
+                            <div class="o_kanban_record_body text-muted small mb-2">
+                                <div><i class="fa fa-book me-1"/> <field name="course_unit_id"/></div>
+                                <div><i class="fa fa-building me-1"/> <field name="department_id"/></div>
+                                <div><i class="fa fa-calendar me-1"/> <field name="academic_term_id"/></div>
+                            </div>
+                            <div class="o_kanban_record_bottom border-top pt-2 mt-1 d-flex justify-content-between align-items-center">
+                                <div class="oe_kanban_bottom_left">
+                                    <field name="state" widget="label_selection"
+                                           options="{'classes': {'draft': 'default', 'submitted': 'warning', 'approved': 'success', 'rejected': 'danger'}}"/>
+                                </div>
+                                <div class="oe_kanban_bottom_right">
+                                    <field name="trainer_id" widget="many2one_avatar_user"/>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- List View -->
+    <record id="umti_work_plan_view_list" model="ir.ui.view">
+        <field name="name">umti.work.plan.list</field>
+        <field name="model">umti.work.plan</field>
+        <field name="arch" type="xml">
+            <list decoration-muted="state == 'rejected'"
+                  decoration-info="state == 'draft'"
+                  decoration-warning="state == 'submitted'"
+                  decoration-success="state == 'approved'"
+                  decoration-danger="state == 'rejected'">
+                <field name="name"/>
+                <field name="scheme_id"/>
+                <field name="trainer_id"/>
+                <field name="department_id"/>
+                <field name="hod_id"/>
+                <field name="state" widget="badge"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record id="umti_work_plan_view_form" model="ir.ui.view">
+        <field name="name">umti.work.plan.form</field>
+        <field name="model">umti.work.plan</field>
+        <field name="arch" type="xml">
+            <form string="Work Plan">
+                <header>
+                    <button name="action_submit" type="object" string="Submit to HOD"
+                            class="btn-primary" invisible="state not in ('draft', 'rejected')"/>
+                    <button name="action_approve" type="object" string="Approve"
+                            class="btn-success" invisible="state != 'submitted'"
+                            groups="umti_trainers.group_umti_trainers_manager"/>
+                    <button name="action_reject" type="object" string="Request Revisions"
+                            class="btn-danger" invisible="state != 'submitted'"
+                            groups="umti_trainers.group_umti_trainers_manager"/>
+                    <button name="action_reset_draft" type="object" string="Reset to Draft"
+                            invisible="state not in ('submitted', 'rejected')"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,submitted,approved"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="e.g. Work Plan - Term 1 2026" readonly="state == 'approved'"/></h1>
+                    </div>
+
+                    <group>
+                        <group string="Trainer &amp; Department Metadata">
+                            <field name="trainer_id" readonly="state == 'approved'"/>
+                            <field name="tel_no" readonly="state == 'approved'"/>
+                            <field name="department_id" readonly="state == 'approved'"/>
+                            <field name="academic_term_id" readonly="state == 'approved'"/>
+                            <field name="company_id" groups="base.group_multi_company" readonly="state == 'approved'"/>
+                        </group>
+                        <group string="Unit &amp; Timeline">
+                            <field name="course_unit_id" readonly="state == 'approved'"/>
+                            <field name="unit_code" readonly="state == 'approved'"/>
+                            <field name="class_name" readonly="state == 'approved'"/>
+                            <field name="start_date" readonly="state == 'approved'"/>
+                            <field name="end_date" readonly="state == 'approved'"/>
+                        </group>
+                    </group>
+
+                    <group string="Plan Tasks &amp; Benchmark Criteria">
+                        <field name="skill_or_job_task" readonly="state == 'approved'"/>
+                        <field name="benchmark_criteria" readonly="state == 'approved'"/>
+                    </group>
+
+                    <notebook>
+                        <page string="Objectives &amp; Details" name="objectives">
+                            <field name="objectives" placeholder="Specify term objectives and goals..." readonly="state == 'approved'"/>
+                        </page>
+                        <page string="Linked Schemes of Work" name="schemes">
+                            <field name="scheme_of_work_ids" readonly="state == 'approved'">
+                                <list>
+                                    <field name="title"/>
+                                    <field name="unit_id"/>
+                                    <field name="state" widget="badge"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Session Activities" name="session_activities">
+                            <field name="line_ids" readonly="state == 'approved'">
+                                <list editable="bottom">
+                                    <field name="session_date"/>
+                                    <field name="time_slot"/>
+                                    <field name="specific_objective"/>
+                                    <field name="activity"/>
+                                    <field name="venue"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Approvals &amp; Sign-offs" name="approvals">
+                            <group>
+                                <group string="Prepared By (Trainer)">
+                                    <field name="prepared_by_id" readonly="1"/>
+                                    <field name="prepared_date" readonly="1"/>
+                                </group>
+                                <group string="Approved By (Head of Department)">
+                                    <field name="approved_by_id" readonly="1"/>
+                                    <field name="approved_date" readonly="1"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="HOD Revisions / Notes" name="hod_notes" invisible="state != 'rejected' and not rejection_reason">
+                            <field name="rejection_reason" placeholder="State reasons for revision..." readonly="state == 'approved'"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- Search View -->
+    <record id="umti_work_plan_view_search" model="ir.ui.view">
+        <field name="name">umti.work.plan.search</field>
+        <field name="model">umti.work.plan</field>
+        <field name="arch" type="xml">
+            <search string="Search Work Plans">
+                <field name="name"/>
+                <field name="trainer_id"/>
+                <field name="department_id"/>
+                <field name="scheme_id"/>
+                <filter string="Draft" name="filter_draft" domain="[('state', '=', 'draft')]"/>
+                <filter string="Submitted" name="filter_submitted" domain="[('state', '=', 'submitted')]"/>
+                <filter string="Approved" name="filter_approved" domain="[('state', '=', 'approved')]"/>
+                <filter string="Rejected" name="filter_rejected" domain="[('state', '=', 'rejected')]"/>
+                <separator/>
+                <group expand="0" string="Group By">
+                    <filter string="Department" name="groupby_department" context="{'group_by': 'department_id'}"/>
+                    <filter string="Trainer" name="groupby_trainer" context="{'group_by': 'trainer_id'}"/>
+                    <filter string="State" name="groupby_state" context="{'group_by': 'state'}"/>
+                    <filter string="Academic Term" name="groupby_term" context="{'group_by': 'academic_term_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="umti_work_plan_action" model="ir.actions.act_window">
+        <field name="name">Work Plans</field>
+        <field name="res_model">umti.work.plan</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="search_view_id" ref="umti_work_plan_view_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Create your first Work Plan</p>
+        </field>
+    </record>
+
+</odoo>

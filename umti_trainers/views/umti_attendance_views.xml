@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Attendance line graph: opened from the student Attendance Chart page -->
+    <record id="umti_attendance_line_view_graph" model="ir.ui.view">
+        <field name="name">umti.attendance.line.graph</field>
+        <field name="model">umti.attendance.line</field>
+        <field name="arch" type="xml">
+            <graph type="bar" stacked="1">
+                <field name="status_id"/>
+                <field name="unit_id"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- List View -->
+    <record id="umti_attendance_sheet_view_list" model="ir.ui.view">
+        <field name="name">umti.attendance.sheet.list</field>
+        <field name="model">umti.attendance.sheet</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="date"/>
+                <field name="trainer_id"/>
+                <field name="department_id" optional="show"/>
+                <field name="course_id"/>
+                <field name="unit_id"/>
+                <field name="academic_term_id"/>
+                <field name="present_count"/>
+                <field name="absent_count"/>
+                <field name="total_count"/>
+                <field name="state" widget="badge"
+                       decoration-info="state == 'draft'"
+                       decoration-success="state == 'done'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record id="umti_attendance_sheet_view_form" model="ir.ui.view">
+        <field name="name">umti.attendance.sheet.form</field>
+        <field name="model">umti.attendance.sheet</field>
+        <field name="arch" type="xml">
+            <form string="Attendance Sheet">
+                <header>
+                    <button name="action_populate_roster"
+                            string="Fetch Enrolled Students"
+                            type="object" class="btn-secondary"
+                            invisible="state != 'draft'"/>
+                    <button name="action_submit_attendance"
+                            string="Submit Attendance"
+                            type="object" class="btn-primary"
+                            invisible="state != 'draft'"/>
+                    <button name="action_reset_draft"
+                            string="Reset to Draft"
+                            type="object"
+                            invisible="state != 'done'"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,done"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button class="oe_stat_button" icon="fa-users"
+                                name="action_view_students" type="object">
+                            <field name="total_count" string="Students"
+                                   widget="statinfo"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="Session title"/></h1>
+                    </div>
+                    <group>
+                        <group string="Session Details">
+                            <field name="date"/>
+                            <field name="trainer_id"/>
+                            <field name="department_id"/>
+                            <field name="company_id"
+                                   groups="base.group_multi_company"/>
+                        </group>
+                        <group string="Academic Context">
+                            <field name="course_id"
+                                   domain="[('department_id', '=', department_id)]"
+                                   options="{'no_create': True}"/>
+                            <field name="allowed_unit_ids" invisible="1"/>
+                            <field name="unit_id"
+                                   domain="[('id', 'in', allowed_unit_ids)]"
+                                   options="{'no_create': True, 'no_open': True}"/>
+                            <field name="academic_term_id"/>
+                        </group>
+                    </group>
+                    <group string="Summary">
+                        <group>
+                            <field name="present_count"/>
+                        </group>
+                        <group>
+                            <field name="absent_count"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Attendance" name="attendance">
+                            <field name="line_ids">
+                                <list editable="bottom"
+                                      create="false" delete="false">
+                                    <field name="student_id" readonly="1" force_save="1"/>
+                                    <field name="is_present" column_invisible="True"/>
+                                    <field name="status_id"
+                                           options="{'no_create': True, 'no_open': True}"
+                                           decoration-success="is_present"
+                                           decoration-danger="not is_present"/>
+                                    <field name="absence_reason"
+                                           placeholder="Enter reason if absent/excused..."
+                                           invisible="is_present"/>
+                                    <field name="remarks"
+                                           placeholder="Optional notes..."/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- Search View -->
+    <record id="umti_attendance_sheet_view_search" model="ir.ui.view">
+        <field name="name">umti.attendance.sheet.search</field>
+        <field name="model">umti.attendance.sheet</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="trainer_id"/>
+                <field name="department_id"/>
+                <field name="course_id"/>
+                <field name="unit_id"/>
+                <field name="academic_term_id"/>
+                <filter name="filter_today" string="Today"
+                        domain="[('date', '=', context_today().strftime('%%Y-%%m-%%d'))]"/>
+                <filter name="filter_draft" string="Draft"
+                        domain="[('state', '=', 'draft')]"/>
+                <filter name="filter_done" string="Submitted"
+                        domain="[('state', '=', 'done')]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_trainer" string="Trainer"
+                            context="{'group_by': 'trainer_id'}"/>
+                    <filter name="group_course" string="Course"
+                            context="{'group_by': 'course_id'}"/>
+                    <filter name="group_unit" string="Unit"
+                            context="{'group_by': 'unit_id'}"/>
+                    <filter name="group_date" string="Date"
+                            context="{'group_by': 'date'}"/>
+                    <filter name="group_state" string="Status"
+                            context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Kanban View -->
+    <record id="umti_attendance_sheet_view_kanban" model="ir.ui.view">
+        <field name="name">umti.attendance.sheet.kanban</field>
+        <field name="model">umti.attendance.sheet</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="state" class="o_kanban_small_column"
+                    quick_create="false" records_draggable="false" group_create="false">
+                <field name="name"/>
+                <field name="date"/>
+                <field name="unit_id"/>
+                <field name="course_id"/>
+                <field name="academic_term_id"/>
+                <field name="trainer_id"/>
+                <field name="present_count"/>
+                <field name="absent_count"/>
+                <field name="total_count"/>
+                <field name="state"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="oe_kanban_global_click p-2">
+                            <div class="o_kanban_record_top mb-1">
+                                <div class="o_kanban_record_headings">
+                                    <strong class="o_kanban_record_title fs-6">
+                                        <field name="name"/>
+                                    </strong>
+                                    <div class="text-muted small"><field name="date"/></div>
+                                </div>
+                            </div>
+                            <div class="o_kanban_record_body text-muted small mb-2">
+                                <div><i class="fa fa-book me-1"/> <field name="unit_id"/></div>
+                                <div><i class="fa fa-graduation-cap me-1"/> <field name="course_id"/></div>
+                                <div><i class="fa fa-calendar me-1"/> <field name="academic_term_id"/></div>
+                                <div class="mt-1">
+                                    <span class="text-success me-2"><i class="fa fa-check me-1"/><field name="present_count"/> present</span>
+                                    <span class="text-danger me-2"><i class="fa fa-times me-1"/><field name="absent_count"/> absent</span>
+                                    <span><field name="total_count"/> total</span>
+                                </div>
+                            </div>
+                            <div class="o_kanban_record_bottom border-top pt-2 mt-1 d-flex justify-content-between align-items-center">
+                                <div class="oe_kanban_bottom_left">
+                                    <field name="state" widget="badge"
+                                           decoration-info="state == 'draft'"
+                                           decoration-success="state == 'done'"/>
+                                </div>
+                                <div class="oe_kanban_bottom_right">
+                                    <field name="trainer_id" widget="many2one_avatar_user"/>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="umti_attendance_sheet_action" model="ir.actions.act_window">
+        <field name="name">Attendance Sheets</field>
+        <field name="res_model">umti.attendance.sheet</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="search_view_id" ref="umti_attendance_sheet_view_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Record your first attendance</p>
+            <p>Track session attendance for enrolled students.</p>
+        </field>
+    </record>
+
+</odoo>

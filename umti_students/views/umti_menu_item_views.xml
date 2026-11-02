@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- 1. Students -->
+    <menuitem id="menu_school_root" 
+        name="School" 
+        sequence="50"              
+        web_icon="umti_students,static/description/icon.png"
+        groups="group_umti_students_user"/>
+
+    <menuitem id="menu_school_students" 
+        name="Students" 
+        action="school_student_action" 
+        sequence="10"/>
+
+    <!-- 2. Admissions -->
+    <menuitem id="menu_school_admissions" 
+        name="Intakes &amp; Admissions" 
+        sequence="5"
+        groups="group_umti_students_admission_officer"/>
+    
+
+    <menuitem id="menu_school_intakes" 
+        name="Intakes" 
+        parent="menu_school_admissions"
+        action="school_admission_intake_action" 
+        sequence="10"/>
+    <menuitem id="menu_school_applications_parent" 
+        name="Applications &amp; Reviews"
+        parent="menu_school_admissions" 
+        sequence="20"/>
+    <menuitem id="menu_school_applications" 
+        name="Applications" 
+        parent="menu_school_applications_parent"
+        action="school_admission_application_action" 
+        sequence="20"/>
+        
+    <menuitem id="menu_school_application_reviews" 
+        name="Application Reviews" 
+        parent="menu_school_applications_parent"
+        action="school_admission_review_action" 
+        sequence="30"/>
+
+    <!-- 3. Fees and exams -->
+    <menuitem id="menu_school_portfolio" 
+        name="Fees and Exams"
+        parent="menu_school_root" 
+        sequence="20"
+        groups="group_umti_students_user"/>
+
+    <!-- Library TODO: Add groups-->
+    <menuitem id="menu_school_library"
+        name="Library"
+        sequence="5"/>
+
+    <menuitem id="menu_umti_library_books"
+                  name="Books"
+                  parent="menu_school_library"
+                  action="action_umti_library_books"
+                  sequence="10"/>
+
+    <menuitem id="menu_umti_library_lending"
+                  name="Book Leases"
+                  parent="menu_school_library"
+                  action="action_umti_library_lending"
+                  sequence="10"/>
+    <!-- KITS TODO: Add groups-->
+    <menuitem id="menu_school_kits_parent"
+        name="Kits"
+        sequence="5"/>
+
+      <!-- Menu -->
+        <menuitem id="menu_umti_kits"
+                  name="Kits"
+                  parent="menu_school_kits_parent"
+                  action="action_umti_kits"
+                  sequence="10"/>
+
+     <!-- Menu -->
+        <menuitem id="menu_umti_kits_issuances"
+                  name="Issuances"
+                  parent="menu_school_kits_parent"
+                  action="action_umti_kits_issuances"
+                  sequence="15"/>
+
+    <!-- 4. Configuration -->
+    <menuitem id="menu_school_config" 
+        name="Configuration" 
+        parent="menu_school_root"
+        sequence="90" 
+        groups="group_umti_students_manager"/>
+</odoo>

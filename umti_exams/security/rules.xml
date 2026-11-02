@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="rule_umti_grade_scale_company" model="ir.rule">
+            <field name="name">Grading scale: multi-company</field>
+            <field name="model_id" ref="model_umti_grade_scale"/>
+            <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        </record>
+        <record id="rule_umti_assessment_company" model="ir.rule">
+            <field name="name">Assessment: multi-company</field>
+            <field name="model_id" ref="model_umti_assessment"/>
+            <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        </record>
+        <record id="rule_umti_assessment_mark_company" model="ir.rule">
+            <field name="name">Assessment mark: multi-company</field>
+            <field name="model_id" ref="model_umti_assessment_mark"/>
+            <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        </record>
+        <record id="rule_umti_assessment_plan_company" model="ir.rule">
+            <field name="name">Assessment plan: multi-company</field>
+            <field name="model_id" ref="model_umti_assessment_plan"/>
+            <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        </record>
+        <record id="rule_umti_unit_result_company" model="ir.rule">
+            <field name="name">Unit result: multi-company</field>
+            <field name="model_id" ref="model_umti_unit_result"/>
+            <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        </record>
+    </data>
+</odoo>

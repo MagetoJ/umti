@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="umti_attendance_status_view_list" model="ir.ui.view">
+        <field name="name">umti.attendance.status.list</field>
+        <field name="model">umti.attendance.status</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="is_present"/>
+                <field name="counts_in_rate"/>
+                <field name="is_default"/>
+                <field name="active" column_invisible="True"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="umti_attendance_status_view_search" model="ir.ui.view">
+        <field name="name">umti.attendance.status.search</field>
+        <field name="model">umti.attendance.status</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="code"/>
+                <filter name="inactive" string="Archived"
+                        domain="[('active', '=', False)]"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="umti_attendance_status_action" model="ir.actions.act_window">
+        <field name="name">Attendance Statuses</field>
+        <field name="res_model">umti.attendance.status</field>
+        <field name="view_mode">list</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Add an attendance status</p>
+            <p>Statuses such as Present, Absent or Late that trainers can pick for each student.</p>
+        </field>
+    </record>
+
+    <menuitem id="menu_umti_attendance_status"
+              name="Attendance Statuses"
+              parent="umti_trainers.menu_umti_attendance"
+              action="umti_attendance_status_action"
+              groups="umti_trainers.group_umti_trainers_manager"
+              sequence="40"/>
+
+</odoo>

@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Kanban View: one card per unit for the semester, students as support -->
+    <record id="umti_unit_trainer_view_kanban" model="ir.ui.view">
+        <field name="name">umti.unit.trainer.kanban</field>
+        <field name="model">umti.unit.trainer</field>
+        <field name="arch" type="xml">
+            <kanban default_order="academic_term_id desc, unit_code"
+                    class="o_kanban_small_column">
+                <field name="unit_id"/>
+                <field name="unit_code"/>
+                <field name="unit_type"/>
+                <field name="credit_contribution"/>
+                <field name="academic_term_id"/>
+                <field name="academic_year_id"/>
+                <field name="trainer_id"/>
+                <field name="student_count"/>
+                <templates>
+                    <t t-name="card">
+                        <main>
+                            <div class="d-flex align-items-start gap-2">
+                                <span class="badge text-bg-light border"
+                                      t-if="record.unit_code.raw_value">
+                                    <field name="unit_code"/>
+                                </span>
+                                <field name="unit_id" class="fw-bold fs-5 flex-grow-1"/>
+                            </div>
+                            <div class="d-flex flex-wrap gap-2 mt-2">
+                                <span class="badge text-bg-secondary"
+                                      t-if="record.unit_type.raw_value">
+                                    <field name="unit_type"/>
+                                </span>
+                                <span class="badge text-bg-light border">
+                                    <field name="credit_contribution"/> credits
+                                </span>
+                            </div>
+                            <div class="text-muted small mt-2">
+                                <i class="fa fa-calendar-o me-1"/>
+                                <field name="academic_term_id"/>
+                                <span class="mx-1">·</span>
+                                <field name="academic_year_id"/>
+                            </div>
+                            <div class="mt-1">
+                                <i class="fa fa-user-o me-1 text-muted"/>
+                                <field name="trainer_id"/>
+                            </div>
+                        </main>
+                        <footer>
+                            <span class="badge text-bg-primary">
+                                <field name="student_count"/> students
+                            </span>
+                        </footer>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- List View -->
+    <record id="umti_unit_trainer_view_list" model="ir.ui.view">
+        <field name="name">umti.unit.trainer.list</field>
+        <field name="model">umti.unit.trainer</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="unit_id"/>
+                <field name="department_id" optional="show"/>
+                <field name="allowed_trainer_ids" column_invisible="1"/>
+                <field name="trainer_id" required="1"/>
+                <field name="academic_year_id"/>
+                <field name="academic_term_id"/>
+                <field name="active" column_invisible="1"/>
+                <field name="company_id" groups="base.group_multi_company"
+                       optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record id="umti_unit_trainer_view_form" model="ir.ui.view">
+        <field name="name">umti.unit.trainer.form</field>
+        <field name="model">umti.unit.trainer</field>
+        <field name="arch" type="xml">
+            <form string="Unit Trainer">
+                <sheet>
+                    <widget name="web_ribbon" title="Archived"
+                            bg_color="text-bg-danger" invisible="active"/>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_students" type="object"
+                                class="oe_stat_button" icon="fa-users">
+                            <field name="student_count" widget="statinfo"
+                                   string="Students"/>
+                        </button>
+                    </div>
+                    <group>
+                        <group string="Unit">
+                            <field name="unit_id" options="{'no_create': True}"/>
+                            <field name="department_id"/>
+                        </group>
+                        <group string="Semester">
+                            <field name="academic_term_id"
+                                   options="{'no_create': True}"/>
+                            <field name="academic_year_id"
+                                   options="{'no_create': True}"/>
+                        </group>
+                        <group string="Trainer">
+                            <field name="allowed_trainer_ids" invisible="1"/>
+                            <field name="trainer_id"
+                                   options="{'no_create': True}"/>
+                            <field name="trainer_user_id"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="active" invisible="1"/>
+                        <field name="company_id"
+                               groups="base.group_multi_company"/>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- Search View -->
+    <record id="umti_unit_trainer_view_search" model="ir.ui.view">
+        <field name="name">umti.unit.trainer.search</field>
+        <field name="model">umti.unit.trainer</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="unit_id"/>
+                <field name="trainer_id"/>
+                <field name="department_id"/>
+                <field name="academic_term_id"/>
+                <field name="academic_year_id"/>
+                <filter name="filter_active" string="Active"
+                        domain="[('active', '=', True)]"/>
+                <filter name="filter_archived" string="Archived"
+                        domain="[('active', '=', False)]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_term" string="Semester"
+                            context="{'group_by': 'academic_term_id'}"/>
+                    <filter name="group_unit" string="Unit"
+                            context="{'group_by': 'unit_id'}"/>
+                    <filter name="group_trainer" string="Trainer"
+                            context="{'group_by': 'trainer_id'}"/>
+                    <filter name="group_department" string="Department"
+                            context="{'group_by': 'department_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Kanban View -->
+    <record id="umti_unit_trainer_view_kanban" model="ir.ui.view">
+        <field name="name">umti.unit.trainer.kanban</field>
+        <field name="model">umti.unit.trainer</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="academic_term_id" class="o_kanban_small_column"
+                    quick_create="false" records_draggable="false" group_create="false">
+                <field name="unit_id"/>
+                <field name="unit_code"/>
+                <field name="unit_type"/>
+                <field name="trainer_id"/>
+                <field name="department_id"/>
+                <field name="academic_year_id"/>
+                <field name="academic_term_id"/>
+                <field name="student_count"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="oe_kanban_global_click p-2">
+                            <div class="o_kanban_record_top mb-1">
+                                <div class="o_kanban_record_headings">
+                                    <span class="badge text-bg-secondary mb-1"><field name="unit_code"/></span>
+                                    <strong class="o_kanban_record_title fs-6 d-block">
+                                        <field name="unit_id"/>
+                                    </strong>
+                                </div>
+                            </div>
+                            <div class="o_kanban_record_body text-muted small mb-2">
+                                <div><i class="fa fa-building me-1"/> <field name="department_id"/></div>
+                                <div><i class="fa fa-calendar me-1"/> <field name="academic_year_id"/></div>
+                                <div t-if="record.unit_type.raw_value"><i class="fa fa-tag me-1"/> <field name="unit_type"/></div>
+                            </div>
+                            <div class="o_kanban_record_bottom border-top pt-2 mt-1 d-flex justify-content-between align-items-center">
+                                <div class="oe_kanban_bottom_left">
+                                    <i class="fa fa-users me-1"/><field name="student_count"/> students
+                                </div>
+                                <div class="oe_kanban_bottom_right">
+                                    <field name="trainer_id" widget="many2one_avatar_employee"/>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="umti_unit_trainer_action" model="ir.actions.act_window">
+        <field name="name">Unit Trainers</field>
+        <field name="res_model">umti.unit.trainer</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="search_view_id" ref="umti_unit_trainer_view_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Assign trainers to units</p>
+            <p>Pick the trainer of each unit per academic year and semester.
+               Students, timetables and the trainer workspace all read the
+               trainer from here.</p>
+        </field>
+    </record>
+
+</odoo>

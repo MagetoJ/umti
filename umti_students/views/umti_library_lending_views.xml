@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Form View -->
+        <record id="umti_library_lending_form" model="ir.ui.view">
+            <field name="name">umti.library.lending.form</field>
+            <field name="model">umti.library.lending</field>
+            <field name="arch" type="xml">
+                <form string="Book Leases">
+                    <header>
+                        <button name="action_lease" type="object" string="Lease" class="oe_highlight" invisible="state != 'draft'"/>
+                        <button name="action_return" type="object" string="Return" class="oe_highlight" invisible="state != 'leased'"/>
+                        <button name="action_lost" type="object" string="Mark as Lost" class="oe_highlight" invisible="state != 'leased'"/>
+                        <field name="state" widget="statusbar" statusbar_visible="draft,leased,returned,overdue,lost"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_button_box" name="button_box">
+
+                        </div>
+                        <group>
+                            <group>
+                                <field name="student_id"/>
+                                <field name="book_id"/>
+                                <field name="borrow_date"/>
+                                <field name="due_date"/>
+                            </group>
+                            <group>                                  
+                                <field name="return_date"/>                              
+                                <field name="is_overdue"/>
+                                <field name="overdue_days" invisible="not is_overdue and not invoice_id"/>
+                                <field name="overdue_charge_id" invisible="not is_overdue and not invoice_id"/>
+                                <field name="overdue_payment_state" invisible="not overdue_charge_id and not invoice_id"/>
+                                <field name="invoice_id" invisible="state != 'lost'"/>
+                                <field name="invoice_payment_state" invisible="not invoice_id"/>
+                            </group>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+        
+        <!-- List View -->
+        <record id="umti_library_lending_list" model="ir.ui.view">
+            <field name="name">umti.library.lending.list</field>
+            <field name="model">umti.library.lending</field>
+            <field name="arch" type="xml">
+                <list string="Book Leases">
+                    <field name="student_id"/>
+                    <field name="book_id"/>
+                    <field name="borrow_date"/>
+                    <field name="due_date"/>
+                    <field name="return_date"/>
+                    <field name="is_overdue"/>
+                    <field name="overdue_days" invisible="not is_overdue"/>
+                    <field name="state" widget="badge"
+                        decoration-success="state == 'leased'"
+                        decoration-warning="state == 'returned'"
+                        decoration-danger="state == 'overdue'"
+                        decoration-muted="state == 'draft'"/>
+                </list>
+            </field>
+        </record>
+        
+        <!-- Kanban View -->
+        <record id="umti_library_lending_kanban" model="ir.ui.view">
+            <field name="name">umti.library.lending.kanban</field>
+            <field name="model">umti.library.lending</field>
+            <field name="arch" type="xml">
+                <kanban default_group_by="state">
+                    <field name="state"/>
+                    <templates>
+                        <t t-name="card">
+                            <main>
+                                <field name="student_id" class="fw-bold fs-5"/>
+                                <field name="book_id"/>
+                                <field name="borrow_date"/>
+                                <field name="due_date"/>
+                                <footer>
+                                    <field name="state" widget="badge"
+                                           decoration-success="state == 'leased'"
+                                           decoration-warning="state == 'returned'"
+                                           decoration-danger="state in ('overdue', 'lost')"
+                                           decoration-muted="state == 'draft'"/>
+                                </footer>
+                            </main>
+                        </t>
+                    </templates>
+                </kanban>
+            </field>
+        </record>
+
+        <!-- Search View -->
+        <record id="umti_library_lending_search" model="ir.ui.view">
+            <field name="name">umti.library.lending.search</field>
+            <field name="model">umti.library.lending</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="student_id"/>
+                    <field name="book_id"/>
+                    <filter name="filter_draft" string="Draft" domain="[('state', '=', 'draft')]"/>
+                    <filter name="filter_leased" string="Leased" domain="[('state', '=', 'leased')]"/>
+                    <filter name="filter_returned" string="Returned" domain="[('state', '=', 'returned')]"/>
+                    <filter name="filter_overdue" string="Overdue" domain="[('state', '=', 'overdue')]"/>
+                    <filter name="filter_lost" string="Lost" domain="[('state', '=', 'lost')]"/>
+                    <group expand="0" string="Group By">
+                        <filter name="group_state" string="Status" context="{'group_by': 'state'}"/>
+                        <filter name="group_student" string="Student" context="{'group_by': 'student_id'}"/>
+                        <filter name="group_book" string="Book" context="{'group_by': 'book_id'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <!-- Action -->
+        <record id="action_umti_library_lending" model="ir.actions.act_window">
+            <field name="name">Book Leases</field>
+            <field name="res_model">umti.library.lending</field>
+            <field name="view_mode">kanban,list,form</field>
+            <field name="search_view_id" ref="umti_library_lending_search"/>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Create your first umti library_lending!
+                </p>
+            </field>
+        </record>
+        
+    </data>
+</odoo>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="param_max_carry_over_units" model="ir.config_parameter">
+            <field name="key">umti_students.max_carry_over_units</field>
+            <field name="value">2</field>
+        </record>
+    </data>
+</odoo>
