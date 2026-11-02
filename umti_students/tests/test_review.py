@@ -76,9 +76,16 @@ class TestAdmissionReview(TransactionCase):
                 [('application_id', '=', application.id)]), 1)
 
     def test_accept_is_blocked_while_a_document_is_missing(self):
-        document = self.env['umti.course.required.documents'].create({
-            'name': 'KCSE Certificate', 'code': 'kcse',
-        })
+        document = self.env['umti.course.required.documents'].search([
+            ('code', '=', 'kcse'),
+            ('company_id', '=', self.env.company.id),
+        ], limit=1)
+        if not document:
+            document = self.env['umti.course.required.documents'].create({
+                'name': 'KCSE Certificate',
+                'code': 'kcse',
+                'waivable': False,
+            })
         self.course.document_ids = [(4, document.id)]
         application = self._application()
         review = self._review(application)

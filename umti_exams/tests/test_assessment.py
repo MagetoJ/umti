@@ -23,10 +23,19 @@ class TestAssessment(ExamsCommon):
         self.assertEqual(a.duration, 2.5)
 
     def test_schedule_requires_fields(self):
+        # Creating an assessment without a date to test validation failure
         a = self._assessment(date=False)
         with self.assertRaises(UserError):
             a.action_schedule()
-        a.write({'date': '2026-11-20'})
+            
+        # Ensure venue, start_time, and end_time are set along with date for schedule transition
+        a.write({
+            'date': '2026-11-20',
+            'start_time': 9.0,
+            'end_time': 11.0,
+            'venue_id': getattr(self, 'venue', self.env['umti.venue'].search([], limit=1)).id 
+                or self.env['umti.venue'].create({'name': 'Main Hall'}).id,
+        })
         a.action_schedule()
         self.assertEqual(a.state, 'scheduled')
 

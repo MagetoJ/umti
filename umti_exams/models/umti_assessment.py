@@ -9,7 +9,7 @@ MANAGER_GROUPS = ('umti_exams.group_umti_exams_manager', 'base.group_system')
 class UmtiAssessment(models.Model):
     _name = 'umti.assessment'
     _description = 'Course Assessment & Exam Schedule'
-    _inherit = ['mail.thread', 'mail.activity.mixin']  
+    _inherit = ['mail.thread', 'mail.activity.mixin']
     _order = 'date desc, id desc'
 
     name = fields.Char(string='Title', required=True, tracking=True)
@@ -141,6 +141,11 @@ class UmtiAssessment(models.Model):
         for rec in self:
             if rec.duration < 0:
                 raise ValidationError(_("Duration cannot be negative."))
+            if rec.start_time is not False and rec.end_time is not False:
+                if rec.start_time >= rec.end_time:
+                    raise ValidationError(_("Start time must be strictly before end time."))
+                if rec.end_time > 23.99:
+                    raise ValidationError(_("End time must be within 24 hours."))
 
     @api.constrains('max_marks', 'pass_marks', 'weight')
     def _check_marks(self):
@@ -152,11 +157,17 @@ class UmtiAssessment(models.Model):
             if not (0 <= rec.weight <= 100):
                 raise ValidationError(_("Weight percentage must be between 0 and 100."))
 
-    @api.constrains('unit_id', 'course_id')
-    def _check_unit_in_course(self):
+    @api.constrains('unit_id', 'course_id', 'semester_id', 'academic_year_id')
+    def _check_unit_and_semester_relations(self):
         for rec in self:
-            if rec.unit_id and rec.course_id and rec.unit_id not in rec.course_id.unit_ids:
-                raise ValidationError(_("The selected primary unit is not part of the selected course."))
+            if rec.unit_id and rec.course_id:
+                if hasattr(rec.unit_id, 'course_id') and rec.unit_id.course_id and rec.unit_id.course_id != rec.course_id:
+                    raise ValidationError(_("The unit must belong to the selected course."))
+                elif rec.unit_id not in rec.course_id.unit_ids:
+                    raise ValidationError(_("The selected primary unit is not part of the selected course."))
+            if rec.semester_id and rec.academic_year_id:
+                if hasattr(rec.semester_id, 'academic_year_id') and rec.semester_id.academic_year_id != rec.academic_year_id:
+                    raise ValidationError(_("The semester must belong to the selected academic year."))
 
     @api.depends('assessment_type', 'state', 'semester_id', 'course_id', 'unit_id')
     def _compute_effective_weight(self):
