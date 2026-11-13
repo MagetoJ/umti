@@ -56,6 +56,13 @@ class TestAdmissionReview(TransactionCase):
         return self.env['school.admission.review'].search(
             [('application_id', '=', application.id)], limit=1)
 
+    def test_submit_creates_the_review_for_the_menu(self):
+        application = self._application()
+        review = self.env['school.admission.review'].search([
+            ('application_id', '=', application.id)])
+        self.assertEqual(len(review), 1)
+        self.assertEqual(review.state, 'received')
+
     def test_review_status_opens_the_review_form(self):
         application = self._application()
         action = application.action_view_review_status()

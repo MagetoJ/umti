@@ -116,21 +116,43 @@ class SchoolStudentInherit(models.Model):
             Enrollment.create(vals_list)
 
     def _units_for_semester(self, semester):
-        """Units of the student's course matching the given semester.
+        """Units placed in the given study period of the student's course.
 
-        unit_level/unit_semester are Selections on the course unit, so the
-        semester's own year and sequence are mapped onto their keys (the
-        student's *current* level is only a fallback). Falls back to the
-        matched level, or every course unit, when nothing matches exactly.
+        The course's unit plan (``umti.course.unit.line``) is authoritative:
+        it lets a shared unit sit in different years or periods for different
+        courses. Courses that predate the unit plan fall back to the legacy
+        ``unit_level`` / ``unit_semester`` fields on the unit.
         """
         self.ensure_one()
         Unit = self.env['umti.course.units']
-        units = self.course_id.unit_ids.filtered('active')
+        course = self.course_id
+        year_num = semester.course_year or 1
+
+        pattern = course._get_term_pattern() if course else False
+        main_lines = pattern._main_lines() if pattern else False
+        period_sequence = (semester.academic_term_id.sequence
+                           if semester.academic_term_id else False)
+        if not period_sequence and main_lines:
+            index = (max(semester.sequence or 1, 1) - 1) % len(main_lines)
+            period_sequence = main_lines[index].sequence
+
+        lines = course.unit_line_ids.filtered(
+            lambda line: line.active and line.unit_id.active
+            and line.unit_id in course.unit_ids)
+        if lines:
+            same_year = lines.filtered(
+                lambda line: line.course_year == year_num) or lines
+            if period_sequence:
+                matched = same_year.filtered(
+                    lambda line: line.period_sequence == period_sequence)
+                same_year = matched or same_year
+            return same_year.mapped('unit_id')
+
+        units = course.unit_ids.filtered('active')
         # 'other' is a catch-all, not a year: keep the year keys only.
         level_keys = [key for key, _label
                       in Unit._fields['unit_level'].selection
                       if key != 'other']
-        year_num = semester.course_year or 0
         if 0 < year_num <= len(level_keys):
             level_key = level_keys[year_num - 1]
         elif self.course_level in level_keys:
@@ -155,9 +177,11 @@ class SchoolStudentInherit(models.Model):
         'umti.course.units', string='Upcoming Units',
         compute='_compute_unit_progression')
 
-    @api.depends('course_id', 'course_id.unit_ids', 'course_level',
+    @api.depends('course_id', 'course_id.unit_ids',
+                 'course_id.unit_line_ids', 'course_level',
                  'semester_ids.state', 'semester_ids.sequence',
-                 'semester_ids.course_year')
+                 'semester_ids.course_year',
+                 'semester_ids.academic_term_id')
     def _compute_unit_progression(self):
         Unit = self.env['umti.course.units']
         for student in self:
@@ -196,46 +220,6 @@ class SchoolStudentInherit(models.Model):
                 ])
                 trainers = allocations.mapped('employee_id.user_id')
             student.current_trainer_ids = trainers
-
-    # ------------------------------------------------------------------
-    # Admission hooks: units are enrolled automatically
-    # ------------------------------------------------------------------
-    @api.model_create_multi
-    def create(self, vals_list):
-        students = super().create(vals_list)
-        students.filtered('course_id')._auto_enroll_on_admission()
-        return students
-
-    def write(self, vals):
-        before = {}
-        if 'course_id' in vals:
-            before = {s.id: s.course_id.id for s in self}
-        res = super().write(vals)
-        if 'course_id' in vals:
-            changed = self.filtered(
-                lambda s: s.course_id and s.course_id.id != before.get(s.id))
-            changed._auto_enroll_on_admission()
-        return res
-
-    def _auto_enroll_on_admission(self):
-        """Enroll students into their course units for the current term.
-
-        Leaves a chatter note when it cannot (no usable term, no units) so
-        the problem is visible instead of silently producing empty rosters.
-        """
-        term = self._get_current_term()
-        for student in self:
-            if not term:
-                student.message_post(body=_(
-                    "Units were not auto-enrolled: no open semester "
-                    "was found. Create or start a term, then use "
-                    "'Enroll Course Units' on this student."))
-                continue
-            created = student.action_auto_enroll_units(term=term)
-            if not created and student.course_id and not student.course_id.unit_ids:
-                student.message_post(body=_(
-                    "Units were not auto-enrolled: course %s has no units "
-                    "configured.", student.course_id.name))
 
     def action_enroll_course_units(self):
         """Button wrapper: enroll now and tell the user what happened."""
@@ -280,7 +264,7 @@ class SchoolStudentInherit(models.Model):
         for student in self:
             if not student.course_id:
                 continue
-            target_term = term or self._get_current_term()
+            target_term = term or student._get_current_term()
             if not target_term:
                 continue
             has_history = Enrollment.sudo().search_count(
@@ -313,26 +297,37 @@ class SchoolStudentInherit(models.Model):
         return created
 
     def _get_current_term(self):
-        """Best term to enroll into: running today, else open today, else next."""
+        """Best term for this student's course: running, open, then next.
+
+        Terms are course-owned now, so the fallback must never pick another
+        course's running term. Shared legacy terms (no course) still match.
+        """
         Term = self.env['umti.academic.term']
         today = fields.Date.context_today(self)
+        course_ids = self.mapped('course_id').ids
+        course_domain = (
+            [('course_id', 'in', course_ids + [False])] if course_ids else [])
         for domain in (
             [('term_start_date', '<=', today), ('term_end_date', '>=', today),
              ('status', '=', 'in_progress')],
             [('term_start_date', '<=', today), ('term_end_date', '>=', today),
              ('status', '!=', 'ended')],
         ):
-            term = Term.search(domain, order='term_start_date desc', limit=1)
+            term = Term.search(
+                course_domain + domain,
+                order='term_start_date desc', limit=1)
             if term:
                 return term
-        upcoming = Term.search([
-            ('term_start_date', '>', today), ('status', '!=', 'ended'),
-        ], order='term_start_date asc', limit=1)
+        upcoming = Term.search(
+            course_domain + [
+                ('term_start_date', '>', today), ('status', '!=', 'ended'),
+            ], order='term_start_date asc', limit=1)
         if upcoming:
             return upcoming
         # Dates may not have been kept up to date: use the latest open term.
         return Term.search(
-            [('status', '!=', 'ended')], order='term_start_date desc', limit=1)
+            course_domain + [('status', '!=', 'ended')],
+            order='term_start_date desc', limit=1)
 
     def action_view_enrollments(self):
         self.ensure_one()

@@ -1,10 +1,10 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_trainer_allocation_trainer,umti.trainer.allocation trainer,model_umti_trainer_allocation,group_umti_trainers_user,1,1,1,0
+access_trainer_allocation_hod,umti.trainer.allocation hod,model_umti_trainer_allocation,group_umti_trainers_manager,1,1,1,1
+access_trainer_allocation_manager,umti.trainer.allocation manager,model_umti_trainer_allocation,group_umti_trainers_admin,1,1,1,1
 access_umti_unit_trainer_trainer,umti.unit.trainer trainer,model_umti_unit_trainer,group_umti_trainers_user,1,0,0,0
 access_umti_unit_trainer_hod,umti.unit.trainer hod,model_umti_unit_trainer,group_umti_trainers_manager,1,1,1,1
 access_umti_unit_trainer_manager,umti.unit.trainer manager,model_umti_unit_trainer,group_umti_trainers_admin,1,1,1,1
-access_trainer_allocation_hod,umti.trainer.allocation hod,model_umti_trainer_allocation,group_umti_trainers_manager,1,1,1,1
-access_trainer_allocation_manager,umti.trainer.allocation manager,model_umti_trainer_allocation,group_umti_trainers_admin,1,1,1,1
 access_school_student_trainer,school.student trainer,umti_students.model_school_student,group_umti_trainers_user,1,0,0,0
 access_student_unit_enrollment_trainer,umti.student.unit.enrollment trainer,model_umti_student_unit_enrollment,group_umti_trainers_user,1,0,0,0
 access_student_unit_enrollment_hod,umti.student.unit.enrollment hod,model_umti_student_unit_enrollment,group_umti_trainers_manager,1,1,1,0
@@ -15,9 +15,14 @@ access_scheme_of_work_manager,umti.scheme.of.work manager,model_umti_scheme_of_w
 access_scheme_of_work_line_trainer,umti.scheme.of.work.line trainer,model_umti_scheme_of_work_line,group_umti_trainers_user,1,1,1,1
 access_scheme_of_work_line_hod,umti.scheme.of.work.line hod,model_umti_scheme_of_work_line,group_umti_trainers_manager,1,1,1,1
 access_scheme_of_work_line_manager,umti.scheme.of.work.line manager,model_umti_scheme_of_work_line,group_umti_trainers_admin,1,1,1,1
-access_work_plan_trainer,umti.work.plan trainer,model_umti_work_plan,group_umti_trainers_user,1,1,1,0
+access_work_plan_trainer,umti.work.plan trainer,model_umti_work_plan,group_umti_trainers_user,1,0,0,0
+access_work_plan_work_plan_manager,umti.work.plan work plan manager,model_umti_work_plan,group_umti_work_plan_manager,1,1,1,1
 access_work_plan_hod,umti.work.plan hod,model_umti_work_plan,group_umti_trainers_manager,1,1,1,1
 access_work_plan_manager,umti.work.plan manager,model_umti_work_plan,group_umti_trainers_admin,1,1,1,1
+access_work_plan_line_trainer,umti.work.plan.line trainer,model_umti_work_plan_line,group_umti_trainers_user,1,0,0,0
+access_work_plan_line_work_plan_manager,umti.work.plan.line work plan manager,model_umti_work_plan_line,group_umti_work_plan_manager,1,1,1,1
+access_work_plan_line_hod,umti.work.plan.line hod,model_umti_work_plan_line,group_umti_trainers_manager,1,1,1,1
+access_work_plan_line_manager,umti.work.plan.line manager,model_umti_work_plan_line,group_umti_trainers_admin,1,1,1,1
 access_attendance_sheet_trainer,umti.attendance.sheet trainer,model_umti_attendance_sheet,group_umti_trainers_user,1,1,1,0
 access_attendance_sheet_hod,umti.attendance.sheet hod,model_umti_attendance_sheet,group_umti_trainers_manager,1,1,1,1
 access_attendance_sheet_manager,umti.attendance.sheet manager,model_umti_attendance_sheet,group_umti_trainers_admin,1,1,1,1
@@ -33,3 +38,6 @@ access_attendance_status_manager,umti.attendance.status manager,model_umti_atten
 access_attendance_summary_trainer,umti.attendance.summary trainer,model_umti_attendance_summary,group_umti_trainers_user,1,0,0,0
 access_attendance_summary_hod,umti.attendance.summary hod,model_umti_attendance_summary,group_umti_trainers_manager,1,0,0,0
 access_attendance_summary_manager,umti.attendance.summary manager,model_umti_attendance_summary,group_umti_trainers_admin,1,0,0,0
+access_umti_class_group_user,umti.class.group.user,model_umti_class_group,group_umti_trainers_user,1,0,0,0
+access_umti_class_group_manager,umti.class.group.manager,model_umti_class_group,group_umti_trainers_manager,1,1,1,1
+access_umti_class_group_admin,umti.class.group.admin,model_umti_class_group,group_umti_trainers_admin,1,1,1,1

@@ -37,27 +37,53 @@ class SchoolAdmissionReview(models.Model):
     # The admission invoice is driven from here now: accept creates it,
     # the review collects the money.
     adm_fee_invoice_id = fields.Many2one(
-        related='application_id.adm_fee_invoice_id', string='Admission Invoice',
-        readonly=True)
+        related='application_id.adm_fee_invoice_id',
+        string='Paid Once Invoice', readonly=True)
+    refundable_invoice_id = fields.Many2one(
+        related='application_id.refundable_invoice_id',
+        string='Refundable Invoice', readonly=True)
+    normal_invoice_id = fields.Many2one(
+        related='application_id.normal_invoice_id',
+        string='Normal Invoice', readonly=True)
     invoice_count = fields.Integer(related='application_id.invoice_count')
+    currency_id = fields.Many2one(
+        'res.currency', related='application_id.currency_id', readonly=True)
+    admission_fee = fields.Monetary(
+        related='application_id.admission_fee', currency_field='currency_id')
+    admission_fee_waived = fields.Boolean(
+        related='application_id.admission_fee_waived')
+    admission_fee_waiver_reason = fields.Text(
+        related='application_id.admission_fee_waiver_reason')
+    apply_financial_support = fields.Boolean(
+        related='application_id.apply_financial_support')
+    financial_support_description = fields.Text(
+        related='application_id.financial_support_description')
+    financial_support_attachment_ids = fields.Many2many(
+        'ir.attachment', compute='_compute_financial_support_attachments')
     fee_paid = fields.Boolean(related='application_id.fee_paid')
+    admission_fee_paid = fields.Boolean(
+        related='application_id.admission_fee_paid')
     fee_status = fields.Selection(
         related='application_id.fee_status', string='Fee Status', readonly=True)
     payment_ids = fields.Many2many(
         'account.payment', string='Payments', compute='_compute_payment_ids')
     payment_count = fields.Integer(compute='_compute_payment_ids')
 
-    @api.depends('adm_fee_invoice_id', 'adm_fee_invoice_id.payment_state')
+    @api.depends('application_id.adm_fee_invoice_id',
+                 'application_id.refundable_invoice_id',
+                 'application_id.normal_invoice_id',
+                 'application_id.adm_fee_invoice_id.payment_state',
+                 'application_id.refundable_invoice_id.payment_state',
+                 'application_id.normal_invoice_id.payment_state')
     def _compute_payment_ids(self):
-        """Payments already reconciled against the admission invoice."""
+        """Payments reconciled against any of the intake invoices."""
         for record in self:
-            invoice = record.adm_fee_invoice_id
             payments = self.env['account.payment']
-            if invoice:
+            for invoice in record.application_id.intake_invoice_ids:
                 if 'matched_payment_ids' in invoice._fields:
-                    payments = invoice.matched_payment_ids
+                    payments |= invoice.matched_payment_ids
                 else:
-                    payments = invoice.line_ids.matched_credit_ids.mapped(
+                    payments |= invoice.line_ids.matched_credit_ids.mapped(
                         'credit_move_id.payment_id')
             record.payment_ids = payments
             record.payment_count = len(payments)
@@ -94,6 +120,12 @@ class SchoolAdmissionReview(models.Model):
     reviewer_notes = fields.Text(string='Reviewer Notes')
     rejection_reason = fields.Text(string='Reason for Rejection')
 
+    @api.depends('application_id.financial_support_attachment_ids')
+    def _compute_financial_support_attachments(self):
+        for review in self:
+            review.financial_support_attachment_ids = (
+                review.application_id.financial_support_attachment_ids)
+
     def action_start_review(self):
         self.application_id.action_start_review()
         self.write({'state': 'under_review'})
@@ -120,18 +152,32 @@ class SchoolAdmissionReview(models.Model):
             'review_end_date': fields.Date.context_today(self),
         })
     
-    def action_view_admission_invoice(self):
-        """Open the invoice raised when the application was accepted."""
+    def _open_invoice(self, invoice, title):
         self.ensure_one()
         return {
             'type': 'ir.actions.act_window',
-            'name': _('Admission Invoice'),
+            'name': title,
             'res_model': 'account.move',
-            'res_id': self.adm_fee_invoice_id.id,
+            'res_id': invoice.id,
             'view_mode': 'form',
             'views': [[False, 'form']],
             'target': 'current',
         }
+
+    def action_view_admission_invoice(self):
+        self.ensure_one()
+        return self._open_invoice(
+            self.adm_fee_invoice_id, _('Paid Once Invoice'))
+
+    def action_view_refundable_invoice(self):
+        self.ensure_one()
+        return self._open_invoice(
+            self.refundable_invoice_id, _('Refundable Invoice'))
+
+    def action_view_normal_invoice(self):
+        self.ensure_one()
+        return self._open_invoice(
+            self.normal_invoice_id, _('Normal Invoice'))
 
     def action_view_payments(self):
         """Open the payment(s) collected for the admission invoice."""
@@ -139,7 +185,7 @@ class SchoolAdmissionReview(models.Model):
         payments = self.payment_ids
         action = {
             'type': 'ir.actions.act_window',
-            'name': _('Admission Fee Payments'),
+            'name': _('Intake Invoice Payments'),
             'res_model': 'account.payment',
             'view_mode': 'list,form',
             'views': [[False, 'list'], [False, 'form']],
@@ -154,11 +200,23 @@ class SchoolAdmissionReview(models.Model):
             })
         return action
 
+    def action_open_fee_waiver_wizard(self):
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Waive Admission Fee'),
+            'res_model': 'school.admission.fee.waiver.wizard',
+            'view_mode': 'form',
+            'views': [[False, 'form']],
+            'target': 'new',
+            'context': {'default_review_id': self.id},
+        }
+
     def action_open_payment_wizard(self):
         """Ask for the journal to book the admission fee payment in."""
         self.ensure_one()
         if not self.adm_fee_invoice_id:
-            raise UserError(_('There is no admission invoice to pay yet.'))
+            raise UserError(_('There is no admission fee invoice to pay yet.'))
         return {
             'type': 'ir.actions.act_window',
             'name': _('Register Payment'),
@@ -180,7 +238,9 @@ class SchoolAdmissionReview(models.Model):
         if self.state != 'accepted':
             raise UserError(_('Accept the application before enrolling it.'))
         application = self.application_id
-        if application.admission_fee and not application.fee_paid:
+        if (application.admission_fee
+                and not application.admission_fee_paid
+                and not application.admission_fee_waived):
             raise UserError(_('The admission fee has not been paid.'))
         student = application.student_id or self.env['school.student'].search(
             [('application_id', '=', application.id)], limit=1)

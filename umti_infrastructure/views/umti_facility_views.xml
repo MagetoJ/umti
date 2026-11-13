@@ -17,7 +17,7 @@
                             <field name="code"/>
                             <field name="building_name"/>
                             <field name="floor_level"/>
-                            <field name="department_id"/>
+                            
                             <field name="company_id" groups="base.group_multi_company"/>
                         </group>
                         <group string="Details">
@@ -70,7 +70,7 @@
                 <field name="name"/>
                 <field name="building_name"/>
                 <field name="floor_level" optional="show"/>
-                <field name="department_id" optional="show"/>
+                
                 <field name="facility_type"/>
                 <field name="capacity"/>
                 <field name="status" widget="badge"
@@ -90,7 +90,7 @@
             <search>
                 <field name="name" filter_domain="['|', ('name', 'ilike', self), ('code', 'ilike', self)]" string="Room"/>
                 <field name="building_name"/>
-                <field name="department_id"/>
+                
                 <filter name="f_available" string="Available" domain="[('status', '=', 'available')]"/>
                 <filter name="f_maintenance" string="Maintenance" domain="[('status', '=', 'maintenance')]"/>
                 <separator/>

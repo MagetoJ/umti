@@ -4,7 +4,7 @@ from odoo.exceptions import UserError, ValidationError
 
 class UmtiAttendanceSheet(models.Model):
     _name = 'umti.attendance.sheet'
-    _description = 'Attendance Sheet'
+    _description = 'UMTI Attendance Record'
     _inherit = ['mail.thread', 'mail.activity.mixin']
     _order = 'date desc'
 
@@ -20,8 +20,13 @@ class UmtiAttendanceSheet(models.Model):
     department_id = fields.Many2one(
         'umti.department', string='Department',
         required=True, tracking=True)
+    group_id = fields.Many2one(
+        'umti.class.group', string='Class Group', tracking=True,
+        domain="[('active', '=', True)]",
+        help="Shared teaching group. When set, the roster comes from every "
+             "cohort term in the group.")
     course_id = fields.Many2one(
-        'umti.course', string='Course', required=True, tracking=True,
+        'umti.course', string='Course', tracking=True,
         domain="[('department_id', '=', department_id)]")
     unit_id = fields.Many2one(
         'umti.course.units', string='Unit', required=True, tracking=True,
@@ -29,8 +34,7 @@ class UmtiAttendanceSheet(models.Model):
     allowed_unit_ids = fields.Many2many(
         'umti.course.units', compute='_compute_allowed_unit_ids')
     academic_term_id = fields.Many2one(
-        'umti.academic.term', string='Semester',
-        required=True, tracking=True,
+        'umti.academic.term', string='Semester', tracking=True,
         domain="[('status', '=', 'in_progress')]")
     line_ids = fields.One2many(
         'umti.attendance.line', 'sheet_id', string='Attendance Lines')
@@ -51,7 +55,7 @@ class UmtiAttendanceSheet(models.Model):
     # Fields that may not change once the sheet is submitted.
     _SUBMITTED_LOCKED_FIELDS = {
         'name', 'date', 'trainer_id', 'department_id', 'course_id',
-        'unit_id', 'academic_term_id', 'line_ids',
+        'unit_id', 'academic_term_id', 'group_id', 'line_ids',
     }
 
     def write(self, vals):
@@ -62,13 +66,15 @@ class UmtiAttendanceSheet(models.Model):
                     "Reset it to draft first."))
         return super().write(vals)
 
-    @api.constrains('trainer_id', 'unit_id', 'academic_term_id', 'date', 'name')
+    @api.constrains('trainer_id', 'unit_id', 'academic_term_id', 'group_id',
+                    'date', 'name')
     def _check_duplicate_sheet(self):
         for rec in self:
             domain = [
                 ('id', '!=', rec.id), ('trainer_id', '=', rec.trainer_id.id),
                 ('unit_id', '=', rec.unit_id.id),
                 ('academic_term_id', '=', rec.academic_term_id.id),
+                ('group_id', '=', rec.group_id.id),
                 ('date', '=', rec.date), ('name', '=', rec.name),
             ]
             if self.search_count(domain):
@@ -78,11 +84,39 @@ class UmtiAttendanceSheet(models.Model):
                     "a second session on the same day.",
                     name=rec.name, unit=rec.unit_id.display_name, date=rec.date))
 
-    @api.depends('course_id', 'course_id.unit_ids')
+    @api.constrains('group_id', 'course_id', 'academic_term_id')
+    def _check_session_context(self):
+        for rec in self:
+            if rec.group_id and not rec.group_id.term_ids:
+                raise ValidationError(_(
+                    "Class group %(group)s has no cohort terms yet.",
+                    group=rec.group_id.name))
+            if not rec.group_id and not (rec.course_id and rec.academic_term_id):
+                raise ValidationError(_(
+                    "An attendance sheet needs a course and a semester, or a "
+                    "class group."))
+            if (not rec.group_id and rec.academic_term_id.course_id
+                    and rec.academic_term_id.course_id != rec.course_id):
+                raise ValidationError(_(
+                    "Term %(term)s belongs to %(term_course)s, not to "
+                    "%(course)s.",
+                    term=rec.academic_term_id.name,
+                    term_course=rec.academic_term_id.course_id.name,
+                    course=rec.course_id.name))
+            if (rec.group_id and rec.unit_id
+                    and rec.unit_id != rec.group_id.unit_id):
+                raise ValidationError(_(
+                    "The sheet unit must be the class group's unit."))
+
+    @api.depends('course_id', 'course_id.unit_ids', 'group_id',
+                 'group_id.unit_id')
     def _compute_allowed_unit_ids(self):
         for rec in self:
-            rec.allowed_unit_ids = (
-                rec.course_id.unit_ids if rec.course_id else False)
+            if rec.group_id:
+                rec.allowed_unit_ids = rec.group_id.unit_id
+            else:
+                rec.allowed_unit_ids = (
+                    rec.course_id.unit_ids if rec.course_id else False)
 
     @api.onchange('course_id')
     def _onchange_course_id(self):
@@ -92,16 +126,27 @@ class UmtiAttendanceSheet(models.Model):
         else:
             self.unit_id = False
 
-    @api.onchange('unit_id', 'academic_term_id')
+    @api.onchange('group_id')
+    def _onchange_group_id(self):
+        if self.group_id:
+            self.unit_id = self.group_id.unit_id
+            self.department_id = self.group_id.unit_id.department_id
+            self.course_id = False
+            self.academic_term_id = False
+
+    @api.onchange('unit_id', 'academic_term_id', 'group_id')
     def _onchange_fetch_enrolled_students(self):
         self._populate_roster()
 
     def _get_roster_enrollments(self):
         """Active enrollments that make up this sheet's roster.
 
-        Extension point: other modules can widen how the roster is found.
+        For a shared class group the roster is every enrollment of the
+        group's unit in any of the group's cohort terms.
         """
         self.ensure_one()
+        if self.group_id:
+            return self.group_id._get_enrollments()
         if not (self.unit_id and self.academic_term_id):
             return self.env['umti.student.unit.enrollment']
         return self.env['umti.student.unit.enrollment'].search([
@@ -111,11 +156,17 @@ class UmtiAttendanceSheet(models.Model):
         ])
 
     def _populate_roster(self):
-        if not (self.unit_id and self.academic_term_id):
+        if self.group_id:
+            if not (self.unit_id and self.group_id.term_ids):
+                return
+        elif not (self.unit_id and self.academic_term_id):
             return
         lines = [(5, 0, 0)]
         for enrollment in self._get_roster_enrollments():
-            lines.append((0, 0, {'student_id': enrollment.student_id.id}))
+            lines.append((0, 0, {
+                'student_id': enrollment.student_id.id,
+                'enrollment_id': enrollment.id,
+            }))
         self.line_ids = lines
 
     def action_populate_roster(self):
@@ -123,20 +174,25 @@ class UmtiAttendanceSheet(models.Model):
             if rec.state != 'draft':
                 raise UserError(_(
                     "Roster can only be refreshed while in Draft state."))
-            if not (rec.unit_id and rec.academic_term_id):
+            if rec.group_id:
+                if not (rec.unit_id and rec.group_id.term_ids):
+                    raise UserError(_(
+                        "Please select a class group with cohort terms."))
+            elif not (rec.unit_id and rec.academic_term_id):
                 raise UserError(_(
                     "Please select a Unit and Semester first."))
             enrollments = rec._get_roster_enrollments()
             if not enrollments:
                 raise UserError(_(
-                    "No enrolled students found for %(unit)s in %(term)s. "
-                    "Check that students are enrolled in this unit for the "
-                    "term (Trainer Workspace > Unit Enrollments).",
-                    unit=rec.unit_id.name, term=rec.academic_term_id.name))
+                    "No enrolled students found for %(unit)s. Check that "
+                    "students are enrolled in this unit for the term or "
+                    "group (Trainer Workspace > Unit Enrollments).",
+                    unit=rec.unit_id.name))
             rec.line_ids.unlink()
             self.env['umti.attendance.line'].create([{
                 'sheet_id': rec.id,
                 'student_id': e.student_id.id,
+                'enrollment_id': e.id,
             } for e in enrollments])
 
     def action_submit_attendance(self):
@@ -161,6 +217,8 @@ class UmtiAttendanceSheet(models.Model):
 
     def action_view_students(self):
         self.ensure_one()
+        if self.group_id:
+            return self.group_id.action_view_enrollments()
         return {
             'type': 'ir.actions.act_window',
             'name': _('Enrolled Students'),
@@ -184,6 +242,16 @@ class UmtiAttendanceLine(models.Model):
         required=True, ondelete='cascade', index=True)
     student_id = fields.Many2one(
         'school.student', string='Student', required=True)
+    enrollment_id = fields.Many2one(
+        'umti.student.unit.enrollment', string='Enrollment',
+        ondelete='set null', index=True)
+    student_term_id = fields.Many2one(
+        'umti.academic.term', string='Student Term',
+        related='enrollment_id.academic_term_id', store=True,
+        help="The student's own term, which may differ from the sheet's "
+             "host term in a shared class group.")
+    group_id = fields.Many2one(
+        related='sheet_id.group_id', string='Class Group', store=True)
     date = fields.Date(
         related='sheet_id.date', string='Date', store=True)
     course_id = fields.Many2one(

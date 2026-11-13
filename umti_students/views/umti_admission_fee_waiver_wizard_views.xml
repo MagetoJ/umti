@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="school_admission_fee_waiver_wizard_form" model="ir.ui.view">
+        <field name="name">school.admission.fee.waiver.wizard.form</field>
+        <field name="model">school.admission.fee.waiver.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Waive Admission Fee">
+                <group>
+                    <group>
+                        <field name="review_id" invisible="1"/>
+                        <field name="application_id" invisible="1"/>
+                        <field name="applicant_name"/>
+                        <field name="admission_fee"/>
+                        <field name="currency_id" invisible="1"/>
+                        <field name="apply_financial_support" invisible="1"/>
+                    </group>
+                </group>
+                <group string="Requested Support"
+                       invisible="not apply_financial_support">
+                    <field name="financial_support_description" readonly="1"/>
+                    <field name="financial_support_attachment_ids"
+                           widget="many2many_binary" nolabel="1"
+                           readonly="1"/>
+                </group>
+                <group string="Waiver">
+                    <field name="reason"
+                           placeholder="Why is this applicant exempt from the admission fee?"/>
+                </group>
+                <footer>
+                    <button name="action_confirm" type="object"
+                            string="Waive Fee" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary"
+                            special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

@@ -45,6 +45,12 @@
                   action="action_umti_course_level"
                   sequence="3"/>
 
+    <menuitem id="menu_umti_term_pattern"
+                  name="Term Patterns"
+                  parent="menu_umti_config"
+                  action="action_umti_term_pattern"
+                  sequence="4"/>
+
     <menuitem id="menu_umti_academic_year"
                   name="Academic Years"
                   parent="menu_umti_config"
@@ -62,4 +68,10 @@
                   parent="menu_umti_config"
                   action="action_umti_fee_structure"
                   sequence="7"/>
+
+    <menuitem id="menu_umti_votehead"
+                  name="Voteheads"
+                  parent="menu_umti_config"
+                  action="action_umti_votehead"
+                  sequence="8"/>
 </odoo>

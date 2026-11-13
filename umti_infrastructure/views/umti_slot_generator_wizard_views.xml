@@ -4,45 +4,15 @@
         <field name="name">umti.slot.generator.wizard.form</field>
         <field name="model">umti.slot.generator.wizard</field>
         <field name="arch" type="xml">
-            <form string="Bulk Time Slot Generator">
+            <form string="Generate Time Slots">
                 <group>
-                    <field name="slot_type" widget="radio"/>
+                    <field name="template_id" options="{'no_create': True}"/>
                 </group>
-
-                <notebook>
-                    <page string="Working Days">
-                        <group col="4">
-                            <field name="day_mon"/>
-                            <field name="day_tue"/>
-                            <field name="day_wed"/>
-                            <field name="day_thu"/>
-                            <field name="day_fri"/>
-                            <field name="day_sat"/>
-                            <field name="day_sun"/>
-                        </group>
-                    </page>
-
-                    <page string="Regular Class Slots" invisible="slot_type == 'exam'">
-                        <field name="regular_schedule_ids">
-                            <list editable="bottom">
-                                <field name="name"/>
-                                <field name="start_time" widget="float_time"/>
-                                <field name="end_time" widget="float_time"/>
-                            </list>
-                        </field>
-                    </page>
-
-                    <page string="Exam Slots" invisible="slot_type == 'regular'">
-                        <field name="exam_schedule_ids">
-                            <list editable="bottom">
-                                <field name="name"/>
-                                <field name="start_time" widget="float_time"/>
-                                <field name="end_time" widget="float_time"/>
-                            </list>
-                        </field>
-                    </page>
-                </notebook>
-
+                <p class="text-muted">
+                    Times and working days are defined on the template
+                    (Configuration &gt; Slot Templates). Existing slots are
+                    reused, never duplicated.
+                </p>
                 <footer>
                     <button name="action_generate_slots" string="Generate Time Slots" type="object" class="btn-primary"/>
                     <button string="Cancel" class="btn-secondary" special="cancel"/>

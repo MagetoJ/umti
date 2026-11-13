@@ -11,7 +11,7 @@
         <field name="implied_ids" eval="[(4, ref('umti_students.group_umti_students_user'))]"/>
     </record>
 
-    <!-- Head of Department: sets the assessment plan for their own department.
+    <!-- Head of Department.
          Sits between User and Manager so the groups stay a linear hierarchy. -->
     <record id="group_umti_exams_hod" model="res.groups">
         <field name="name">Head of Department</field>

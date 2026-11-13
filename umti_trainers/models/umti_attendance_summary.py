@@ -9,7 +9,7 @@ class UmtiAttendanceSummary(models.Model):
     the percentage.
     """
     _name = 'umti.attendance.summary'
-    _description = 'Attendance Summary'
+    _description = 'UMTI Attendance Summary'
     _auto = False
     _order = 'student_id, academic_term_id, unit_id'
 
@@ -63,7 +63,8 @@ class UmtiAttendanceSummary(models.Model):
                            s.course_id,
                            s.department_id,
                            s.unit_id,
-                           s.academic_term_id,
+                           COALESCE(l.student_term_id, s.academic_term_id)
+                               AS academic_term_id,
                            s.company_id,
                            COUNT(l.id) AS session_count,
                            SUM(CASE WHEN st.is_present THEN 1 ELSE 0 END) AS present_count,
@@ -76,6 +77,8 @@ class UmtiAttendanceSummary(models.Model):
                       JOIN umti_attendance_sheet s ON s.id = l.sheet_id AND s.state = 'done'
                       JOIN umti_attendance_status st ON st.id = l.status_id
                   GROUP BY l.student_id, s.course_id, s.department_id,
-                           s.unit_id, s.academic_term_id, s.company_id
+                           s.unit_id,
+                           COALESCE(l.student_term_id, s.academic_term_id),
+                           s.company_id
                   ) agg
             )""" % self._table)

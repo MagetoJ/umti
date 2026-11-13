@@ -17,9 +17,11 @@ class SchoolAdmissionPaymentWizard(models.TransientModel):
     review_id = fields.Many2one(
         'school.admission.review', string='Review', required=True,
         ondelete='cascade')
+    available_invoice_ids = fields.Many2many(
+        'account.move', compute='_compute_available_invoices')
     invoice_id = fields.Many2one(
-        related='review_id.adm_fee_invoice_id', string='Invoice',
-        readonly=True)
+        'account.move', string='Invoice', required=True,
+        domain="[('id', 'in', available_invoice_ids)]")
     partner_id = fields.Many2one(related='invoice_id.partner_id', readonly=True)
     company_id = fields.Many2one(related='invoice_id.company_id', readonly=True)
     currency_id = fields.Many2one(related='invoice_id.currency_id')
@@ -32,6 +34,17 @@ class SchoolAdmissionPaymentWizard(models.TransientModel):
         help='Journal the payment is booked in.')
     payment_date = fields.Date(
         required=True, default=fields.Date.context_today)
+
+    @api.depends('review_id')
+    def _compute_available_invoices(self):
+        for wizard in self:
+            wizard.available_invoice_ids = (
+                wizard.review_id.application_id.intake_invoice_ids)
+
+    @api.onchange('invoice_id')
+    def _onchange_invoice_id(self):
+        if self.invoice_id:
+            self.amount = self.invoice_id.amount_residual
 
     @api.model
     def _default_journal(self):
@@ -47,22 +60,41 @@ class SchoolAdmissionPaymentWizard(models.TransientModel):
             'default_review_id')
         if review_id:
             review = self.env['school.admission.review'].browse(review_id)
+            invoices = review.application_id.intake_invoice_ids
+            invoice = self.env['account.move']
+            context_invoice = self.env.context.get('default_invoice_id')
+            if context_invoice:
+                invoice = invoices.filtered(
+                    lambda move: move.id == context_invoice)[:1]
+            if not invoice:
+                invoice = invoices.filtered(
+                    lambda move: move.amount_residual > 0
+                    and any(votehead.code == 'ADMISSION'
+                            for votehead in
+                            move.invoice_line_ids.umti_votehead_id))[:1]
+            if not invoice:
+                invoice = invoices.filtered(
+                    lambda move: move.amount_residual > 0)[:1]
+            if not invoice:
+                invoice = review.adm_fee_invoice_id or invoices[:1]
             res.setdefault('review_id', review.id)
-            res.setdefault('amount', review.adm_fee_invoice_id.amount_residual)
+            if invoice:
+                res.setdefault('invoice_id', invoice.id)
+                res.setdefault('amount', invoice.amount_residual)
             res.setdefault('journal_id', self._default_journal().id)
         return res
 
     def action_create_payment(self):
-        """Create the payment and reconcile it with the admission invoice."""
+        """Create the payment and reconcile it with the intake invoice."""
         self.ensure_one()
         invoice = self.invoice_id
         if not invoice:
-            raise UserError(_('There is no admission invoice to pay.'))
+            raise UserError(_('There is no intake invoice to pay.'))
         if invoice.state != 'posted':
             raise UserError(_(
-                'The admission invoice must be posted before it is paid.'))
+                'The intake invoice must be posted before it is paid.'))
         if invoice.amount_residual <= 0:
-            raise UserError(_('The admission invoice is already settled.'))
+            raise UserError(_('The intake invoice is already settled.'))
         register = self.env['account.payment.register'].with_context(
             active_model='account.move',
             active_ids=invoice.ids,

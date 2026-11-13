@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Hostel Blocks View -->
+    <record id="umti_hostel_block_view_tree" model="ir.ui.view">
+        <field name="name">umti.hostel.block.list</field>
+        <field name="model">umti.hostel.block</field>
+        <field name="arch" type="xml">
+            <list string="Hostel Blocks">
+                <field name="name"/>
+                <field name="code"/>
+                <field name="gender_restriction" widget="badge"/>
+                <field name="total_capacity" sum="Total Capacity"/>
+                <field name="occupied_capacity" sum="Total Occupied"/>
+                <field name="available_capacity" sum="Total Available"/>
+                <field name="warden_id"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="umti_hostel_block_view_form" model="ir.ui.view">
+        <field name="name">umti.hostel.block.form</field>
+        <field name="model">umti.hostel.block</field>
+        <field name="arch" type="xml">
+            <form string="Hostel Block">
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button class="oe_stat_button" icon="fa-bed" type="object" name="action_view_rooms" invisible="not room_ids">
+                            <field name="room_count" widget="statinfo" string="Rooms"/>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <div class="oe_title">
+                        <h1><field name="name" placeholder="e.g. Mara Hostel Hall A"/></h1>
+                    </div>
+                    <group>
+                        <group string="Basic Details">
+                            <field name="code"/>
+                            <field name="gender_restriction"/>
+                            <field name="warden_id" options="{'no_create': True}"/>
+                            <field name="active" widget="boolean_toggle"/>
+                        </group>
+                        <group string="Capacity Metrics">
+                            <field name="total_capacity" readonly="1"/>
+                            <field name="occupied_capacity" readonly="1"/>
+                            <field name="available_capacity" readonly="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Rooms in Block" name="rooms">
+                            <field name="room_ids">
+                                <list editable="bottom">
+                                    <field name="name"/>
+                                    <field name="floor"/>
+                                    <field name="room_type"/>
+                                    <field name="total_beds" sum="Total Beds"/>
+                                    <field name="occupied_beds" sum="Total Occupied"/>
+                                    <field name="available_beds" sum="Total Available"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Notes" name="notes">
+                            <field name="description" placeholder="Specify block rules, maintenance notes, or amenities..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Hostel Allocation Views -->
+
+
+
+    <!-- Allocation: add block / room / bed picker to the umti_students form -->
+    <record id="umti_hostel_allocation_view_form_inventory" model="ir.ui.view">
+        <field name="name">umti.hostel.allocation.form.inventory</field>
+        <field name="model">umti.hostel.allocation</field>
+        <field name="inherit_id" ref="umti_students.umti_hostel_allocation_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='hostel_id']" position="after">
+                <field name="block_id" options="{'no_create': True}"/>
+                <field name="room_id" options="{'no_create': True}"/>
+                <field name="bed_id" options="{'no_create': True}"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Actions -->
+    <record id="action_umti_hostel_block" model="ir.actions.act_window">
+        <field name="name">Hostel Blocks</field>
+        <field name="res_model">umti.hostel.block</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="action_umti_hostel_allocation" model="ir.actions.act_window">
+        <field name="name">Student Hostel Allocations</field>
+        <field name="res_model">umti.hostel.allocation</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+</odoo>

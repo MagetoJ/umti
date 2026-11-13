@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="umti_hostel_view_form" model="ir.ui.view">
+        <field name="name">umti.hostel.form</field>
+        <field name="model">umti.hostel</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="code"/>
+                            <field name="capacity"/>
+                            <field name="active"/>
+                        </group>
+                        <group>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Notes">
+                            <field name="notes"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="umti_hostel_view_list" model="ir.ui.view">
+        <field name="name">umti.hostel.list</field>
+        <field name="model">umti.hostel</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="capacity"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="umti_hostel_allocation_view_form" model="ir.ui.view">
+        <field name="name">umti.hostel.allocation.form</field>
+        <field name="model">umti.hostel.allocation</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_check_in" type="object"
+                            string="Check In" class="oe_highlight"
+                            invisible="state not in ('reserved',)"/>
+                    <button name="action_check_out" type="object"
+                            string="Check Out" class="oe_highlight"
+                            invisible="state != 'checked_in'"/>
+                    <button name="action_cancel" type="object" string="Cancel"
+                            invisible="state in ('checked_out', 'cancelled')"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="reserved,checked_in,checked_out"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group string="Student">
+                            <field name="student_id"/>
+                            <field name="course_id" readonly="1"/>
+                            <field name="student_state" readonly="1"/>
+                        </group>
+                        <group string="Allocation">
+                            <field name="hostel_id"/>
+                            <field name="room"/>
+                            <field name="bed"/>
+                            <field name="academic_year_id"/>
+                            <field name="academic_term_id"/>
+                            <field name="check_in"/>
+                            <field name="check_out"/>
+                            <field name="fee"/>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="active"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Notes">
+                            <field name="notes"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="umti_hostel_allocation_view_list" model="ir.ui.view">
+        <field name="name">umti.hostel.allocation.list</field>
+        <field name="model">umti.hostel.allocation</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="student_id"/>
+                <field name="hostel_id"/>
+                <field name="room"/>
+                <field name="bed"/>
+                <field name="academic_term_id"/>
+                <field name="check_in"/>
+                <field name="check_out"/>
+                <field name="state" widget="badge"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="umti_hostel_allocation_view_search" model="ir.ui.view">
+        <field name="name">umti.hostel.allocation.search</field>
+        <field name="model">umti.hostel.allocation</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="student_id"/>
+                <field name="hostel_id"/>
+                <field name="course_id"/>
+                <field name="state"/>
+                <filter name="filter_checked_in" string="Checked In"
+                        domain="[('state','=','checked_in')]"/>
+                <filter name="filter_reserved" string="Reserved"
+                        domain="[('state','=','reserved')]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_hostel" string="Hostel"
+                            context="{'group_by': 'hostel_id'}"/>
+                    <filter name="group_state" string="State"
+                            context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_umti_hostels" model="ir.actions.act_window">
+        <field name="name">Hostels</field>
+        <field name="res_model">umti.hostel</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="umti_hostel_view_list"/>
+    </record>
+
+    <record id="action_umti_hostel_allocations" model="ir.actions.act_window">
+        <field name="name">Hostel Allocations</field>
+        <field name="res_model">umti.hostel.allocation</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="umti_hostel_allocation_view_list"/>
+        <field name="search_view_id" ref="umti_hostel_allocation_view_search"/>
+    </record>
+
+    <record id="action_umti_accommodation_dashboard" model="ir.actions.client">
+        <field name="name">Accommodation</field>
+        <field name="tag">umti_section_dashboard</field>
+        <field name="context">{'umti_section': 'accommodation'}</field>
+    </record>
+
+    <record id="umti_hostel_company_rule" model="ir.rule">
+        <field name="name">Hostel: multi-company</field>
+        <field name="model_id" ref="model_umti_hostel"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+
+    <record id="umti_hostel_allocation_company_rule" model="ir.rule">
+        <field name="name">Hostel allocation: multi-company</field>
+        <field name="model_id" ref="model_umti_hostel_allocation"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+</odoo>

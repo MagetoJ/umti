@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 from . import umti_course
 from . import umti_course_level
+from . import umti_term_pattern
 from . import umti_course_units
+from . import umti_course_unit_line
 from . import umti_department
 from . import umti_course_requirements
 from . import umti_fee_structure

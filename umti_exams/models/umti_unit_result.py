@@ -1,7 +1,7 @@
 from odoo import models, fields, api, _
-from odoo.exceptions import AccessError, UserError
+from odoo.exceptions import AccessError, UserError, ValidationError
 
-from .assessment_types import CORE_TYPES, DEFAULT_CORE_WEIGHTS
+from .assessment_types import CORE_TYPES
 from .score_utils import percentage
 
 MANAGER_GROUPS = ('umti_exams.group_umti_exams_manager', 'base.group_system')
@@ -121,7 +121,6 @@ class UMTIUnitResult(models.Model):
         """Rebuild results for (student, unit, semester, year) tuples."""
         Assessment = self.env['umti.assessment'].sudo()
         Mark = self.env['umti.assessment.mark'].sudo()
-        Plan = self.env['umti.assessment.plan']
         Student = self.env['school.student'].sudo()
         Term = self.env['umti.academic.term'].sudo()
         for student_id, unit_id, semester_id, _year_id in set(keys):
@@ -138,40 +137,40 @@ class UMTIUnitResult(models.Model):
                 ('student_id', '=', student_id), ('assessment_id', 'in', assessments.ids),
                 ('state', 'in', ['verified', 'published'])])
 
-            department = student.course_id.department_id or assessments[:1].department_id
-            semester = Term.browse(semester_id)
-            weights = dict(DEFAULT_CORE_WEIGHTS)
-            if department and semester.exists():
-                weights = Plan._get_or_create(semester, department).core_weights()
-
-            components = {'cat': 0.0, 'assignment': 0.0, 'final': 0.0}
+            # Each assessment carries its own weight (% of the final mark).
+            final_mark = 0.0
+            by_type = {'cat': [], 'assignment': [], 'final': []}
             lo_vals = {f: 0.0 for f in LEARNING_OUTCOME_SCORE_FIELDS}
 
             for m in marks:
-                a_type = m.assessment_id.assessment_type
-                lo_type = m.assessment_id.learning_outcome_type
-                
-                # Check outcome mapping first
+                a = m.assessment_id
+                lo_type = a.learning_outcome_type
+                final_mark += m.percentage * a.effective_weight / 100.0
                 if lo_type in lo_vals:
                     lo_vals[lo_type] = m.percentage
                 elif lo_type == 'cat':
-                    components['cat'] = m.percentage
+                    by_type['cat'].append(m.percentage)
                 elif lo_type == 'assignment':
-                    components['assignment'] = m.percentage
+                    by_type['assignment'].append(m.percentage)
                 elif lo_type == 'final_exam':
-                    components['final'] = m.percentage
+                    by_type['final'].append(m.percentage)
+                elif a.assessment_type in by_type:
+                    by_type[a.assessment_type].append(m.percentage)
 
-                # Fallback to standard assessment_type
-                if a_type in components and not lo_type:
-                    components[a_type] = m.percentage
-
-            final_mark = sum(components[k] * weights.get(k, 0.0) / 100.0 for k in CORE_TYPES)
+            components = {
+                k: (sum(v) / len(v) if v else 0.0) for k, v in by_type.items()}
+            weight_total = sum(assessments.mapped('effective_weight'))
+            # Only assessments that carry a weight can hold a result back;
+            # zero-weight ones (quizzes, outcome checks...) are record-only.
+            weighted = assessments.filtered(lambda a: a.effective_weight > 0)
             published_assessments = marks.filtered(lambda m: m.state == 'published').mapped('assessment_id')
-            pending = max(0, len(assessments) - len(published_assessments))
-            complete = pending == 0
+            pending = len(weighted - published_assessments)
+            # Complete only when every assessment is published AND the weights
+            # add up to 100, otherwise the final mark would be misleading.
+            complete = bool(assessments) and pending == 0 and abs(weight_total - 100.0) < 0.01
 
             vals = {
-                'weight_total': sum(weights.values()),
+                'weight_total': round(weight_total, 2),
                 'pending_count': pending,
                 'cat_percent': round(components['cat'], 2),
                 'assignment_percent': round(components['assignment'], 2),
@@ -203,28 +202,39 @@ class UMTIUnitResult(models.Model):
 
     def _missing_components(self):
         self.ensure_one()
-        labels = {'cat': 'CAT', 'assignment': 'Assignment', 'final': 'Final Exam'}
         domain = [
             ('unit_id', '=', self.unit_id.id), ('semester_id', '=', self.semester_id.id),
-            ('state', '!=', 'cancelled'), ('assessment_type', 'in', CORE_TYPES)]
+            ('state', '!=', 'cancelled')]
         if self.student_id.course_id:
             domain.append(('course_id', '=', self.student_id.course_id.id))
         assessments = self.env['umti.assessment'].sudo().search(domain)
+        if not assessments:
+            return [_("- No assessment has been created for this unit.")]
         published = self.env['umti.assessment.mark'].sudo().search([
             ('student_id', '=', self.student_id.id), ('assessment_id', 'in', assessments.ids),
             ('state', '=', 'published')]).assessment_id
         lines = []
-        for kind in CORE_TYPES:
-            of_kind = assessments.filtered(lambda a, k=kind: a.assessment_type == k)
-            if not of_kind:
-                lines.append(_("- %s: no assessment has been created for this unit.", labels[kind]))
-                continue
-            waiting = of_kind - published
-            if waiting:
-                lines.append(_(
-                    "- %(kind)s: marks not yet published for %(names)s.",
-                    kind=labels[kind], names=", ".join(waiting.mapped('name'))))
+        waiting = assessments.filtered(lambda a: a.effective_weight > 0) - published
+        if waiting:
+            lines.append(_(
+                "- Marks not yet published for: %s.", ", ".join(waiting.mapped('name'))))
+        total = sum(assessments.mapped('effective_weight'))
+        if abs(total - 100.0) >= 0.01:
+            lines.append(_(
+                "- The assessment weights total %.2f%%; they must total 100%%.", total))
         return lines or [_("- Refresh the result and try again.")]
+
+    @api.constrains('course_id', 'semester_id')
+    def _check_term_course(self):
+        for rec in self:
+            if (rec.semester_id.course_id
+                    and rec.semester_id.course_id != rec.course_id):
+                raise ValidationError(_(
+                    "Term %(term)s belongs to %(term_course)s, not to "
+                    "%(course)s.",
+                    term=rec.semester_id.name,
+                    term_course=rec.semester_id.course_id.name,
+                    course=rec.course_id.name))
 
     def _check_manager(self):
         if not any(self.env.user.has_group(g) for g in MANAGER_GROUPS):

@@ -9,10 +9,27 @@ class UmtiCourseLevel(models.Model):
     _rec_name = 'name'
 
     name = fields.Char(string='Name', required=True, index=True, tracking=True)
+    term_pattern_id = fields.Many2one(
+        'umti.term.pattern', string='Default Term Pattern', tracking=True,
+        domain="[('active', '=', True)]",
+        help="Pattern used by courses of this level unless the course sets "
+             "its own. Empty means the company default from Settings.")
+    effective_term_pattern_id = fields.Many2one(
+        'umti.term.pattern', string='Effective Term Pattern',
+        compute='_compute_effective_term_pattern_id',
+        help="The pattern actually used: this level's pattern or the "
+             "company default.")
     courses_counts = fields.Integer(string='Course Counts', compute='_compute_counts',)
     active = fields.Boolean(default=True)
     company_id = fields.Many2one('res.company', string="Company", required=True, default=lambda self: self.env.user.company_id)
 
+
+    @api.depends('term_pattern_id')
+    def _compute_effective_term_pattern_id(self):
+        default = self.env['umti.term.pattern']._default_pattern()
+        for level in self:
+            level.effective_term_pattern_id = (
+                level.term_pattern_id or default)
 
     def _compute_counts(self):
           for rec in self:

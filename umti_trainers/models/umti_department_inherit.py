@@ -88,7 +88,7 @@ class UmtiDepartmentInherit(models.Model):
             dept.avg_exam_mark = 0.0
             if Mark is None:
                 continue
-            domain = [('unit_id.department_id', '=', dept.id),
+            domain = [('unit_id.department_ids', 'in', dept.id),
                       ('state', '=', 'published')]
             total = Mark.search_count(domain)
             if not total:
@@ -103,7 +103,7 @@ class UmtiDepartmentInherit(models.Model):
                   if 'umti.unit.result' in self.env else None)
         for dept in self:
             dept.unit_result_ids = Result.search([
-                ('unit_id.department_id', '=', dept.id),
+                ('unit_id.department_ids', 'in', dept.id),
             ]) if Result is not None else False
 
     def action_view_students(self):

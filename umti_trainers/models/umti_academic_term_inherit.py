@@ -19,6 +19,6 @@ class UmtiAcademicTermInherit(models.Model):
             lambda term: vals.get('status') == 'in_progress'
             and term.status != 'in_progress')
         res = super().write(vals)
-        if becoming_running.filtered(lambda term: not term.parent_term):
-            self.env['umti.student.semester'].sudo()._start_pending()
+        for term in becoming_running.filtered(lambda term: not term.parent_term):
+            self.env['umti.student.semester'].sudo()._start_pending(term)
         return res

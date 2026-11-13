@@ -14,6 +14,7 @@ export class UmtiDashboard extends Component {
         action: { type: Object, optional: true },
         actionId: { type: [Number, Boolean], optional: true },
         className: { type: String, optional: true },
+        globalState: { type: Object, optional: true },
         state: { type: Object, optional: true },
         updateActionState: { type: Function, optional: true },
     };
@@ -21,10 +22,13 @@ export class UmtiDashboard extends Component {
     setup() {
         this.action = useService("action");
         this.notification = useService("notification");
+        const actionContext = (this.props.action && this.props.action.context) || {};
+        const defaultFilters = actionContext.umti_default_filters || {};
         this.state = useState({
             loading: true,
             error: null,
             data: null,
+            filters: { ...defaultFilters },
             // The setup checklist is a helper, not the dashboard itself.
             onboardOpen: false,
         });
@@ -49,8 +53,10 @@ export class UmtiDashboard extends Component {
             this.state.data = this.section
                 ? await rpc("/umti/dashboard/section_data", {
                       section: this.section,
+                      filters: this.state.filters,
                   })
                 : await rpc("/umti/dashboard/data");
+            this.syncFilters();
         } catch (error) {
             this.state.error =
                 (error && (error.data && error.data.message || error.message)) ||
@@ -102,6 +108,54 @@ export class UmtiDashboard extends Component {
 
     get term() {
         return (this.state.data && this.state.data.term) || null;
+    }
+
+    get filters() {
+        return (this.state.data && this.state.data.filters) || [];
+    }
+
+    get actions() {
+        return (this.state.data && this.state.data.actions) || [];
+    }
+
+    syncFilters() {
+        const values = {};
+        for (const filter of this.filters) {
+            values[filter.key] = filter.value;
+        }
+        this.state.filters = values;
+    }
+
+    async onFilterChange(key, value) {
+        this.state.filters = { ...this.state.filters, [key]: value };
+        await this.load();
+    }
+
+    async runAction(action) {
+        if (action.confirm && !window.confirm(action.confirm)) {
+            return;
+        }
+        try {
+            const result = await rpc("/umti/dashboard/section_action", {
+                section: this.section,
+                action: action.key,
+                filters: this.state.filters,
+            });
+            if (result.action) {
+                this.action.doAction(result.action);
+                return;
+            }
+            this.notification.add(
+                result.message || _t("Done"),
+                { type: result.type || "success" }
+            );
+            await this.load();
+        } catch (error) {
+            this.notification.add(
+                this.errorMessage(error, _t("The action could not be run.")),
+                { type: "danger" }
+            );
+        }
     }
 
     get onboarding() {

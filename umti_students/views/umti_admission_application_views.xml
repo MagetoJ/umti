@@ -94,8 +94,20 @@
                             <field name="academic_year_id"/>
                             <field name="admission_fee"/>
                             <field name="currency_id" invisible="1"/>
-                            <field name="fee_paid"/>
+                            <field name="fee_paid" invisible="1"/>
+                            <field name="admission_fee_waived" readonly="1" invisible="1"/>
+                            <field name="admission_fee_waiver_reason"
+                                   readonly="1"
+                                   invisible="not admission_fee_waived"/>
+                            <field name="admission_fee_waived_by"
+                                   readonly="1"
+                                   invisible="not admission_fee_waived"/>
+                            <field name="admission_fee_waived_date"
+                                   readonly="1"
+                                   invisible="not admission_fee_waived"/>
                             <field name="fee_reference" invisible="not fee_paid"/>
+                            <field name="apply_financial_support"
+                                       readonly="state not in ('draft')"/>
                             <field name="active" invisible="1"/>
                             <field name="student_id" invisible="1"/>
                             <field name="company_id" groups="base.group_multi_company"/>
@@ -156,6 +168,19 @@
                                     </group>
                                 </form>
                             </field>
+                        </page>
+                        <page string="Financial Support" name="financial_support" invisible="not apply_financial_support">
+                            <group>
+                                
+                                <field name="financial_support_description"
+                                       readonly="state not in ('draft')"
+                                       required="apply_financial_support"
+                                       invisible="not apply_financial_support"/>
+                                <field name="financial_support_attachment_ids"
+                                       widget="many2many_binary" nolabel="1"
+                                       readonly="state not in ('draft', 'submitted')"
+                                       invisible="not apply_financial_support"/>
+                            </group>
                         </page>
                         <page string="Course Requirements" name="requirements">
                             <field name="requirement_ids" nolabel="1">

@@ -2,6 +2,7 @@
 from dateutil.relativedelta import relativedelta
 
 from odoo import _, api, fields, models
+from odoo.exceptions import UserError
 
 from .umti_dashboard import _kpi  # noqa: F401  (re-exported for sections)
 
@@ -27,7 +28,7 @@ class UmtiDashboardSection(models.AbstractModel):
     # Entry point
     # ------------------------------------------------------------------
     @api.model
-    def get_dashboard_data(self):
+    def get_dashboard_data(self, filters=None):
         data = {
             "title": self.DASH_TITLE,
             "subtitle": self.DASH_SUBTITLE,
@@ -42,12 +43,19 @@ class UmtiDashboardSection(models.AbstractModel):
             "charts": [],
             "lists": [],
             "onboarding": None,
+            "filters": [],
+            "actions": [],
+            "active_filters": filters or {},
         }
         self._build(data)
         return data
 
     def _build(self, data):
         raise NotImplementedError
+
+    def run_dashboard_action(self, action, filters=None):
+        """Run a section action (generate, post, ...)."""
+        raise UserError(_("This dashboard does not support actions."))
 
     # ------------------------------------------------------------------
     # Domain helpers
@@ -91,7 +99,10 @@ class UmtiDashboardSection(models.AbstractModel):
         Model = self.env[model_name]
         base = self._full(model_name, domain, path)
         items = []
-        for key, label in Model._fields[field_name].selection:
+        selection = Model._fields[field_name].selection
+        if callable(selection):
+            selection = selection(Model)
+        for key, label in selection:
             item_domain = base + [(field_name, "=", key)]
             count = Model.search_count(item_domain)
             if count:

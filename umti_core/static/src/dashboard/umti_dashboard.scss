@@ -740,3 +740,42 @@
         color: #6ee7b7;
     }
 }
+
+
+.umti-dash__header-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+.umti-dash__filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 0 0 18px;
+    padding: 14px 18px;
+    background: var(--umti-card, #fff);
+    border: 1px solid var(--umti-line, #e5e7eb);
+    border-radius: 12px;
+}
+
+.umti-dash__filter {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 150px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--umti-muted, #6b7280);
+}
+
+.umti-dash__filter select {
+    min-width: 150px;
+    padding: 6px 8px;
+    border: 1px solid var(--umti-line, #d1d5db);
+    border-radius: 8px;
+    background: var(--umti-card, #fff);
+    color: var(--umti-text, #111827);
+    font-size: 13px;
+}

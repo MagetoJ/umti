@@ -29,6 +29,12 @@
               action="umti_student_unit_enrollment_action"
               sequence="15"/>
 
+    <menuitem id="menu_umti_class_groups"
+              name="Class Groups"
+              parent="menu_umti_trainers_root"
+              action="action_umti_class_group"
+              sequence="17"/>
+
     <!-- Students the logged-in trainer is taking -->
     <menuitem id="menu_umti_my_students"
               name="My Students"
@@ -45,7 +51,7 @@
     <menuitem id="menu_umti_scheme_of_work"
               name="Schemes of Work"
               parent="menu_umti_academic_deliverables"
-              action="umti_scheme_of_work_action"
+              action="action_umti_scheme_of_work"
               sequence="10"/>
 
     <menuitem id="menu_umti_work_plan"

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     "name": "UMTI Core",
-    "version": "18.0.1.2.0",
+    "version": "18.0.1.23.4",
     "category": "Tools",
     "summary": "UMTI Core",
     "description": "This module provides the course as the core foundation of UMTI module as a whole.",
@@ -11,14 +11,19 @@
     "depends": ["base","mail","account"],
     "data": [
         "data/module_presets.xml",
+        "data/umti_votehead_data.xml",
         "data/umti_group_category.xml",
         "security/security.xml",
         "security/ir.model.access.csv",
+        "data/umti_term_pattern_data.xml",
+        "data/umti_course_level_data.xml",
         "views/umti_course_views.xml",
         "views/umti_department_views.xml",
         "views/umti_course_level_views.xml",
+        "views/umti_term_pattern_views.xml",
         "views/umti_course_units_views.xml",
         "views/umti_fee_structure_views.xml",
+        "views/umti_votehead_views.xml",
         "views/umti_academic_year_views.xml",
         "views/umti_academic_term_views.xml",
         "views/res_config_settings.xml",

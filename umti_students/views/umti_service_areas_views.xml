@@ -1,0 +1,873 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="umti_counselling_case_view_list" model="ir.ui.view">
+        <field name="name">umti.counselling.case.list</field>
+        <field name="model">umti.counselling.case</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="student_id"/>
+                <field name="name"/>
+                <field name="category"/>
+                <field name="risk_level"/>
+                <field name="assigned_to"/>
+                <field name="opened_date"/>
+                <field name="state"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="counselling_view_form" model="ir.ui.view">
+        <field name="name">umti.counselling.case.form</field>
+        <field name="model">umti.counselling.case</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <group>
+                        <field name="student_id"/>
+                        <field name="name"/>
+                        <field name="category"/>
+                        <field name="risk_level"/>
+                        <field name="assigned_to"/>
+                        <field name="opened_date"/>
+                        <field name="closed_date"/>
+                        <field name="resolution"/>
+                    </group>
+                    <notebook>
+                        <page string="Notes">
+                            <field name="notes"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="counselling_view_search" model="ir.ui.view">
+        <field name="name">umti.counselling.case.search</field>
+        <field name="model">umti.counselling.case</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="student_id"/>
+                <field name="name"/>
+                <field name="category"/>
+                <field name="state"/>
+
+                <group expand="0" string="Group By">
+                    <filter name="group_state" string="State" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_umti_counselling_records" model="ir.actions.act_window">
+        <field name="name">Guidance &amp; Counselling</field>
+        <field name="res_model">umti.counselling.case</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="umti_counselling_case_view_list"/>
+        <field name="search_view_id" ref="counselling_view_search"/>
+    </record>
+
+    <record id="action_umti_counselling_dashboard" model="ir.actions.client">
+        <field name="name">Guidance &amp; Counselling</field>
+        <field name="tag">umti_section_dashboard</field>
+        <field name="context">{'umti_section': 'counselling'}</field>
+    </record>
+
+    <record id="counselling_company_rule" model="ir.rule">
+        <field name="name">umti.counselling.case: multi-company</field>
+        <field name="model_id" ref="model_umti_counselling_case"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+
+    <record id="umti_welfare_request_view_list" model="ir.ui.view">
+        <field name="name">umti.welfare.request.list</field>
+        <field name="model">umti.welfare.request</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="student_id"/>
+                <field name="name"/>
+                <field name="category"/>
+                <field name="amount"/>
+                <field name="assigned_to"/>
+                <field name="opened_date"/>
+                <field name="state"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="welfare_view_form" model="ir.ui.view">
+        <field name="name">umti.welfare.request.form</field>
+        <field name="model">umti.welfare.request</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <group>
+                        <field name="student_id"/>
+                        <field name="name"/>
+                        <field name="category"/>
+                        <field name="need"/>
+                        <field name="amount"/>
+                        <field name="currency_id" invisible="1"/>
+                        <field name="assigned_to"/>
+                        <field name="opened_date"/>
+                        <field name="approval_date"/>
+                        <field name="closed_date"/>
+                        <field name="resolution"/>
+                    </group>
+                    <notebook>
+                        <page string="Notes">
+                            <field name="notes"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="welfare_view_search" model="ir.ui.view">
+        <field name="name">umti.welfare.request.search</field>
+        <field name="model">umti.welfare.request</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="student_id"/>
+                <field name="name"/>
+                <field name="category"/>
+                <field name="state"/>
+
+                <group expand="0" string="Group By">
+                    <filter name="group_state" string="State" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_umti_welfare_records" model="ir.actions.act_window">
+        <field name="name">Student Welfare</field>
+        <field name="res_model">umti.welfare.request</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="umti_welfare_request_view_list"/>
+        <field name="search_view_id" ref="welfare_view_search"/>
+    </record>
+
+    <record id="action_umti_welfare_dashboard" model="ir.actions.client">
+        <field name="name">Student Welfare</field>
+        <field name="tag">umti_section_dashboard</field>
+        <field name="context">{'umti_section': 'welfare'}</field>
+    </record>
+
+    <record id="welfare_company_rule" model="ir.rule">
+        <field name="name">umti.welfare.request: multi-company</field>
+        <field name="model_id" ref="model_umti_welfare_request"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+
+    <record id="umti_discipline_case_view_list" model="ir.ui.view">
+        <field name="name">umti.discipline.case.list</field>
+        <field name="model">umti.discipline.case</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="student_id"/>
+                <field name="name"/>
+                <field name="incident_type"/>
+                <field name="hearing_date"/>
+                <field name="assigned_to"/>
+                <field name="opened_date"/>
+                <field name="state"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="discipline_view_form" model="ir.ui.view">
+        <field name="name">umti.discipline.case.form</field>
+        <field name="model">umti.discipline.case</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <group>
+                        <field name="student_id"/>
+                        <field name="name"/>
+                        <field name="incident_type"/>
+                        <field name="description"/>
+                        <field name="hearing_date"/>
+                        <field name="assigned_to"/>
+                        <field name="opened_date"/>
+                        <field name="closed_date"/>
+                        <field name="decision"/>
+                        <field name="sanction"/>
+                        <field name="resolution"/>
+                    </group>
+                    <notebook>
+                        <page string="Notes">
+                            <field name="notes"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="discipline_view_search" model="ir.ui.view">
+        <field name="name">umti.discipline.case.search</field>
+        <field name="model">umti.discipline.case</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="student_id"/>
+                <field name="name"/>
+                <field name="incident_type"/>
+                <field name="state"/>
+
+                <group expand="0" string="Group By">
+                    <filter name="group_state" string="State" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_umti_discipline_records" model="ir.actions.act_window">
+        <field name="name">Discipline</field>
+        <field name="res_model">umti.discipline.case</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="umti_discipline_case_view_list"/>
+        <field name="search_view_id" ref="discipline_view_search"/>
+    </record>
+
+    <record id="action_umti_discipline_dashboard" model="ir.actions.client">
+        <field name="name">Discipline</field>
+        <field name="tag">umti_section_dashboard</field>
+        <field name="context">{'umti_section': 'discipline'}</field>
+    </record>
+
+    <record id="discipline_company_rule" model="ir.rule">
+        <field name="name">umti.discipline.case: multi-company</field>
+        <field name="model_id" ref="model_umti_discipline_case"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+
+    <record id="umti_grievance_case_view_list" model="ir.ui.view">
+        <field name="name">umti.grievance.case.list</field>
+        <field name="model">umti.grievance.case</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="student_id"/>
+                <field name="name"/>
+                <field name="category"/>
+                <field name="assigned_to"/>
+                <field name="opened_date"/>
+                <field name="state"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="grievances_view_form" model="ir.ui.view">
+        <field name="name">umti.grievance.case.form</field>
+        <field name="model">umti.grievance.case</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <group>
+                        <field name="student_id"/>
+                        <field name="name"/>
+                        <field name="category"/>
+                        <field name="description"/>
+                        <field name="assigned_to"/>
+                        <field name="opened_date"/>
+                        <field name="closed_date"/>
+                        <field name="resolution"/>
+                    </group>
+                    <notebook>
+                        <page string="Notes">
+                            <field name="notes"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="grievances_view_search" model="ir.ui.view">
+        <field name="name">umti.grievance.case.search</field>
+        <field name="model">umti.grievance.case</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="student_id"/>
+                <field name="name"/>
+                <field name="category"/>
+                <field name="state"/>
+
+                <group expand="0" string="Group By">
+                    <filter name="group_state" string="State" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_umti_grievances_records" model="ir.actions.act_window">
+        <field name="name">Grievances &amp; Feedback</field>
+        <field name="res_model">umti.grievance.case</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="umti_grievance_case_view_list"/>
+        <field name="search_view_id" ref="grievances_view_search"/>
+    </record>
+
+    <record id="action_umti_grievances_dashboard" model="ir.actions.client">
+        <field name="name">Grievances &amp; Feedback</field>
+        <field name="tag">umti_section_dashboard</field>
+        <field name="context">{'umti_section': 'grievances'}</field>
+    </record>
+
+    <record id="grievances_company_rule" model="ir.rule">
+        <field name="name">umti.grievance.case: multi-company</field>
+        <field name="model_id" ref="model_umti_grievance_case"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+
+    <record id="umti_clearance_view_list" model="ir.ui.view">
+        <field name="name">umti.graduation.clearance.list</field>
+        <field name="model">umti.graduation.clearance</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="student_id"/>
+                <field name="name"/>
+                <field name="graduation_date"/>
+                <field name="academic_year_id"/>
+                <field name="refund_amount"/>
+                <field name="state"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="clearance_view_form" model="ir.ui.view">
+        <field name="name">umti.graduation.clearance.form</field>
+        <field name="model">umti.graduation.clearance</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <group>
+                        <field name="student_id"/>
+                        <field name="name"/>
+                        <field name="graduation_date"/>
+                        <field name="academic_year_id"/>
+                        <field name="finance_cleared"/>
+                        <field name="library_cleared"/>
+                        <field name="kits_cleared"/>
+                        <field name="discipline_cleared"/>
+                        <field name="accommodation_cleared"/>
+                        <field name="refund_amount"/>
+                        <field name="currency_id" invisible="1"/>
+                        <field name="certificate_issued"/>
+                    </group>
+                    <notebook>
+                        <page string="Notes">
+                            <field name="notes"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="clearance_view_search" model="ir.ui.view">
+        <field name="name">umti.graduation.clearance.search</field>
+        <field name="model">umti.graduation.clearance</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="student_id"/>
+                <field name="name"/>
+                <field name="state"/>
+
+                <group expand="0" string="Group By">
+                    <filter name="group_state" string="State" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_umti_clearance_records" model="ir.actions.act_window">
+        <field name="name">Clearance &amp; Graduation</field>
+        <field name="res_model">umti.graduation.clearance</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="umti_clearance_view_list"/>
+        <field name="search_view_id" ref="clearance_view_search"/>
+    </record>
+
+    <record id="action_umti_clearance_dashboard" model="ir.actions.client">
+        <field name="name">Clearance &amp; Graduation</field>
+        <field name="tag">umti_section_dashboard</field>
+        <field name="context">{'umti_section': 'clearance'}</field>
+    </record>
+
+    <record id="clearance_company_rule" model="ir.rule">
+        <field name="name">umti.graduation.clearance: multi-company</field>
+        <field name="model_id" ref="model_umti_graduation_clearance"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+
+    <record id="umti_clinic_visit_view_list" model="ir.ui.view">
+        <field name="name">umti.clinic.visit.list</field>
+        <field name="model">umti.clinic.visit</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="student_id"/>
+                <field name="visit_date"/>
+                <field name="referred_to"/>
+                <field name="claim_status"/>
+                <field name="state"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="health_view_form" model="ir.ui.view">
+        <field name="name">umti.clinic.visit.form</field>
+        <field name="model">umti.clinic.visit</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <group>
+                        <field name="student_id"/>
+                        <field name="visit_date"/>
+                        <field name="complaint"/>
+                        <field name="diagnosis"/>
+                        <field name="treatment"/>
+                        <field name="referred_to"/>
+                        <field name="insurance_claim"/>
+                        <field name="claim_status"/>
+                        <field name="confidential"/>
+                    </group>
+                    <notebook>
+                        <page string="Notes">
+                            <field name="notes"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="health_view_search" model="ir.ui.view">
+        <field name="name">umti.clinic.visit.search</field>
+        <field name="model">umti.clinic.visit</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="student_id"/>
+                <field name="visit_date"/>
+                <field name="state"/>
+
+                <group expand="0" string="Group By">
+                    <filter name="group_state" string="State" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_umti_health_records" model="ir.actions.act_window">
+        <field name="name">Health &amp; Clinic</field>
+        <field name="res_model">umti.clinic.visit</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="umti_clinic_visit_view_list"/>
+        <field name="search_view_id" ref="health_view_search"/>
+    </record>
+
+    <record id="action_umti_health_dashboard" model="ir.actions.client">
+        <field name="name">Health &amp; Clinic</field>
+        <field name="tag">umti_section_dashboard</field>
+        <field name="context">{'umti_section': 'health'}</field>
+    </record>
+
+    <record id="health_company_rule" model="ir.rule">
+        <field name="name">umti.clinic.visit: multi-company</field>
+        <field name="model_id" ref="model_umti_clinic_visit"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+
+    <record id="umti_onboarding_view_list" model="ir.ui.view">
+        <field name="name">umti.student.onboarding.list</field>
+        <field name="model">umti.student.onboarding</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="student_id"/>
+                <field name="name"/>
+                <field name="intake_id"/>
+                <field name="academic_year_id"/>
+                <field name="state"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="onboarding_view_form" model="ir.ui.view">
+        <field name="name">umti.student.onboarding.form</field>
+        <field name="model">umti.student.onboarding</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <group>
+                        <field name="student_id"/>
+                        <field name="name"/>
+                        <field name="intake_id"/>
+                        <field name="academic_year_id"/>
+                        <field name="id_card_issued"/>
+                        <field name="photo_captured"/>
+                        <field name="documents_complete"/>
+                        <field name="orientation_complete"/>
+                        <field name="portal_access"/>
+                    </group>
+                    <notebook>
+                        <page string="Notes">
+                            <field name="notes"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="onboarding_view_search" model="ir.ui.view">
+        <field name="name">umti.student.onboarding.search</field>
+        <field name="model">umti.student.onboarding</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="student_id"/>
+                <field name="name"/>
+                <field name="state"/>
+
+                <group expand="0" string="Group By">
+                    <filter name="group_state" string="State" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_umti_onboarding_records" model="ir.actions.act_window">
+        <field name="name">Student ID &amp; Onboarding</field>
+        <field name="res_model">umti.student.onboarding</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="umti_onboarding_view_list"/>
+        <field name="search_view_id" ref="onboarding_view_search"/>
+    </record>
+
+    <record id="action_umti_onboarding_dashboard" model="ir.actions.client">
+        <field name="name">Student ID &amp; Onboarding</field>
+        <field name="tag">umti_section_dashboard</field>
+        <field name="context">{'umti_section': 'onboarding'}</field>
+    </record>
+
+    <record id="onboarding_company_rule" model="ir.rule">
+        <field name="name">umti.student.onboarding: multi-company</field>
+        <field name="model_id" ref="model_umti_student_onboarding"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+
+    <record id="umti_support_plan_view_list" model="ir.ui.view">
+        <field name="name">umti.student.support.plan.list</field>
+        <field name="model">umti.student.support.plan</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="student_id"/>
+                <field name="name"/>
+                <field name="need_category"/>
+                <field name="review_date"/>
+                <field name="state"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="inclusion_view_form" model="ir.ui.view">
+        <field name="name">umti.student.support.plan.form</field>
+        <field name="model">umti.student.support.plan</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <group>
+                        <field name="student_id"/>
+                        <field name="name"/>
+                        <field name="need_category"/>
+                        <field name="accommodations"/>
+                        <field name="review_date"/>
+                        <field name="confidential"/>
+                    </group>
+                    <notebook>
+                        <page string="Notes">
+                            <field name="notes"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="inclusion_view_search" model="ir.ui.view">
+        <field name="name">umti.student.support.plan.search</field>
+        <field name="model">umti.student.support.plan</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="student_id"/>
+                <field name="name"/>
+                <field name="need_category"/>
+                <field name="state"/>
+
+                <group expand="0" string="Group By">
+                    <filter name="group_state" string="State" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_umti_inclusion_records" model="ir.actions.act_window">
+        <field name="name">Special Needs &amp; Inclusion</field>
+        <field name="res_model">umti.student.support.plan</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="umti_support_plan_view_list"/>
+        <field name="search_view_id" ref="inclusion_view_search"/>
+    </record>
+
+    <record id="action_umti_inclusion_dashboard" model="ir.actions.client">
+        <field name="name">Special Needs &amp; Inclusion</field>
+        <field name="tag">umti_section_dashboard</field>
+        <field name="context">{'umti_section': 'inclusion'}</field>
+    </record>
+
+    <record id="inclusion_company_rule" model="ir.rule">
+        <field name="name">umti.student.support.plan: multi-company</field>
+        <field name="model_id" ref="model_umti_student_support_plan"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+
+    <record id="umti_club_membership_view_list" model="ir.ui.view">
+        <field name="name">umti.club.membership.list</field>
+        <field name="model">umti.club.membership</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="student_id"/>
+                <field name="club_id"/>
+                <field name="role"/>
+                <field name="joined_date"/>
+                <field name="left_date"/>
+                <field name="state"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="activities_view_form" model="ir.ui.view">
+        <field name="name">umti.club.membership.form</field>
+        <field name="model">umti.club.membership</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <group>
+                        <field name="student_id"/>
+                        <field name="club_id"/>
+                        <field name="role"/>
+                        <field name="joined_date"/>
+                        <field name="left_date"/>
+                    </group>
+                    <notebook>
+                        <page string="Notes">
+                            <field name="notes"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="activities_view_search" model="ir.ui.view">
+        <field name="name">umti.club.membership.search</field>
+        <field name="model">umti.club.membership</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="student_id"/>
+                <field name="club_id"/>
+                <field name="state"/>
+
+                <group expand="0" string="Group By">
+                    <filter name="group_state" string="State" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_umti_activities_records" model="ir.actions.act_window">
+        <field name="name">Student Activities</field>
+        <field name="res_model">umti.club.membership</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="umti_club_membership_view_list"/>
+        <field name="search_view_id" ref="activities_view_search"/>
+    </record>
+
+    <record id="action_umti_activities_dashboard" model="ir.actions.client">
+        <field name="name">Student Activities</field>
+        <field name="tag">umti_section_dashboard</field>
+        <field name="context">{'umti_section': 'activities'}</field>
+    </record>
+
+    <record id="activities_company_rule" model="ir.rule">
+        <field name="name">umti.club.membership: multi-company</field>
+        <field name="model_id" ref="model_umti_club_membership"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+
+    <record id="umti_transport_subscription_view_list" model="ir.ui.view">
+        <field name="name">umti.transport.subscription.list</field>
+        <field name="model">umti.transport.subscription</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="student_id"/>
+                <field name="route_id"/>
+                <field name="stop"/>
+                <field name="start_date"/>
+                <field name="end_date"/>
+                <field name="fee"/>
+                <field name="state"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="transport_view_form" model="ir.ui.view">
+        <field name="name">umti.transport.subscription.form</field>
+        <field name="model">umti.transport.subscription</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <group>
+                        <field name="student_id"/>
+                        <field name="route_id"/>
+                        <field name="stop"/>
+                        <field name="academic_year_id"/>
+                        <field name="academic_term_id"/>
+                        <field name="start_date"/>
+                        <field name="end_date"/>
+                        <field name="fee"/>
+                        <field name="currency_id" invisible="1"/>
+                    </group>
+                    <notebook>
+                        <page string="Notes">
+                            <field name="notes"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="transport_view_search" model="ir.ui.view">
+        <field name="name">umti.transport.subscription.search</field>
+        <field name="model">umti.transport.subscription</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="student_id"/>
+                <field name="route_id"/>
+                <field name="state"/>
+
+                <group expand="0" string="Group By">
+                    <filter name="group_state" string="State" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_umti_transport_records" model="ir.actions.act_window">
+        <field name="name">Transport</field>
+        <field name="res_model">umti.transport.subscription</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="umti_transport_subscription_view_list"/>
+        <field name="search_view_id" ref="transport_view_search"/>
+    </record>
+
+    <record id="action_umti_transport_dashboard" model="ir.actions.client">
+        <field name="name">Transport</field>
+        <field name="tag">umti_section_dashboard</field>
+        <field name="context">{'umti_section': 'transport'}</field>
+    </record>
+
+    <record id="transport_company_rule" model="ir.rule">
+        <field name="name">umti.transport.subscription: multi-company</field>
+        <field name="model_id" ref="model_umti_transport_subscription"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+
+    <record id="umti_club_view_list" model="ir.ui.view">
+        <field name="name">umti.student.club.list</field>
+        <field name="model">umti.student.club</field>
+        <field name="arch" type="xml">
+            <list><field name="name"/><field name="code"/><field name="category"/><field name="active" widget="boolean_toggle"/></list>
+        </field>
+    </record>
+    <record id="umti_club_view_form" model="ir.ui.view">
+        <field name="name">umti.student.club.form</field>
+        <field name="model">umti.student.club</field>
+        <field name="arch" type="xml">
+            <form><sheet><group><field name="name"/><field name="code"/><field name="category"/><field name="description"/><field name="active"/><field name="company_id" groups="base.group_multi_company"/></group></sheet></form>
+        </field>
+    </record>
+    <record id="action_umti_clubs" model="ir.actions.act_window">
+        <field name="name">Clubs</field><field name="res_model">umti.student.club</field>
+        <field name="view_mode">list,form</field><field name="view_id" ref="umti_club_view_list"/>
+    </record>
+    <record id="umti_route_view_list" model="ir.ui.view">
+        <field name="name">umti.transport.route.list</field>
+        <field name="model">umti.transport.route</field>
+        <field name="arch" type="xml">
+            <list><field name="name"/><field name="code"/><field name="capacity"/><field name="fee"/><field name="active" widget="boolean_toggle"/></list>
+        </field>
+    </record>
+    <record id="umti_route_view_form" model="ir.ui.view">
+        <field name="name">umti.transport.route.form</field>
+        <field name="model">umti.transport.route</field>
+        <field name="arch" type="xml">
+            <form><sheet><group><field name="name"/><field name="code"/><field name="capacity"/><field name="fee"/><field name="currency_id" invisible="1"/><field name="active"/><field name="company_id" groups="base.group_multi_company"/></group></sheet></form>
+        </field>
+    </record>
+    <record id="action_umti_routes" model="ir.actions.act_window">
+        <field name="name">Transport Routes</field><field name="res_model">umti.transport.route</field>
+        <field name="view_mode">list,form</field><field name="view_id" ref="umti_route_view_list"/>
+    </record>
+    <record id="umti_club_company_rule" model="ir.rule">
+        <field name="name">Club: multi-company</field>
+        <field name="model_id" ref="model_umti_student_club"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+    <record id="umti_route_company_rule" model="ir.rule">
+        <field name="name">Transport route: multi-company</field>
+        <field name="model_id" ref="model_umti_transport_route"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+</odoo>

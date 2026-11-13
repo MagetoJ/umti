@@ -31,6 +31,29 @@
                     <field name="status" widget="statusbar" statusbar_visible="draft,active,discontinued"/>
                 </header>
                 <sheet>
+                    <field name="show_setup_warning" invisible="1"/>
+                    <div class="alert alert-warning d-flex align-items-center gap-2"
+                         role="alert" invisible="not show_setup_warning">
+                        <field name="setup_warning_message" class="mb-0"
+                               readonly="1"/>
+                        <button name="action_dismiss_setup_warning"
+                                type="object" string="I know"
+                                class="btn btn-sm btn-link"/>
+                    </div>
+                    <field name="show_generated_terms_warning" invisible="1"/>
+                    <div class="alert alert-info d-flex align-items-start gap-2"
+                         role="alert"
+                         invisible="not show_generated_terms_warning">
+                        <div class="flex-grow-1">
+                            <strong>Semesters have been created for this course.</strong>
+                            <field name="generated_term_summary" readonly="1"
+                                   nolabel="1" widget="html"/>
+                        </div>
+                        <button name="action_review_generated_terms"
+                                type="object"
+                                string="You might want to review them"
+                                class="btn btn-sm btn-primary"/>
+                    </div>
                     <group>
                         <group name="course_info" string="Course Info">
                             <field name="name"/>
@@ -46,6 +69,9 @@
                         <group name="department_info" string="Department Info">
                             <field name="department_id"/>
                             <field name="course_level_id"/>
+                            <field name="term_pattern_id"
+                                   placeholder="Use the level pattern"/>
+                            <field name="effective_term_pattern_id" readonly="1"/>
                             <label for="minimum_credits" string="Minimum Credits"/>
                             <div class="o_row">
                                 <field name="minimum_credits"/>
@@ -65,10 +91,25 @@
                                 <field name="name"/>
                                 <field name="code"/>
                                 <field name="unit_type"/>
-                                <field name="unit_level"/>
-                                <field name="unit_semester"/>
-                                <field name="department_id"/>
+                                <field name="department_ids"
+                                       widget="many2many_tags"/>
                                 <field name="credit_contribution"/>
+                            </list>
+                        </field>
+                    </page>
+                    <page string="Unit Plan" name="unit_plan">
+                        <div class="mb-2">
+                            <button name="action_fill_unit_plan_from_units"
+                                    type="object" string="Fill from Units"
+                                    class="btn btn-secondary"/>
+                        </div>
+                        <field name="unit_line_ids" nolabel="1">
+                            <list editable="bottom">
+                                <field name="unit_id"/>
+                                <field name="course_year"/>
+                                <field name="period_sequence"/>
+                                <field name="phase"/>
+                                <field name="active" widget="boolean_toggle"/>
                             </list>
                         </field>
                     </page>

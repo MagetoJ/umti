@@ -18,9 +18,6 @@
     <menuitem id="menu_umti_assessment" name="Assessments" parent="menu_umti_exams_root"
               action="action_umti_assessment" sequence="10"/>
 
-    <menuitem id="menu_umti_assessment_plan" name="Assessment Plans" parent="menu_umti_exams_root"
-              action="action_umti_assessment_plan" sequence="5"
-              groups="umti_exams.group_umti_exams_hod,umti_exams.group_umti_exams_manager,base.group_system"/>
 
     <menuitem id="menu_umti_assessment_mark" name="Marks" parent="menu_umti_exams_root"
               action="action_umti_assessment_mark" sequence="20"/>

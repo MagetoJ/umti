@@ -1,6 +1,6 @@
 {
     'name': 'UMTI Trainers',
-    'version': '18.0.1.2.2',
+    'version': '18.0.1.2.9',
     'category': 'Education',
     'summary': 'Trainer allocations, unit enrollments, schemes of work, work plans, attendance and semester transitions',
     'depends': ['umti_core','umti_students','hr', 'hr_contract'],
@@ -20,6 +20,7 @@
         'views/umti_scheme_of_work_views.xml',
         'views/umti_work_plan_views.xml',
         'views/umti_attendance_views.xml',
+        'views/umti_class_group_views.xml',
         'views/school_student_inherit_views.xml',
         'views/umti_department_inherit_views.xml',
         'wizard/umti_student_transition_wizard_views.xml',

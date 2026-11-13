@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Seeded patterns mirror the legacy school_term_structure values, so an
+         existing database keeps its calendar until a level or course is
+         deliberately changed. noupdate keeps the one2many line commands from
+         being re-applied (and duplicated) on every upgrade. -->
+    <data noupdate="1">
+    <record id="term_pattern_two_sem" model="umti.term.pattern">
+        <field name="name">Two Semesters</field>
+        <field name="code">two_sem</field>
+        <field name="sequence">10</field>
+        <field name="kind">semester</field>
+        <field name="scope">per_year</field>
+        <field name="anchor">academic_year</field>
+        <field name="company_id" ref="base.main_company"/>
+        <field name="line_ids" eval="[(5, 0, 0), 
+            (0, 0, {'sequence': 10, 'name': 'Semester 1'}),
+            (0, 0, {'sequence': 20, 'name': 'Semester 2'}),
+        ]"/>
+    </record>
+
+    <record id="term_pattern_two_sem_qua" model="umti.term.pattern">
+        <field name="name">Two Semesters with Quarters</field>
+        <field name="code">two_sem_qua</field>
+        <field name="sequence">20</field>
+        <field name="kind">semester</field>
+        <field name="scope">per_year</field>
+        <field name="anchor">academic_year</field>
+        <field name="company_id" ref="base.main_company"/>
+        <field name="line_ids" eval="[(5, 0, 0), 
+            (0, 0, {'sequence': 10, 'name': 'Semester 1'}),
+            (0, 0, {'sequence': 20, 'name': 'Semester 2'}),
+            (0, 0, {'sequence': 11, 'name': 'Quarter 1', 'parent_sequence': 10}),
+            (0, 0, {'sequence': 12, 'name': 'Quarter 2', 'parent_sequence': 10}),
+            (0, 0, {'sequence': 21, 'name': 'Quarter 3', 'parent_sequence': 20}),
+            (0, 0, {'sequence': 22, 'name': 'Quarter 4', 'parent_sequence': 20}),
+        ]"/>
+    </record>
+
+    <record id="term_pattern_two_sem_final" model="umti.term.pattern">
+        <field name="name">Two Semesters with Quarters and Final Exams</field>
+        <field name="code">two_sem_final</field>
+        <field name="sequence">30</field>
+        <field name="kind">semester</field>
+        <field name="scope">per_year</field>
+        <field name="anchor">academic_year</field>
+        <field name="company_id" ref="base.main_company"/>
+        <field name="line_ids" eval="[(5, 0, 0), 
+            (0, 0, {'sequence': 10, 'name': 'Semester 1'}),
+            (0, 0, {'sequence': 20, 'name': 'Semester 2'}),
+            (0, 0, {'sequence': 11, 'name': 'Quarter 1', 'parent_sequence': 10}),
+            (0, 0, {'sequence': 12, 'name': 'Quarter 2', 'parent_sequence': 10}),
+            (0, 0, {'sequence': 13, 'name': 'Final Exam 1', 'parent_sequence': 10, 'phase': 'exam', 'duration_value': 1, 'duration_unit': 'days'}),
+            (0, 0, {'sequence': 21, 'name': 'Quarter 3', 'parent_sequence': 20}),
+            (0, 0, {'sequence': 22, 'name': 'Quarter 4', 'parent_sequence': 20}),
+            (0, 0, {'sequence': 23, 'name': 'Final Exam 2', 'parent_sequence': 20, 'phase': 'exam', 'duration_value': 1, 'duration_unit': 'days'}),
+        ]"/>
+    </record>
+
+    <record id="term_pattern_three_sem" model="umti.term.pattern">
+        <field name="name">Three Trimesters</field>
+        <field name="code">three_sem</field>
+        <field name="sequence">40</field>
+        <field name="kind">trimester</field>
+        <field name="scope">per_year</field>
+        <field name="anchor">academic_year</field>
+        <field name="company_id" ref="base.main_company"/>
+        <field name="line_ids" eval="[(5, 0, 0), 
+            (0, 0, {'sequence': 10, 'name': 'Semester 1'}),
+            (0, 0, {'sequence': 20, 'name': 'Semester 2'}),
+            (0, 0, {'sequence': 30, 'name': 'Semester 3'}),
+        ]"/>
+    </record>
+
+    <record id="term_pattern_four_quarter" model="umti.term.pattern">
+        <field name="name">Four Quarters</field>
+        <field name="code">four_Quarter</field>
+        <field name="sequence">50</field>
+        <field name="kind">quarter</field>
+        <field name="scope">per_year</field>
+        <field name="anchor">academic_year</field>
+        <field name="company_id" ref="base.main_company"/>
+        <field name="line_ids" eval="[(5, 0, 0), 
+            (0, 0, {'sequence': 10, 'name': 'Quarter 1'}),
+            (0, 0, {'sequence': 20, 'name': 'Quarter 2'}),
+            (0, 0, {'sequence': 30, 'name': 'Quarter 3'}),
+            (0, 0, {'sequence': 40, 'name': 'Quarter 4'}),
+        ]"/>
+    </record>
+
+    <record id="term_pattern_block" model="umti.term.pattern">
+        <field name="name">Single Block (whole course)</field>
+        <field name="code">block</field>
+        <field name="sequence">60</field>
+        <field name="kind">block</field>
+        <field name="scope">whole_course</field>
+        <field name="anchor">intake</field>
+        <field name="company_id" ref="base.main_company"/>
+        <field name="line_ids" eval="[(5, 0, 0), 
+            (0, 0, {'sequence': 10, 'name': 'Block', 'duration_value': 0}),
+        ]"/>
+    </record>
+    </data>
+</odoo>

@@ -1,6 +1,7 @@
 from odoo.exceptions import AccessError, UserError
 from odoo.tests import tagged
 
+from ..models.assessment_types import DEFAULT_CORE_WEIGHTS
 from .common import ExamsCommon
 
 
@@ -16,7 +17,7 @@ class TestUnitResult(ExamsCommon):
         """Create CAT / Assignment / Final; each argument is (alice, bob) marks."""
         made = {}
         for kind, (alice, bob) in (('cat', cat), ('assignment', assignment), ('final', final)):
-            a = self._assessment(assessment_type=kind)
+            a = self._assessment(assessment_type=kind, weight=DEFAULT_CORE_WEIGHTS[kind])
             self._mark_all(a, {self.alice: alice, self.bob: bob})
             if kind in publish:
                 self._publish(a)
@@ -48,50 +49,63 @@ class TestUnitResult(ExamsCommon):
         made['final'].with_user(self.manager).action_publish_all()
         self.assertTrue(self._result().is_complete)
 
-    def test_incomplete_without_all_three_components(self):
+    def test_incomplete_when_weights_do_not_total_100(self):
         for kind in ('cat', 'final'):
-            a = self._assessment(assessment_type=kind)
+            a = self._assessment(assessment_type=kind, weight=DEFAULT_CORE_WEIGHTS[kind])
             self._mark_all(a, {self.alice: 90, self.bob: 90})
             self._publish(a)
         res = self._result()
-        self.assertFalse(res.is_complete)   # no assignment exists yet
-        self.assertEqual(res.pending_count, 1)
+        self.assertEqual(res.weight_total, 90)
+        self.assertFalse(res.is_complete)   # the 10% assignment does not exist
         with self.assertRaises(UserError):
             res.with_user(self.manager).action_publish()
 
-    def test_optional_types_do_not_count(self):
+    def test_zero_weight_assessments_are_record_only(self):
         self._core(cat=(50, 80), assignment=(80, 40), final=(80, 40))
         before = self._result().final_mark
-        quiz = self._assessment(assessment_type='quiz')
+        quiz = self._assessment(assessment_type='quiz', weight=0)
         self._mark_all(quiz, {self.alice: 100, self.bob: 100})
         self._publish(quiz)
-        midterm = self._assessment(assessment_type='midterm')   # left unmarked
+        midterm = self._assessment(assessment_type='midterm', weight=0)   # left unmarked
         res = self._result()
         self.assertEqual(res.final_mark, before)
-        self.assertTrue(res.is_complete)    # an unfinished optional type never blocks
+        self.assertTrue(res.is_complete)    # a zero-weight assessment never blocks
         self.assertEqual(quiz.mark_ids[:1].weighted_score, 0)
         self.assertTrue(midterm)
 
+    def test_any_type_can_carry_weight(self):
+        # no plan needed: a quiz can simply be given a share of the final mark
+        for kind, weight, score in (('quiz', 30, 100), ('final', 70, 50)):
+            a = self._assessment(assessment_type=kind, weight=weight)
+            self._mark_all(a, {self.alice: score, self.bob: score})
+            self._publish(a)
+        res = self._result()
+        self.assertTrue(res.is_complete)
+        self.assertAlmostEqual(res.final_mark, 30 + 35)
+
     def test_several_cats_are_averaged(self):
-        self._core(cat=(40, 40), assignment=(0, 0), final=(0, 0))
-        cat2 = self._assessment(assessment_type='cat')
-        self._mark_all(cat2, {self.alice: 80, self.bob: 80})
-        self._publish(cat2)
+        cats = []
+        for score in (40, 80):
+            a = self._assessment(assessment_type='cat', weight=10)
+            self._mark_all(a, {self.alice: score, self.bob: score})
+            self._publish(a)
+            cats.append(a)
         res = self._result()
         self.assertEqual(res.cat_percent, 60)
-        self.assertAlmostEqual(res.final_mark, 60 * 20 / 100)
+        self.assertAlmostEqual(res.final_mark, 40 * 10 / 100 + 80 * 10 / 100)
 
     def test_cancelled_ignored_in_consolidation(self):
-        self._core(cat=(50, 50), assignment=(50, 50), final=(50, 50))
-        extra = self._assessment(assessment_type='cat')
+        made = self._core(cat=(50, 50), assignment=(50, 50), final=(50, 50))
+        made['cat'].write({'weight': 10})
+        extra = self._assessment(assessment_type='cat', weight=10)
         extra.action_open()                       # an unpublished extra CAT is pending
+        self._mark_all(made['cat'], {self.alice: 50, self.bob: 50})
         res = self._result()
         self.assertEqual(res.pending_count, 1)
         self.assertFalse(res.is_complete)
         extra.with_user(self.manager).action_cancel()
         res = self._result()
         self.assertEqual(res.pending_count, 0)
-        self.assertTrue(res.is_complete)
 
     def test_publish_result_writes_and_updates_exam_record(self):
         made = self._core(cat=(72, 40), assignment=(72, 40), final=(72, 40))

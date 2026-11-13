@@ -1,43 +1,57 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <data numpy="1">
-        <!-- Default Regular Slot Templates -->
-        <record id="slot_template_regular_1" model="umti.slot.template">
-            <field name="name">Morning Session 1</field>
-            <field name="slot_type">regular</field>
-            <field name="start_time">8.0</field>
-            <field name="end_time">10.0</field>
-            <field name="sequence">10</field>
-        </record>
-        <record id="slot_template_regular_2" model="umti.slot.template">
-            <field name="name">Morning Session 2</field>
-            <field name="slot_type">regular</field>
-            <field name="start_time">10.5</field>
-            <field name="end_time">12.5</field>
-            <field name="sequence">20</field>
-        </record>
-        <record id="slot_template_regular_3" model="umti.slot.template">
-            <field name="name">Afternoon Session</field>
-            <field name="slot_type">regular</field>
-            <field name="start_time">14.0</field>
-            <field name="end_time">16.0</field>
-            <field name="sequence">30</field>
+    <!-- Starter templates. noupdate: edits made by the school survive upgrades.
+         auto_apply is off so nothing is generated at install time (existing
+         databases may already hold slots that overlap the new periods);
+         open a template and press "Apply / Refresh Slots" to use it. -->
+    <data noupdate="1">
+
+        <record id="slot_template_legacy_3h" model="umti.timetable.slot.template">
+            <field name="name">Standard 3-Hour Blocks (08:00-17:00)</field>
+            <field name="code">STD3H</field>
+            <field name="auto_apply" eval="False"/>
+            <field name="description">Matches the slots generated before templates were reusable, so existing timetables keep working.</field>
+            <field name="line_ids" eval="[
+                (0, 0, {'sequence': 10, 'name': 'Morning Session 1', 'line_type': 'regular', 'start_time': 8.0, 'end_time': 11.0}),
+                (0, 0, {'sequence': 20, 'name': 'Morning Session 2', 'line_type': 'regular', 'start_time': 11.0, 'end_time': 14.0}),
+                (0, 0, {'sequence': 30, 'name': 'Afternoon Session', 'line_type': 'regular', 'start_time': 14.0, 'end_time': 17.0}),
+            ]"/>
         </record>
 
-        <!-- Default Exam Slot Templates -->
-        <record id="slot_template_exam_1" model="umti.slot.template">
-            <field name="name">Exam Morning Slot</field>
-            <field name="slot_type">exam</field>
-            <field name="start_time">9.0</field>
-            <field name="end_time">12.0</field>
-            <field name="sequence">10</field>
+        <record id="slot_template_day_90" model="umti.timetable.slot.template">
+            <field name="name">Full-time Day (90-minute periods)</field>
+            <field name="code">DAY90</field>
+            <field name="auto_apply" eval="False"/>
+            <field name="line_ids" eval="[
+                (0, 0, {'sequence': 10, 'name': 'Period 1', 'line_type': 'regular', 'start_time': 8.0, 'end_time': 9.5}),
+                (0, 0, {'sequence': 20, 'name': 'Period 2', 'line_type': 'regular', 'start_time': 9.5, 'end_time': 11.0}),
+                (0, 0, {'sequence': 30, 'name': 'Tea Break', 'line_type': 'break', 'start_time': 11.0, 'end_time': 11.5}),
+                (0, 0, {'sequence': 40, 'name': 'Period 3', 'line_type': 'regular', 'start_time': 11.5, 'end_time': 13.0}),
+                (0, 0, {'sequence': 50, 'name': 'Lunch', 'line_type': 'break', 'start_time': 13.0, 'end_time': 14.0}),
+                (0, 0, {'sequence': 60, 'name': 'Period 4', 'line_type': 'regular', 'start_time': 14.0, 'end_time': 15.5}),
+                (0, 0, {'sequence': 70, 'name': 'Period 5', 'line_type': 'regular', 'start_time': 15.5, 'end_time': 17.0}),
+            ]"/>
         </record>
-        <record id="slot_template_exam_2" model="umti.slot.template">
-            <field name="name">Exam Afternoon Slot</field>
-            <field name="slot_type">exam</field>
-            <field name="start_time">13.5</field>
-            <field name="end_time">16.5</field>
-            <field name="sequence">20</field>
+
+        <record id="slot_template_evening" model="umti.timetable.slot.template">
+            <field name="name">Evening Classes</field>
+            <field name="code">EVE</field>
+            <field name="auto_apply" eval="False"/>
+            <field name="line_ids" eval="[
+                (0, 0, {'sequence': 10, 'name': 'Evening 1', 'line_type': 'regular', 'start_time': 17.5, 'end_time': 19.0}),
+                (0, 0, {'sequence': 20, 'name': 'Evening 2', 'line_type': 'regular', 'start_time': 19.0, 'end_time': 20.5}),
+            ]"/>
         </record>
+
+        <record id="slot_template_exam_standard" model="umti.timetable.slot.template">
+            <field name="name">Standard Exam Sessions</field>
+            <field name="code">EXAM2</field>
+            <field name="auto_apply" eval="False"/>
+            <field name="line_ids" eval="[
+                (0, 0, {'sequence': 10, 'name': 'Exam Morning Session', 'line_type': 'exam', 'start_time': 8.5, 'end_time': 11.5}),
+                (0, 0, {'sequence': 20, 'name': 'Exam Afternoon Session', 'line_type': 'exam', 'start_time': 13.5, 'end_time': 16.5}),
+            ]"/>
+        </record>
+
     </data>
 </odoo>

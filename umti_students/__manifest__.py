@@ -1,6 +1,6 @@
 {
     'name': 'UMTI Students',
-    'version': '18.0.2.0.0',
+    'version': '18.0.2.35.2',
     'summary': 'Admissions, student records, fees, exams, review popup and student portal',
     'category': 'Education',
     # Compare with your old manifests (git show HEAD:school_student/__manifest__.py)
@@ -10,12 +10,21 @@
         # 1. Groups and access rights
         'data/umti_students_group_category.xml',
         'security/security.xml',
+        'security/student_finance_security.xml',
+        'security/student_services_security.xml',
         'security/ir.model.access.csv',
         # 2. Sequences
         'data/ir_sequence_data.xml',
+        'data/student_service_types.xml',
         'data/umti_fee_receipt_sequence.xml',
         'views/umti_student_views.xml',
         'views/umti_student_semester_views.xml',
+        'views/umti_alumni_views.xml',
+        'views/umti_careers_views.xml',
+        'views/umti_accommodation_views.xml',
+        'views/umti_scholarships_views.xml',
+        'views/umti_service_areas_views.xml',
+        'views/umti_academic_term_inherit_views.xml',
         'views/umti_library_books_views.xml',
         'views/umti_library_lending_views.xml',
         'views/umti_kits_views.xml',
@@ -28,10 +37,14 @@
         'views/umti_student_portfolio_views.xml',
         'views/umti_admission_review_views.xml',
         'views/umti_admission_payment_wizard_views.xml',
+        'views/umti_admission_fee_waiver_wizard_views.xml',
         'views/umti_menu_item_views.xml',
         'views/umti_student_form_inherit.xml',
-        'views/umti_dashboard_views.xml',
+        'views/umti_dashboard_views.xml',        
         'views/umti_core_menu_icon.xml',
+        'views/umti_student_service_views.xml',
+
+        'views/umti_student_finance_views.xml',
         # 5. Portal page
         'views/umti_portal_templates.xml',
     ],

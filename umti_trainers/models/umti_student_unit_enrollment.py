@@ -76,6 +76,26 @@ class UmtiStudentUnitEnrollment(models.Model):
                 rec.unit_id.name or '',
                 rec.academic_term_id.name or '')
 
+    @api.constrains('course_id', 'student_id', 'academic_term_id', 'unit_id')
+    def _check_course_term(self):
+        for rec in self:
+            if (rec.student_id.course_id
+                    and rec.course_id != rec.student_id.course_id):
+                raise ValidationError(_(
+                    "The enrollment course must be the student's course."))
+            if (rec.academic_term_id.course_id
+                    and rec.academic_term_id.course_id != rec.course_id):
+                raise ValidationError(_(
+                    "Term %(term)s belongs to %(term_course)s, not to "
+                    "%(course)s.",
+                    term=rec.academic_term_id.name,
+                    term_course=rec.academic_term_id.course_id.name,
+                    course=rec.course_id.name))
+            if rec.unit_id not in rec.course_id.unit_ids:
+                raise ValidationError(_(
+                    "Unit %(unit)s does not belong to %(course)s.",
+                    unit=rec.unit_id.name, course=rec.course_id.name))
+
     @api.constrains('unit_id')
     def _check_unit_active(self):
         for rec in self:

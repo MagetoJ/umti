@@ -16,6 +16,7 @@ class UmtiFacility(models.Model):
         ('classroom', 'Classroom'),
         ('lecture_hall', 'Lecture Hall'),
         ('lab', 'Laboratory'),
+        ('hostel', 'Hostel'),
         ('computer_lab', 'Computer Lab'),
         ('workshop', 'Workshop'),
         ('exam_hall', 'Exam Hall'),

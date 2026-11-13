@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="service_type_counselling" model="umti.student.service.type">
+            <field name="name">Guidance &amp; Counselling</field>
+            <field name="code">counselling</field>
+            <field name="sequence">10</field>
+            <field name="icon">fa-heart</field>
+            <field name="confidential" eval="True"/>
+            <field name="active" eval="False"/>
+            <field name="group_ids" eval="[(4, ref('group_umti_service_counselling'))]"/>
+        </record>
+        <record id="service_type_welfare" model="umti.student.service.type">
+            <field name="name">Student Welfare</field>
+            <field name="code">welfare</field>
+            <field name="sequence">20</field>
+            <field name="icon">fa-handshake-o</field>
+            <field name="active" eval="False"/>
+            <field name="group_ids" eval="[(4, ref('group_umti_service_welfare'))]"/>
+        </record>
+        <record id="service_type_discipline" model="umti.student.service.type">
+            <field name="name">Discipline</field>
+            <field name="code">discipline</field>
+            <field name="sequence">30</field>
+            <field name="icon">fa-gavel</field>
+            <field name="confidential" eval="True"/>
+            <field name="active" eval="False"/>
+            <field name="group_ids" eval="[(4, ref('group_umti_service_discipline'))]"/>
+        </record>
+        <record id="service_type_careers" model="umti.student.service.type">
+            <field name="name">Careers &amp; Attachment</field>
+            <field name="code">careers</field>
+            <field name="sequence">40</field>
+            <field name="icon">fa-briefcase</field>
+            <field name="active" eval="False"/>
+            <field name="group_ids" eval="[(4, ref('group_umti_service_careers'))]"/>
+        </record>
+        <record id="service_type_accommodation" model="umti.student.service.type">
+            <field name="name">Accommodation</field>
+            <field name="code">accommodation</field>
+            <field name="sequence">50</field>
+            <field name="icon">fa-bed</field>
+            <field name="active" eval="False"/>
+            <field name="group_ids" eval="[(4, ref('group_umti_service_accommodation'))]"/>
+        </record>
+        <record id="service_type_health" model="umti.student.service.type">
+            <field name="name">Health &amp; Clinic</field>
+            <field name="code">health</field>
+            <field name="sequence">60</field>
+            <field name="icon">fa-medkit</field>
+            <field name="confidential" eval="True"/>
+            <field name="active" eval="False"/>
+            <field name="group_ids" eval="[(4, ref('group_umti_service_health'))]"/>
+        </record>
+        <record id="service_type_scholarships" model="umti.student.service.type">
+            <field name="name">Scholarships &amp; Sponsorship</field>
+            <field name="code">scholarships</field>
+            <field name="sequence">70</field>
+            <field name="icon">fa-graduation-cap</field>
+            <field name="active" eval="False"/>
+            <field name="group_ids" eval="[(4, ref('group_umti_service_scholarships'))]"/>
+        </record>
+        <record id="service_type_clearance" model="umti.student.service.type">
+            <field name="name">Clearance &amp; Graduation</field>
+            <field name="code">clearance</field>
+            <field name="sequence">80</field>
+            <field name="icon">fa-check-square-o</field>
+            <field name="active" eval="False"/>
+            <field name="group_ids" eval="[(4, ref('group_umti_service_clearance'))]"/>
+        </record>
+        <record id="service_type_activities" model="umti.student.service.type">
+            <field name="name">Student Activities</field>
+            <field name="code">activities</field>
+            <field name="sequence">90</field>
+            <field name="icon">fa-futbol-o</field>
+            <field name="active" eval="False"/>
+            <field name="group_ids" eval="[(4, ref('group_umti_service_activities'))]"/>
+        </record>
+        <record id="service_type_grievances" model="umti.student.service.type">
+            <field name="name">Grievances &amp; Feedback</field>
+            <field name="code">grievances</field>
+            <field name="sequence">100</field>
+            <field name="icon">fa-comments-o</field>
+            <field name="confidential" eval="True"/>
+            <field name="active" eval="False"/>
+            <field name="group_ids" eval="[(4, ref('group_umti_service_grievances'))]"/>
+        </record>
+        <record id="service_type_transport" model="umti.student.service.type">
+            <field name="name">Transport</field>
+            <field name="code">transport</field>
+            <field name="sequence">110</field>
+            <field name="icon">fa-bus</field>
+            <field name="active" eval="False"/>
+            <field name="group_ids" eval="[(4, ref('group_umti_service_transport'))]"/>
+        </record>
+        <record id="service_type_onboarding" model="umti.student.service.type">
+            <field name="name">Student ID &amp; Onboarding</field>
+            <field name="code">onboarding</field>
+            <field name="sequence">120</field>
+            <field name="icon">fa-id-card</field>
+            <field name="active" eval="False"/>
+            <field name="group_ids" eval="[(4, ref('group_umti_service_onboarding'))]"/>
+        </record>
+        <record id="service_type_inclusion" model="umti.student.service.type">
+            <field name="name">Special Needs &amp; Inclusion</field>
+            <field name="code">inclusion</field>
+            <field name="sequence">130</field>
+            <field name="icon">fa-universal-access</field>
+            <field name="confidential" eval="True"/>
+            <field name="active" eval="False"/>
+            <field name="group_ids" eval="[(4, ref('group_umti_service_inclusion'))]"/>
+        </record>
+        <record id="service_type_alumni" model="umti.student.service.type">
+            <field name="name">Alumni</field>
+            <field name="code">alumni</field>
+            <field name="sequence">140</field>
+            <field name="icon">fa-users</field>
+            <field name="active" eval="False"/>
+            <field name="group_ids" eval="[(4, ref('group_umti_service_alumni'))]"/>
+        </record>
+    </data>
+</odoo>

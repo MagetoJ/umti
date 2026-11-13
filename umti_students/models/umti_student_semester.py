@@ -34,8 +34,8 @@ class UmtiStudentSemester(models.Model):
         help="")
     academic_term_id = fields.Many2one(
         'umti.academic.term', string='Semester',
-        domain="[('status', '=', 'in_progress')]",
-        help="Only the semester currently in progress can be assigned.")
+        domain="[('course_id', 'in', [course_id, False])]",
+        help="Term of this student's course, or a shared term.")
     sequence = fields.Integer(default=10)
     name = fields.Char(
         string='Semester Label', store=True, compute='_compute_name')
@@ -54,10 +54,26 @@ class UmtiStudentSemester(models.Model):
             'umti_core.school_term_structure', 'two_sem')
         return SEMESTERS_PER_YEAR.get(structure, DEFAULT_SEMESTERS_PER_YEAR)
 
-    @api.depends('sequence')
+    @api.depends('sequence', 'course_year', 'academic_term_id',
+                 'academic_term_id.name', 'student_id.course_id')
     def _compute_name(self):
         per_year = self._semesters_per_year()
         for rec in self:
+            if rec.academic_term_id:
+                rec.name = rec.academic_term_id.name
+                continue
+            pattern = (rec.student_id.course_id._get_term_pattern()
+                       if rec.course_id else False)
+            lines = pattern._main_lines() if pattern else False
+            if lines:
+                index = (max(rec.sequence or 1, 1) - 1) % len(lines)
+                line = lines[index]
+                if pattern.scope == 'per_year' and rec.course_year:
+                    rec.name = _("Year %(year)s - %(name)s",
+                                 year=rec.course_year, name=line.name)
+                else:
+                    rec.name = line.name
+                continue
             index = max(rec.sequence or 1, 1) - 1
             rec.name = _("Year %(year)s Semester %(sem)s",
                          year=index // per_year + 1,

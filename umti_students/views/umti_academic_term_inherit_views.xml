@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="umti_academic_term_view_form_inherit_intake" model="ir.ui.view">
+        <field name="name">umti.academic.term.view.form.inherit.intake</field>
+        <field name="model">umti.academic.term</field>
+        <field name="inherit_id" ref="umti_core.umti_academic_term_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='course_id']" position="after">
+                <field name="intake_id"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="umti_academic_term_view_list_inherit_intake" model="ir.ui.view">
+        <field name="name">umti.academic.term.view.list.inherit.intake</field>
+        <field name="model">umti.academic.term</field>
+        <field name="inherit_id" ref="umti_core.umti_academic_term_view_list"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='course_id']" position="after">
+                <field name="intake_id" optional="hide"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

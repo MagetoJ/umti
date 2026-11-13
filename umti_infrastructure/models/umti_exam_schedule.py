@@ -33,6 +33,17 @@ class UmtiExamSchedule(models.Model):
         ('published', 'Published'),
     ], default='draft', required=True)
 
+    @api.constrains('assessment_id', 'academic_term_id', 'course_id')
+    def _check_assessment_term(self):
+        for rec in self:
+            if rec.academic_term_id != rec.assessment_id.semester_id:
+                raise ValidationError(_(
+                    "The exam schedule term must be the assessment's term."))
+            if rec.course_id != rec.assessment_id.course_id:
+                raise ValidationError(_(
+                    "The exam schedule course must be the assessment's "
+                    "course."))
+
     # ------------------------------------------------------------ Onchange Logic
     @api.onchange('assessment_id')
     def _onchange_assessment_id(self):

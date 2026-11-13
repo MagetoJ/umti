@@ -37,32 +37,64 @@
                     <field name="state" widget="statusbar" statusbar_visible="draft,open,closed"/>
                 </header>
                 <sheet>
+                    <field name="show_course_setup_warning" invisible="1"/>
+                    <div class="alert alert-warning d-flex align-items-center gap-2"
+                         role="alert" invisible="not show_course_setup_warning">
+                        <field name="course_setup_warning_message" class="mb-0"
+                               readonly="1"/>
+                        <button name="action_dismiss_course_setup_warning"
+                                type="object" string="I know"
+                                class="btn btn-sm btn-link"/>
+                    </div>
                     <div class="oe_button_box" name="button_box">
                         <button name="action_view_applications" type="object"
                                 class="oe_stat_button" icon="fa-users">
                             <field name="application_count" widget="statinfo" string="Applications"/>
                         </button>
+                        <button name="action_view_course" type="object"
+                                class="oe_stat_button" icon="fa-graduation-cap"
+                                invisible="not course_id">
+                            <field name="capacity" widget="statinfo" string="Capacity"/>
+                        </button>
+                        <button name="action_view_applications" type="object"
+                                class="oe_stat_button" icon="fa-check-square-o">
+                            <field name="seats_taken" widget="statinfo" string="Seats Taken"/>
+                        </button>
+                        <button name="action_view_applications" type="object"
+                                class="oe_stat_button" icon="fa-ticket">
+                            <field name="seats_left" widget="statinfo" string="Seats Left"/>
+                        </button>
                     </div>
                     <div class="oe_title">
                         <label for="name"/>
-                        <h1><field name="name" placeholder="e.g. Diploma in IT, Sept 2026 intake"/></h1>
+                        <h1><field name="name" placeholder="e.g. Diploma in IT, Sept 2026 intake"
+                                   readonly="state != 'draft'"/></h1>
                     </div>
                     <group>
                         <group>
-                            <field name="academic_year_id"/>
-                            <field name="semester_id"/>
-                            <field name="course_id"/>
-                            <field name="department_id"/>
+                            <field name="academic_year_id"
+                                   readonly="state != 'draft'"/>
+                            <field name="semester_id"
+                                   readonly="state != 'draft'"/>
+                            <field name="course_id"
+                                   readonly="state != 'draft'"/>
+                            <field name="department_id"
+                                   readonly="state != 'draft'"/>
                         </group>
                         <group>
-                            <field name="date_open"/>
-                            <field name="date_close"/>
-                            <field name="capacity"/>
-                            <field name="seats_taken"/>
-                            <field name="seats_left" invisible="not capacity"/>
+                            <field name="date_open"
+                                   readonly="state != 'draft'"/>
+                            <field name="date_close"
+                                   readonly="state != 'draft'"/>
+                            <field name="start_date"
+                                   readonly="state != 'draft'"/>
+                            <field name="end_date"
+                                   readonly="state != 'draft'"/>
                             <field name="admission_fee"/>
                             <field name="currency_id" invisible="1"/>
-                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="company_id"
+                                   groups="base.group_multi_company"
+                                   readonly="state != 'draft'"/>
                         </group>
                     </group>
                     <notebook>
@@ -140,6 +172,8 @@
                             <field name="semester_id"/>
                             <field name="date_open"/>
                             <field name="date_close"/>
+                            <field name="start_date"/>
+                            <field name="end_date"/>
                             <field name="seats_left"/>
                             <footer>
                                 <field name="state" widget="badge"

@@ -3,6 +3,7 @@
     <record id="admission_structure_votehead" model="umti.structure.votehead">
         <field name="name">Admission Fees</field>
         <field name="code">ADMISSION</field>
+        <field name="paid_once">True</field>
     </record>
 
     <record id="leaving_certificate_preset" model="umti.course.required.documents">

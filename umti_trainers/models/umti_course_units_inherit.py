@@ -4,14 +4,6 @@ from odoo import api, fields, models
 class UmtiCourseUnitsInherit(models.Model):
     _inherit = 'umti.course.units'
 
-    def write(self, vals):
-        res = super().write(vals)
-        watched = {'unit_level', 'unit_semester', 'active'}
-        if watched & set(vals):
-            courses = self.mapped('course_ids')
-            if courses:
-                self.env['umti.course']._refresh_for_courses(courses)
-        return res
     allocation_ids = fields.Many2many(
         'umti.trainer.allocation', 'trainer_allocation_unit_rel',
         'unit_id', 'allocation_id',

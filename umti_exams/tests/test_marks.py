@@ -9,7 +9,7 @@ class TestMarks(ExamsCommon):
 
     def setUp(self):
         super().setUp()
-        self.a = self._assessment(weight=100)
+        self.a = self._assessment(weight=20)
         self.a.action_open()
         self.line = self.a.mark_ids.filtered(lambda m: m.student_id == self.alice)
 
@@ -20,7 +20,7 @@ class TestMarks(ExamsCommon):
         self.assertEqual((self.line.grade, self.line.result), ('D', 'pass'))
         self.line.marks = 91
         self.assertEqual(self.line.grade, 'A')
-        # one CAT carries the whole CAT component (20% by default)
+        # this CAT carries 20% of the final mark
         self.assertAlmostEqual(self.line.weighted_score, 91 * 20 / 100)
 
     def test_absent(self):

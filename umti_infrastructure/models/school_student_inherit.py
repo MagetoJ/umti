@@ -62,3 +62,28 @@ class SchoolStudentTimetable(models.Model):
             'domain': self._get_class_schedule_domain(),
             'context': {'group_by': ['day_of_week'], 'create': False},
         }
+    
+class SchoolStudent(models.Model):
+    _inherit = 'school.student'
+
+    hostel_allocation_ids = fields.One2many(
+        'umti.hostel.allocation',
+        'student_id',
+        string='Hostel Allocations'
+    )
+    hostel_allocation_count = fields.Integer(
+        string='Hostel Count',
+        compute='_compute_hostel_allocation_count'
+    )
+
+    @api.depends('hostel_allocation_ids')
+    def _compute_hostel_allocation_count(self):
+        for student in self:
+            student.hostel_allocation_count = len(student.hostel_allocation_ids)
+
+    def action_view_hostel_allocations(self):
+        self.ensure_one()
+        action = self.env["ir.actions.actions"]._for_xml_id("umti_infrastructure.action_umti_hostel_allocation")
+        action['domain'] = [('student_id', '=', self.id)]
+        action['context'] = {'default_student_id': self.id}
+        return action

@@ -23,6 +23,7 @@
                 <field name="date"/>
                 <field name="trainer_id"/>
                 <field name="department_id" optional="show"/>
+                <field name="group_id" optional="show"/>
                 <field name="course_id"/>
                 <field name="unit_id"/>
                 <field name="academic_term_id"/>
@@ -79,14 +80,17 @@
                                    groups="base.group_multi_company"/>
                         </group>
                         <group string="Academic Context">
+                            <field name="group_id"
+                                   options="{'no_create': True, 'no_open': True}"/>
                             <field name="course_id"
+                                   invisible="group_id"
                                    domain="[('department_id', '=', department_id)]"
                                    options="{'no_create': True}"/>
                             <field name="allowed_unit_ids" invisible="1"/>
                             <field name="unit_id"
                                    domain="[('id', 'in', allowed_unit_ids)]"
                                    options="{'no_create': True, 'no_open': True}"/>
-                            <field name="academic_term_id"/>
+                            <field name="academic_term_id" invisible="group_id"/>
                         </group>
                     </group>
                     <group string="Summary">
@@ -103,6 +107,7 @@
                                 <list editable="bottom"
                                       create="false" delete="false">
                                     <field name="student_id" readonly="1" force_save="1"/>
+                                    <field name="student_term_id" optional="hide" readonly="1"/>
                                     <field name="is_present" column_invisible="True"/>
                                     <field name="status_id"
                                            options="{'no_create': True, 'no_open': True}"
@@ -135,6 +140,7 @@
                 <field name="course_id"/>
                 <field name="unit_id"/>
                 <field name="academic_term_id"/>
+                <field name="group_id"/>
                 <filter name="filter_today" string="Today"
                         domain="[('date', '=', context_today().strftime('%%Y-%%m-%%d'))]"/>
                 <filter name="filter_draft" string="Draft"
@@ -148,6 +154,8 @@
                             context="{'group_by': 'course_id'}"/>
                     <filter name="group_unit" string="Unit"
                             context="{'group_by': 'unit_id'}"/>
+                    <filter name="group_group" string="Class Group"
+                            context="{'group_by': 'group_id'}"/>
                     <filter name="group_date" string="Date"
                             context="{'group_by': 'date'}"/>
                     <filter name="group_state" string="Status"
@@ -169,6 +177,7 @@
                 <field name="unit_id"/>
                 <field name="course_id"/>
                 <field name="academic_term_id"/>
+                <field name="group_id"/>
                 <field name="trainer_id"/>
                 <field name="present_count"/>
                 <field name="absent_count"/>

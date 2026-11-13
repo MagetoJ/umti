@@ -16,10 +16,15 @@
                         <group string="Semester Info">
                             <field name="name"/>
                             <field name="academic_year_id"/>
+                            <field name="course_id"/>
+                            <field name="pattern_id"/>
+                            <field name="sequence"/>
+                            <field name="parent_term"/>
                         </group>
                         <group string="Dates">
                             <field name="term_start_date"/>
                             <field name="term_end_date"/>
+                            <field name="is_subterm"/>
                         </group>
                     </group>
                 </sheet>
@@ -38,6 +43,8 @@
                 <field name="term_start_date"/>
                 <field name="term_end_date"/>
                 <field name="academic_year_id"/>
+                <field name="course_id"/>
+                <field name="sequence" optional="hide"/>
             </list>
         </field>
     </record>
@@ -54,6 +61,7 @@
                         <main>
                             <field name="name" class="fw-bold fs-5"/>
                             <field name="academic_year_id"/>
+                            <field name="course_id"/>
                             <field name="term_start_date"/>
                             <field name="term_end_date"/>
                             <footer>
@@ -77,12 +85,14 @@
             <search>
                 <field name="name"/>
                 <field name="academic_year_id"/>
+                <field name="course_id"/>
                 <filter name="filter_draft" string="Draft" domain="[('status', '=', 'draft')]"/>
                 <filter name="filter_in_progress" string="In Progress" domain="[('status', '=', 'in_progress')]"/>
                 <filter name="filter_ended" string="Ended" domain="[('status', '=', 'ended')]"/>
                 <group expand="0" string="Group By">
                     <filter name="group_status" string="Status" context="{'group_by': 'status'}"/>
                     <filter name="group_year" string="Academic Year" context="{'group_by': 'academic_year_id'}"/>
+                    <filter name="group_course" string="Course" context="{'group_by': 'course_id'}"/>
                 </group>
             </search>
         </field>

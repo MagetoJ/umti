@@ -8,10 +8,10 @@
         <field name="arch" type="xml">
             <kanban default_group_by="state" class="o_kanban_small_column" quick_create="false">
                 <field name="name"/>
-                <field name="trainer_id"/>
                 <field name="department_id"/>
                 <field name="course_unit_id"/>
                 <field name="academic_term_id"/>
+                <field name="is_master_plan"/>
                 <field name="state"/>
                 <templates>
                     <t t-name="card">
@@ -24,17 +24,17 @@
                                 </div>
                             </div>
                             <div class="o_kanban_record_body text-muted small mb-2">
-                                <div><i class="fa fa-book me-1"/> <field name="course_unit_id"/></div>
-                                <div><i class="fa fa-building me-1"/> <field name="department_id"/></div>
+                                <div t-if="record.course_unit_id.raw_value"><i class="fa fa-book me-1"/> <field name="course_unit_id"/></div>
+                                <div t-if="record.department_id.raw_value"><i class="fa fa-building me-1"/> <field name="department_id"/></div>
                                 <div><i class="fa fa-calendar me-1"/> <field name="academic_term_id"/></div>
                             </div>
                             <div class="o_kanban_record_bottom border-top pt-2 mt-1 d-flex justify-content-between align-items-center">
                                 <div class="oe_kanban_bottom_left">
                                     <field name="state" widget="label_selection"
-                                           options="{'classes': {'draft': 'default', 'submitted': 'warning', 'approved': 'success', 'rejected': 'danger'}}"/>
+                                           options="{'classes': {'draft': 'default', 'approved': 'warning', 'active': 'success', 'done': 'info'}}"/>
                                 </div>
                                 <div class="oe_kanban_bottom_right">
-                                    <field name="trainer_id" widget="many2one_avatar_user"/>
+                                    <span t-if="record.is_master_plan.raw_value" class="badge bg-primary">Master Plan</span>
                                 </div>
                             </div>
                         </div>
@@ -49,17 +49,21 @@
         <field name="name">umti.work.plan.list</field>
         <field name="model">umti.work.plan</field>
         <field name="arch" type="xml">
-            <list decoration-muted="state == 'rejected'"
-                  decoration-info="state == 'draft'"
-                  decoration-warning="state == 'submitted'"
-                  decoration-success="state == 'approved'"
-                  decoration-danger="state == 'rejected'">
+            <list decoration-info="state == 'draft'"
+                  decoration-warning="state == 'approved'"
+                  decoration-success="state in ('active', 'done')">
                 <field name="name"/>
-                <field name="scheme_id"/>
-                <field name="trainer_id"/>
+                <field name="academic_term_id"/>
                 <field name="department_id"/>
-                <field name="hod_id"/>
-                <field name="state" widget="badge"/>
+                <field name="course_unit_id"/>
+                <field name="start_date"/>
+                <field name="end_date"/>
+                <field name="total_weeks"/>
+                <field name="is_master_plan"/>
+                <field name="state" widget="badge"
+                       decoration-info="state == 'draft'"
+                       decoration-warning="state == 'approved'"
+                       decoration-success="state in ('active', 'done')"/>
             </list>
         </field>
     </record>
@@ -69,88 +73,108 @@
         <field name="name">umti.work.plan.form</field>
         <field name="model">umti.work.plan</field>
         <field name="arch" type="xml">
-            <form string="Work Plan">
+            <form string="Master Institutional Work Plan">
                 <header>
-                    <button name="action_submit" type="object" string="Submit to HOD"
-                            class="btn-primary" invisible="state not in ('draft', 'rejected')"/>
-                    <button name="action_approve" type="object" string="Approve"
-                            class="btn-success" invisible="state != 'submitted'"
-                            groups="umti_trainers.group_umti_trainers_manager"/>
-                    <button name="action_reject" type="object" string="Request Revisions"
-                            class="btn-danger" invisible="state != 'submitted'"
-                            groups="umti_trainers.group_umti_trainers_manager"/>
-                    <button name="action_reset_draft" type="object" string="Reset to Draft"
-                            invisible="state not in ('submitted', 'rejected')"/>
-                    <field name="state" widget="statusbar"
-                           statusbar_visible="draft,submitted,approved"/>
+                    <button name="action_approve" string="Approve &amp; Lock Master Plan" type="object" 
+                            class="oe_highlight" invisible="state != 'draft'"
+                            groups="umti_trainers.group_umti_work_plan_manager"/>
+                    
+                    <button name="action_generate_schemes_of_work" string="Generate Schemes of Work" type="object" 
+                            class="oe_highlight" invisible="state != 'approved'"
+                            groups="umti_trainers.group_umti_work_plan_manager"/>
+
+                    <button name="action_reset_to_draft" string="Reset to Draft" type="object"
+                            invisible="state == 'draft'"
+                            groups="umti_trainers.group_umti_work_plan_manager"/>
+                            
+                    <field name="state" widget="statusbar" statusbar_visible="draft,approved,active,done"/>
                 </header>
                 <sheet>
+                    <widget name="web_ribbon" title="Master Plan" bg_color="text-bg-primary" invisible="not is_master_plan"/>
                     <div class="oe_title">
-                        <label for="name"/>
-                        <h1><field name="name" placeholder="e.g. Work Plan - Term 1 2026" readonly="state == 'approved'"/></h1>
+                        <label for="name" string="Work Plan Title"/>
+                        <h1>
+                            <field name="name" placeholder="e.g. Master Academic Calendar &amp; Work Plan - Term 1 2026"
+                                   readonly="state != 'draft'"/>
+                        </h1>
                     </div>
-
                     <group>
-                        <group string="Trainer &amp; Department Metadata">
-                            <field name="trainer_id" readonly="state == 'approved'"/>
-                            <field name="tel_no" readonly="state == 'approved'"/>
-                            <field name="department_id" readonly="state == 'approved'"/>
-                            <field name="academic_term_id" readonly="state == 'approved'"/>
-                            <field name="company_id" groups="base.group_multi_company" readonly="state == 'approved'"/>
+                        <group string="Institutional Scope">
+                            <field name="is_master_plan" readonly="state != 'draft'"/>
+                            <field name="academic_term_id" readonly="state != 'draft'"/>
+                            <field name="department_id" readonly="state != 'draft'"/>
+                            <field name="course_unit_id" invisible="is_master_plan" readonly="state != 'draft'"/>
                         </group>
-                        <group string="Unit &amp; Timeline">
-                            <field name="course_unit_id" readonly="state == 'approved'"/>
-                            <field name="unit_code" readonly="state == 'approved'"/>
-                            <field name="class_name" readonly="state == 'approved'"/>
-                            <field name="start_date" readonly="state == 'approved'"/>
-                            <field name="end_date" readonly="state == 'approved'"/>
+                        <group string="Schedule Windows">
+                            <field name="start_date" readonly="state != 'draft'"/>
+                            <field name="end_date" readonly="state != 'draft'"/>
+                            <field name="total_weeks" readonly="state != 'draft'"/>
                         </group>
                     </group>
-
-                    <group string="Plan Tasks &amp; Benchmark Criteria">
-                        <field name="skill_or_job_task" readonly="state == 'approved'"/>
-                        <field name="benchmark_criteria" readonly="state == 'approved'"/>
-                    </group>
-
+                    
                     <notebook>
-                        <page string="Objectives &amp; Details" name="objectives">
-                            <field name="objectives" placeholder="Specify term objectives and goals..." readonly="state == 'approved'"/>
-                        </page>
-                        <page string="Linked Schemes of Work" name="schemes">
-                            <field name="scheme_of_work_ids" readonly="state == 'approved'">
-                                <list>
-                                    <field name="title"/>
-                                    <field name="unit_id"/>
-                                    <field name="state" widget="badge"/>
-                                </list>
-                            </field>
-                        </page>
-                        <page string="Session Activities" name="session_activities">
-                            <field name="line_ids" readonly="state == 'approved'">
+                        <!-- Main Work Plan Lines Grid -->
+                        <page string="Master Activity &amp; Curriculum Grid">
+                            <field name="line_ids" readonly="state != 'draft'">
                                 <list editable="bottom">
-                                    <field name="session_date"/>
-                                    <field name="time_slot"/>
-                                    <field name="specific_objective"/>
-                                    <field name="activity"/>
-                                    <field name="venue"/>
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="week_number"/>
+                                    <field name="slot_category" widget="badge"
+                                           decoration-info="slot_category == 'learning'"
+                                           decoration-warning="slot_category in ('assessment', 'cat')"
+                                           decoration-danger="slot_category == 'exam'"
+                                           decoration-success="slot_category in ('school_event', 'co_curricular')"/>
+                                    <field name="name" string="Activity / Module Name"/>
+                                    <field name="topic"/>
+                                    <field name="subtopics_outline" optional="show"/>
+                                    <field name="learning_activities" optional="hide"/>
+                                    <field name="planned_assessment_type" widget="badge"/>
+                                    <field name="other_assessment_name" 
+                                           placeholder="Custom Title (e.g. Viva, Field Report)"
+                                           invisible="planned_assessment_type != 'other'"
+                                           required="planned_assessment_type == 'other'"/>
+                                    <field name="resources" optional="hide"/>
                                 </list>
                             </field>
                         </page>
-                        <page string="Approvals &amp; Sign-offs" name="approvals">
-                            <group>
-                                <group string="Prepared By (Trainer)">
-                                    <field name="prepared_by_id" readonly="1"/>
-                                    <field name="prepared_date" readonly="1"/>
-                                </group>
-                                <group string="Approved By (Head of Department)">
-                                    <field name="approved_by_id" readonly="1"/>
-                                    <field name="approved_date" readonly="1"/>
-                                </group>
-                            </group>
+
+                        <!-- Readonly Tab: Co-Curricular & School Events -->
+                        <page string="School &amp; Co-Curricular Events">
+                            <field name="line_ids" readonly="1" domain="[('slot_category', 'in', ('school_event', 'co_curricular', 'holiday'))]">
+                                <list>
+                                    <field name="week_number"/>
+                                    <field name="slot_category" widget="badge"/>
+                                    <field name="name"/>
+                                    <field name="resources" string="Required Facilities"/>
+                                </list>
+                            </field>
                         </page>
-                        <page string="HOD Revisions / Notes" name="hod_notes" invisible="state != 'rejected' and not rejection_reason">
-                            <field name="rejection_reason" placeholder="State reasons for revision..." readonly="state == 'approved'"/>
+
+                        <!-- Readonly Tab: Exam & Assessment Windows -->
+                        <page string="Exam &amp; Assessment Schedule">
+                            <field name="line_ids" readonly="1" domain="[('slot_category', 'in', ('assessment', 'cat', 'exam'))]">
+                                <list>
+                                    <field name="week_number"/>
+                                    <field name="planned_assessment_type" widget="badge"/>
+                                    <field name="other_assessment_name" invisible="planned_assessment_type != 'other'"/>
+                                    <field name="name"/>
+                                    <field name="topic"/>
+                                </list>
+                            </field>
                         </page>
+
+                        <!-- Generated Schemes of Work -->
+                    <page string="Generated Schemes of Work" invisible="state == 'draft'">
+                        <field name="scheme_ids" readonly="1">
+        <list>
+            <field name="title"/>
+            <field name="trainer_id"/>
+            <field name="department_id"/>
+            <field name="unit_id"/>
+            <field name="state" widget="badge"/>
+        </list>
+    </field>
+                    </page>
                     </notebook>
                 </sheet>
                 <chatter/>
@@ -163,21 +187,21 @@
         <field name="name">umti.work.plan.search</field>
         <field name="model">umti.work.plan</field>
         <field name="arch" type="xml">
-            <search string="Search Work Plans">
+            <search string="Search Master Work Plans">
                 <field name="name"/>
-                <field name="trainer_id"/>
                 <field name="department_id"/>
-                <field name="scheme_id"/>
+                <field name="course_unit_id"/>
+                <field name="academic_term_id"/>
+                <filter string="Master Plans" name="filter_master" domain="[('is_master_plan', '=', True)]"/>
+                <separator/>
                 <filter string="Draft" name="filter_draft" domain="[('state', '=', 'draft')]"/>
-                <filter string="Submitted" name="filter_submitted" domain="[('state', '=', 'submitted')]"/>
                 <filter string="Approved" name="filter_approved" domain="[('state', '=', 'approved')]"/>
-                <filter string="Rejected" name="filter_rejected" domain="[('state', '=', 'rejected')]"/>
+                <filter string="Active" name="filter_active" domain="[('state', '=', 'active')]"/>
                 <separator/>
                 <group expand="0" string="Group By">
                     <filter string="Department" name="groupby_department" context="{'group_by': 'department_id'}"/>
-                    <filter string="Trainer" name="groupby_trainer" context="{'group_by': 'trainer_id'}"/>
-                    <filter string="State" name="groupby_state" context="{'group_by': 'state'}"/>
                     <filter string="Academic Term" name="groupby_term" context="{'group_by': 'academic_term_id'}"/>
+                    <filter string="State" name="groupby_state" context="{'group_by': 'state'}"/>
                 </group>
             </search>
         </field>
@@ -185,12 +209,12 @@
 
     <!-- Action -->
     <record id="umti_work_plan_action" model="ir.actions.act_window">
-        <field name="name">Work Plans</field>
+        <field name="name">Master Institutional Work Plans</field>
         <field name="res_model">umti.work.plan</field>
         <field name="view_mode">kanban,list,form</field>
         <field name="search_view_id" ref="umti_work_plan_view_search"/>
         <field name="help" type="html">
-            <p class="o_view_nocontent_smiling_face">Create your first Work Plan</p>
+            <p class="o_view_nocontent_smiling_face">Create your first Master Institutional Work Plan</p>
         </field>
     </record>
 

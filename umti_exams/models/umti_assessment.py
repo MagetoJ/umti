@@ -1,7 +1,7 @@
 from odoo import _, api, fields, models
 from odoo.exceptions import AccessError, UserError, ValidationError
 
-from .assessment_types import ASSESSMENT_TYPES, CORE_TYPES, DEFAULT_CORE_WEIGHTS
+from .assessment_types import ASSESSMENT_TYPES, DEFAULT_CORE_WEIGHTS
 
 MANAGER_GROUPS = ('umti_exams.group_umti_exams_manager', 'base.group_system')
 
@@ -38,8 +38,8 @@ class UmtiAssessment(models.Model):
 
     assessment_type = fields.Selection(
         ASSESSMENT_TYPES, string='Type', required=True, default='cat', tracking=True,
-        help="CAT, Assignment and Final Exam compute to the final mark. Other types "
-             "must be enabled in the department's assessment plan and are recorded only.")
+        help="Any type can be used. How much it counts toward the final unit "
+             "mark is set by its weight.")
     
     learning_outcome_type = fields.Selection([
         ('lo1_t', 'LO1 - Theory'),
@@ -60,9 +60,8 @@ class UmtiAssessment(models.Model):
     counts_toward_final = fields.Boolean(compute='_compute_effective_weight')
     effective_weight = fields.Float(
         string='Contribution to Final (%)', compute='_compute_effective_weight',
-        help="How much this assessment contributes to the final unit mark. The "
-             "weight of its component (CAT / Assignment / Final Exam) is shared "
-             "equally between all assessments of that type for the unit.")
+        help="How much this assessment contributes to the final unit mark "
+             "(its weight, or 0 if it is cancelled).")
 
     category = fields.Selection([
         ('semester_exam', 'Semester Exam'),
@@ -71,8 +70,9 @@ class UmtiAssessment(models.Model):
 
     max_marks = fields.Float(string='Maximum Marks', default=100.0, required=True, tracking=True)
     weight = fields.Float(
-        string='Legacy Weight (%)',
-        help="Deprecated: weights are now set per department in the Assessment Plan.")
+        string='Weight (%)', tracking=True,
+        help="Share of the unit's final mark that this assessment carries. The "
+             "weights of all assessments of a unit in a semester should total 100.")
     pass_marks = fields.Float(string='Pass Marks', compute='_compute_pass_marks', store=True, readonly=False)
     pass_marks_manual = fields.Boolean(copy=False)
     pass_marks_warning = fields.Char(compute='_compute_pass_marks_warning')
@@ -168,42 +168,55 @@ class UmtiAssessment(models.Model):
             if rec.semester_id and rec.academic_year_id:
                 if hasattr(rec.semester_id, 'academic_year_id') and rec.semester_id.academic_year_id != rec.academic_year_id:
                     raise ValidationError(_("The semester must belong to the selected academic year."))
+            if (rec.semester_id and rec.semester_id.course_id
+                    and rec.semester_id.course_id != rec.course_id):
+                raise ValidationError(_(
+                    "Term %(term)s belongs to %(term_course)s, not to "
+                    "%(course)s.",
+                    term=rec.semester_id.name,
+                    term_course=rec.semester_id.course_id.name,
+                    course=rec.course_id.name))
 
-    @api.depends('assessment_type', 'state', 'semester_id', 'course_id', 'unit_id')
+    @api.depends('weight', 'state')
     def _compute_effective_weight(self):
-        Plan = self.env['umti.assessment.plan'].sudo()
         for rec in self:
-            rec.counts_toward_final = rec.assessment_type in CORE_TYPES
-            rec.effective_weight = 0.0
-            if (not rec.counts_toward_final or rec.state == 'cancelled'
-                    or not rec.semester_id or not rec.course_id.department_id):
-                continue
-            plan = Plan.search([
-                ('semester_id', '=', rec.semester_id.id),
-                ('department_id', '=', rec.course_id.department_id.id)], limit=1)
-            component = (plan.core_weights() if plan else DEFAULT_CORE_WEIGHTS)[rec.assessment_type]
-            siblings = max(1, self.search_count([
-                ('unit_id', '=', rec.unit_id.id), ('semester_id', '=', rec.semester_id.id),
-                ('course_id', '=', rec.course_id.id),
-                ('assessment_type', '=', rec.assessment_type),
-                ('state', '!=', 'cancelled')]))
-            rec.effective_weight = component / siblings
+            rec.effective_weight = 0.0 if rec.state == 'cancelled' else rec.weight
+            rec.counts_toward_final = rec.effective_weight > 0
 
-    @api.constrains('assessment_type', 'semester_id', 'course_id', 'state')
-    def _check_type_enabled(self):
+    def _weight_siblings_domain(self):
+        self.ensure_one()
+        return [
+            ('unit_id', '=', self.unit_id.id),
+            ('semester_id', '=', self.semester_id.id),
+            ('course_id', '=', self.course_id.id),
+            ('state', '!=', 'cancelled')]
+
+    @api.model
+    def _default_weight(self, vals):
+        """Suggested weight for a new assessment: the type's usual share, but
+        never more than what is still free for that unit and semester."""
+        suggested = DEFAULT_CORE_WEIGHTS.get(vals.get('assessment_type') or 'cat', 0.0)
+        if not (vals.get('unit_id') and vals.get('semester_id') and vals.get('course_id')):
+            return suggested
+        used = sum(self.sudo().search([
+            ('unit_id', '=', vals['unit_id']), ('semester_id', '=', vals['semester_id']),
+            ('course_id', '=', vals['course_id']), ('state', '!=', 'cancelled'),
+        ]).mapped('weight'))
+        return max(0.0, min(suggested, 100.0 - used))
+
+    @api.constrains('weight', 'state', 'unit_id', 'semester_id', 'course_id')
+    def _check_weight_total(self):
         if self.env.context.get('umti_migration'):
             return
-        Plan = self.env['umti.assessment.plan']
-        for rec in self.filtered(
-                lambda r: r.state != 'cancelled' and r.semester_id and r.course_id.department_id):
-            plan = Plan._get_or_create(rec.semester_id, rec.course_id.department_id)
-            if rec.assessment_type not in plan.enabled_types():
+        for rec in self.filtered(lambda r: r.state != 'cancelled' and r.unit_id and r.semester_id):
+            total = sum(self.sudo().search(rec._weight_siblings_domain()).mapped('weight'))
+            if total > 100.0 + 0.01:
                 raise ValidationError(_(
-                    "%(type)s is not enabled for %(dept)s in %(sem)s. Ask the Head "
-                    "of Department to enable it in the Assessment Plan.",
-                    type=dict(ASSESSMENT_TYPES)[rec.assessment_type],
-                    dept=rec.course_id.department_id.display_name,
-                    sem=rec.semester_id.display_name))
+                    "The weights of the assessments for %(unit)s in %(sem)s total "
+                    "%(total).2f%%, which is more than 100%%. Lower the weight of "
+                    "this or another assessment.",
+                    unit=rec.unit_id.display_name, sem=rec.semester_id.display_name,
+                    total=total))
 
     @api.constrains('assessment_type', 'unit_id', 'semester_id', 'course_id', 'state')
     def _check_one_final(self):
@@ -218,21 +231,17 @@ class UmtiAssessment(models.Model):
                     "Unit '%(unit)s' already has a Final Exam in semester '%(sem)s'.",
                     unit=rec.unit_id.display_name, sem=rec.semester_id.display_name))
 
-    @api.onchange('assessment_type', 'semester_id', 'course_id')
+    @api.onchange('assessment_type')
     def _onchange_assessment_type(self):
-        dept = self.course_id.department_id
-        if self.assessment_type and self.semester_id and dept:
-            plan = self.env['umti.assessment.plan'].sudo().search([
-                ('semester_id', '=', self.semester_id.id),
-                ('department_id', '=', dept.id)], limit=1)
-            if plan and self.assessment_type not in plan.enabled_types():
-                return {'warning': {
-                    'title': _("Assessment type not enabled"),
-                    'message': _(
-                        "%(type)s is not enabled for %(dept)s this semester. Ask the "
-                        "Head of Department to enable it in the Assessment Plan.",
-                        type=dict(ASSESSMENT_TYPES)[self.assessment_type],
-                        dept=dept.display_name)}}
+        if self.assessment_type and not self.weight:
+            self.weight = DEFAULT_CORE_WEIGHTS.get(self.assessment_type, 0.0)
+
+    @api.onchange('learning_outcome_type')
+    def _onchange_learning_outcome_type(self):
+        # Learning-outcome assessments feed the outcome columns of the result
+        # sheet; give them a weight only if you want them in the final mark.
+        if self.learning_outcome_type and self.learning_outcome_type.startswith('lo'):
+            self.weight = 0.0
 
     @api.onchange('course_id')
     def _onchange_course_id(self):
@@ -257,12 +266,15 @@ class UmtiAssessment(models.Model):
                 vals['code'] = self.env['ir.sequence'].next_by_code('umti.assessment') or 'New'
             if 'pass_marks' in vals:
                 vals['pass_marks_manual'] = True
+            if 'weight' not in vals:
+                lo = vals.get('learning_outcome_type') or ''
+                vals['weight'] = 0.0 if lo.startswith('lo') else self._default_weight(vals)
         return super().create(vals_list)
 
     def write(self, vals):
         if 'pass_marks' in vals and 'max_marks' not in vals:
             vals = dict(vals, pass_marks_manual=True)
-        watch = {'assessment_type', 'learning_outcome_type', 'state', 'unit_id', 'semester_id', 'academic_year_id'}
+        watch = {'assessment_type', 'learning_outcome_type', 'weight', 'state', 'unit_id', 'semester_id', 'academic_year_id'}
         need_refresh = watch & set(vals)
         keys = set()
         if need_refresh:

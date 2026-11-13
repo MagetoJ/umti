@@ -1,6 +1,4 @@
 from . import school_student
-from . import umti_academic_term
-from . import umti_assessment_plan
 from . import umti_assessment
 from . import umti_assessment_mark
 from . import umti_assessment_unit_schedule

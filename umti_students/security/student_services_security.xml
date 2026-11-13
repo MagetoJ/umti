@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="group_umti_student_services_user" model="res.groups">
+        <field name="name">Student Services</field>
+        <field name="category_id" ref="module_category_umti_students"/>
+        <field name="implied_ids" eval="[(4, ref('group_umti_students_user'))]"/>
+    </record>
+
+    <record id="group_umti_service_counselling" model="res.groups">
+        <field name="name">Guidance &amp; Counselling</field>
+        <field name="category_id" ref="module_category_umti_students"/>
+        <field name="implied_ids" eval="[(4, ref('group_umti_student_services_user'))]"/>
+    </record>
+    <record id="group_umti_service_welfare" model="res.groups">
+        <field name="name">Student Welfare</field>
+        <field name="category_id" ref="module_category_umti_students"/>
+        <field name="implied_ids" eval="[(4, ref('group_umti_student_services_user'))]"/>
+    </record>
+    <record id="group_umti_service_discipline" model="res.groups">
+        <field name="name">Discipline</field>
+        <field name="category_id" ref="module_category_umti_students"/>
+        <field name="implied_ids" eval="[(4, ref('group_umti_student_services_user'))]"/>
+    </record>
+    <record id="group_umti_service_careers" model="res.groups">
+        <field name="name">Careers &amp; Attachment</field>
+        <field name="category_id" ref="module_category_umti_students"/>
+        <field name="implied_ids" eval="[(4, ref('group_umti_student_services_user'))]"/>
+    </record>
+    <record id="group_umti_service_accommodation" model="res.groups">
+        <field name="name">Accommodation</field>
+        <field name="category_id" ref="module_category_umti_students"/>
+        <field name="implied_ids" eval="[(4, ref('group_umti_student_services_user'))]"/>
+    </record>
+    <record id="group_umti_service_health" model="res.groups">
+        <field name="name">Health &amp; Clinic</field>
+        <field name="category_id" ref="module_category_umti_students"/>
+        <field name="implied_ids" eval="[(4, ref('group_umti_student_services_user'))]"/>
+    </record>
+    <record id="group_umti_service_scholarships" model="res.groups">
+        <field name="name">Scholarships &amp; Sponsorship</field>
+        <field name="category_id" ref="module_category_umti_students"/>
+        <field name="implied_ids" eval="[(4, ref('group_umti_student_services_user'))]"/>
+    </record>
+    <record id="group_umti_service_clearance" model="res.groups">
+        <field name="name">Clearance &amp; Graduation</field>
+        <field name="category_id" ref="module_category_umti_students"/>
+        <field name="implied_ids" eval="[(4, ref('group_umti_student_services_user'))]"/>
+    </record>
+    <record id="group_umti_service_activities" model="res.groups">
+        <field name="name">Student Activities</field>
+        <field name="category_id" ref="module_category_umti_students"/>
+        <field name="implied_ids" eval="[(4, ref('group_umti_student_services_user'))]"/>
+    </record>
+    <record id="group_umti_service_grievances" model="res.groups">
+        <field name="name">Grievances &amp; Feedback</field>
+        <field name="category_id" ref="module_category_umti_students"/>
+        <field name="implied_ids" eval="[(4, ref('group_umti_student_services_user'))]"/>
+    </record>
+    <record id="group_umti_service_transport" model="res.groups">
+        <field name="name">Transport</field>
+        <field name="category_id" ref="module_category_umti_students"/>
+        <field name="implied_ids" eval="[(4, ref('group_umti_student_services_user'))]"/>
+    </record>
+    <record id="group_umti_service_onboarding" model="res.groups">
+        <field name="name">Student ID &amp; Onboarding</field>
+        <field name="category_id" ref="module_category_umti_students"/>
+        <field name="implied_ids" eval="[(4, ref('group_umti_student_services_user'))]"/>
+    </record>
+    <record id="group_umti_service_inclusion" model="res.groups">
+        <field name="name">Special Needs &amp; Inclusion</field>
+        <field name="category_id" ref="module_category_umti_students"/>
+        <field name="implied_ids" eval="[(4, ref('group_umti_student_services_user'))]"/>
+    </record>
+    <record id="group_umti_service_alumni" model="res.groups">
+        <field name="name">Alumni</field>
+        <field name="category_id" ref="module_category_umti_students"/>
+        <field name="implied_ids" eval="[(4, ref('group_umti_student_services_user'))]"/>
+    </record>
+
+    <!-- Managers see every service, including confidential cases. -->
+    <record id="group_umti_students_manager" model="res.groups">
+        <field name="implied_ids" eval="[
+            (4, ref('group_umti_student_services_user')),
+            (4, ref('group_umti_service_counselling')),
+            (4, ref('group_umti_service_welfare')),
+            (4, ref('group_umti_service_discipline')),
+            (4, ref('group_umti_service_careers')),
+            (4, ref('group_umti_service_accommodation')),
+            (4, ref('group_umti_service_health')),
+            (4, ref('group_umti_service_scholarships')),
+            (4, ref('group_umti_service_clearance')),
+            (4, ref('group_umti_service_activities')),
+            (4, ref('group_umti_service_grievances')),
+            (4, ref('group_umti_service_transport')),
+            (4, ref('group_umti_service_onboarding')),
+            (4, ref('group_umti_service_inclusion')),
+            (4, ref('group_umti_service_alumni'))]"/>
+    </record>
+
+    <record id="umti_student_service_case_company_rule" model="ir.rule">
+        <field name="name">Student service case: multi-company</field>
+        <field name="model_id" ref="model_umti_student_service_case"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+
+    <record id="umti_student_service_case_confidential_rule" model="ir.rule">
+        <field name="name">Student service case: confidential services</field>
+        <field name="model_id" ref="model_umti_student_service_case"/>
+        <field name="groups" eval="[(4, ref('group_umti_student_services_user'))]"/>
+        <field name="domain_force">['|', ('confidential', '=', False), ('service_type_id.group_ids', 'in', user.groups_id.ids)]</field>
+    </record>
+</odoo>

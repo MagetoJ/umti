@@ -15,6 +15,9 @@
                     </div>
                         <group>
                             <field name="name"/>
+                            <field name="term_pattern_id"/>
+                            <field name="effective_term_pattern_id"
+                                   readonly="1" invisible="1"/>
                         </group>
                     </sheet>
                      <chatter/>
@@ -29,6 +32,8 @@
             <field name="arch" type="xml">
                 <list string="Course Levels">
                     <field name="name"/>
+                    <field name="term_pattern_id"/>
+                    <field name="effective_term_pattern_id" optional="hide"/>
                 </list>
             </field>
         </record>

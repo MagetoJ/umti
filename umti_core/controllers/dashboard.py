@@ -8,12 +8,16 @@ from odoo.http import request
 
 class UmtiDashboardController(http.Controller):
 
-    @http.route("/umti/dashboard/data", type="json", auth="user")
+    @http.route(
+        ["/dashboard", "/umti/dashboard", "/umti/dashboard/data"],
+        type="json",
+        auth="user",
+    )
     def dashboard_data(self, **_kwargs):
         """Dashboard payload for the OWL client action.
 
         Only internal users may read school-wide statistics, regardless of
-        the action's menu visibility.
+        the action's menu visibility. Handles standard and fallback route paths.
         """
         if not request.env.user.has_group("base.group_user"):
             raise AccessError(_("Only internal users can view the dashboard."))
@@ -37,7 +41,7 @@ class UmtiDashboardController(http.Controller):
         return request.env["umti.dashboard"].open_next_term()
 
     @http.route("/umti/dashboard/section_data", type="json", auth="user")
-    def section_data(self, section=None, **_kwargs):
+    def section_data(self, section=None, filters=None, **_kwargs):
         """Payload for one area dashboard (students, library, kits, ...).
 
         ``section`` maps to the abstract model ``umti.dashboard.<section>``,
@@ -45,8 +49,32 @@ class UmtiDashboardController(http.Controller):
         """
         if not request.env.user.has_group("base.group_user"):
             raise AccessError(_("Only internal users can view the dashboard."))
-        model_name = "umti.dashboard.%s" % (section or "")
-        if (not section or not re.fullmatch(r"[a-z_]+", section)
-                or model_name not in request.env):
-            raise UserError(_("Unknown dashboard."))
-        return request.env[model_name].get_dashboard_data()
+        section_str = str(section or "").strip().lower()
+        model_name = "umti.dashboard.%s" % section_str
+        if (
+            not section_str
+            or not re.fullmatch(r"[a-z_]+", section_str)
+            or model_name not in request.env
+        ):
+            raise UserError(_("Unknown dashboard section: %s") % section_str)
+        return request.env[model_name].get_dashboard_data(filters or {})
+
+    @http.route("/umti/dashboard/section_action", type="json", auth="user")
+    def section_action(self, section=None, action=None, filters=None,
+                       **_kwargs):
+        """Run one action supplied by an area dashboard."""
+        if not request.env.user.has_group("base.group_user"):
+            raise AccessError(_("Only internal users can use the dashboard."))
+        section_str = str(section or "").strip().lower()
+        action_str = str(action or "").strip().lower()
+        model_name = "umti.dashboard.%s" % section_str
+        if (
+            not section_str
+            or not re.fullmatch(r"[a-z_]+", section_str)
+            or not action_str
+            or not re.fullmatch(r"[a-z_]+", action_str)
+            or model_name not in request.env
+        ):
+            raise UserError(_("Unknown dashboard action."))
+        return request.env[model_name].run_dashboard_action(
+            action_str, filters or {})

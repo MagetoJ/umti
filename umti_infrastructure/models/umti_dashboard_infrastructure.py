@@ -8,6 +8,7 @@ EQUIPMENT = "umti.facility.equipment"
 CLASS = "umti.class.schedule"
 EXAM = "umti.exam.schedule"
 SLOT = "umti.timetable.slot"
+HOSTEL = "umti.hostel"
 
 TEACHING_TYPES = ("classroom", "lecture_hall", "lab", "computer_lab",
                   "workshop")
@@ -21,7 +22,7 @@ class UmtiDashboardInfrastructure(models.AbstractModel):
     _description = "Campus Infrastructure Dashboard"
 
     DASH_TITLE = "Campus Infrastructure Dashboard"
-    DASH_SUBTITLE = "Rooms, equipment, timetable load and exams"
+    DASH_SUBTITLE = "Rooms, equipment, hostels, timetable load and exams"
 
     def _build(self, data):
         if not self._has(FACILITY):
@@ -61,6 +62,35 @@ class UmtiDashboardInfrastructure(models.AbstractModel):
             _kpi("seats", "Seating Capacity", seats, "fa-users",
                  "across available rooms", "violet"),
         ]
+
+        # Safe Hostel KPI handling
+        if self._has(HOSTEL):
+            H, hpath = HOSTEL, "company_id"
+            hostels = self.env[H].search(self._full(H, [("active", "=", True)], hpath))
+            total_hostels = len(hostels)
+
+            # Safely check field presence to avoid KeyError
+            if "total_capacity" in self.env[H]._fields:
+                total_cap = sum(hostels.mapped("total_capacity"))
+                occupied_cap = sum(hostels.mapped("occupied_capacity"))
+                avail_cap = sum(hostels.mapped("available_capacity"))
+            else:
+                total_cap = sum(hostels.mapped("capacity")) if "capacity" in self.env[H]._fields else 0
+                occupied_cap = 0
+                avail_cap = total_cap
+
+            occ_rate = round((occupied_cap / total_cap * 100), 1) if total_cap > 0 else 0.0
+
+            data["kpis"] += [
+                _kpi("hostels", "Hostel Blocks", total_hostels, "fa-bed",
+                     "%d total capacity" % total_cap, "blue", model=H,
+                     domain=self._full(H, [("active", "=", True)], hpath)),
+                _kpi("hostel_occupancy", "Bed Occupancy", occupied_cap, "fa-users",
+                     "%d available" % avail_cap, "green" if avail_cap > 0 else "amber",
+                     model=H, domain=self._full(H, [("active", "=", True)], hpath)),
+                _kpi("hostel_rate", "Occupancy Rate", "%.1f%%" % occ_rate, "fa-pie-chart",
+                     "%d of %d occupied" % (occupied_cap, total_cap), "violet"),
+            ]
 
         if self._has(EQUIPMENT):
             E, epath = EQUIPMENT, "facility_id.company_id"

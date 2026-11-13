@@ -321,19 +321,20 @@ class UmtiDashboard(models.AbstractModel):
                                          [("active", "=", True)]))))
 
         if self._has("umti.fee.structure"):
-            approved = self._count(
-                "umti.fee.structure", [("status", "=", "approved")])
-            drafts = self._count(
-                "umti.fee.structure", [("status", "=", "draft")])
-            if approved:
-                hint = "%d approved structure(s)." % approved
-            elif drafts:
-                hint = ("%d structure(s) are still draft — approve them "
-                        "before invoicing." % drafts)
+            active_structures = self._count(
+                "umti.fee.structure", [("status", "=", "active")])
+            proposed = self._count(
+                "umti.fee.structure", [("status", "=", "proposed")])
+            if active_structures:
+                hint = "%d active structure(s)." % active_structures
+            elif proposed:
+                hint = ("%d structure(s) are still proposed — activate them "
+                        "before invoicing." % proposed)
             else:
                 hint = "Define what each course charges, per semester."
             steps.append(self._step(
-                "fee_structures", "Fee structures", hint, approved > 0,
+                "fee_structures", "Fee structures", hint,
+                active_structures > 0,
                 "Review fee structures",
                 self._action("umti.fee.structure", _("Fee Structures"),
                              self._drill("umti.fee.structure"))))
@@ -713,7 +714,7 @@ class UmtiDashboard(models.AbstractModel):
                     "label": unit.name or unit.code or _("Unit"),
                     "meta": "%s \u00b7 %s credits" % (
                         unit.code or "", unit.credit_contribution or 0),
-                    "badge": unit.department_id.name or "",
+                    "badge": ', '.join(unit.department_ids.mapped('name')),
                 } for unit in missing[:5]],
             })
 

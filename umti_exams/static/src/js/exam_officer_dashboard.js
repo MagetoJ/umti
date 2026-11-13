@@ -12,6 +12,7 @@ export class ExamOfficerDashboard extends Component {
         action: { type: Object, optional: true },
         actionId: { type: [Number, Boolean], optional: true },
         className: { type: String, optional: true },
+        globalState: { type: Object, optional: true },
         state: { type: Object, optional: true },
         updateActionState: { type: Function, optional: true },
     };

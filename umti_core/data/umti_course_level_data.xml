@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="course_level_3" model="umti.course.level">
+            <field name="name">Level 3</field>
+            <field name="company_id" ref="base.main_company"/>
+            <field name="active" eval="True"/>
+        </record>
+
+        <record id="course_level_4" model="umti.course.level">
+            <field name="name">Level 4</field>
+            <field name="company_id" ref="base.main_company"/>
+            <field name="active" eval="True"/>
+        </record>
+
+        <record id="course_level_5" model="umti.course.level">
+            <field name="name">Level 5</field>
+            <field name="company_id" ref="base.main_company"/>
+            <field name="active" eval="True"/>
+        </record>
+
+        <record id="course_level_6" model="umti.course.level">
+            <field name="name">Level 6</field>
+            <field name="company_id" ref="base.main_company"/>
+            <field name="active" eval="True"/>
+        </record>
+    </data>
+</odoo>

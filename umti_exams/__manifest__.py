@@ -1,6 +1,6 @@
 {
     "name": "UMTI Exams and Assessment",
-    "version": "18.0.1.1.0",
+    "version": "18.0.1.3.0",
     "category": "Education",
     "license": "LGPL-3",
     "summary": "Exams, Grade Scales, Assessment Mark Sheets, and Unit Results for UMTI",
@@ -18,7 +18,6 @@
         "data/ir_sequence_data.xml",
         "data/grade_scale_data.xml",
         "views/umti_grade_scale_views.xml",
-        "views/umti_assessment_plan_views.xml",
         "views/umti_assessment_views.xml",
         "views/umti_assessment_mark_views.xml",
         "views/umti_unit_result_views.xml",

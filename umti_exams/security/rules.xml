@@ -16,11 +16,6 @@
             <field name="model_id" ref="model_umti_assessment_mark"/>
             <field name="domain_force">[('company_id', 'in', company_ids)]</field>
         </record>
-        <record id="rule_umti_assessment_plan_company" model="ir.rule">
-            <field name="name">Assessment plan: multi-company</field>
-            <field name="model_id" ref="model_umti_assessment_plan"/>
-            <field name="domain_force">[('company_id', 'in', company_ids)]</field>
-        </record>
         <record id="rule_umti_unit_result_company" model="ir.rule">
             <field name="name">Unit result: multi-company</field>
             <field name="model_id" ref="model_umti_unit_result"/>

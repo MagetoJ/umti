@@ -32,3 +32,12 @@ access_umti_academic_year_admin,umti.academic.year.admin,model_umti_academic_yea
 access_umti_academic_term_user,umti.academic.term.user,model_umti_academic_term,umti_core.group_umti_academic_year_user,1,0,0,0
 access_umti_academic_term_manager,umti.academic.term.manager,model_umti_academic_term,umti_core.group_umti_academic_year_manager,1,1,1,0
 access_umti_academic_term_admin,umti.academic.term.admin,model_umti_academic_term,umti_core.group_umti_academic_year_admin,1,1,1,1
+access_umti_term_pattern_user,umti.term.pattern.user,model_umti_term_pattern,umti_core.group_umti_academic_year_user,1,0,0,0
+access_umti_term_pattern_manager,umti.term.pattern.manager,model_umti_term_pattern,umti_core.group_umti_academic_year_manager,1,1,1,0
+access_umti_term_pattern_admin,umti.term.pattern.admin,model_umti_term_pattern,umti_core.group_umti_academic_year_admin,1,1,1,1
+access_umti_term_pattern_line_user,umti.term.pattern.line.user,model_umti_term_pattern_line,umti_core.group_umti_academic_year_user,1,0,0,0
+access_umti_term_pattern_line_manager,umti.term.pattern.line.manager,model_umti_term_pattern_line,umti_core.group_umti_academic_year_manager,1,1,1,0
+access_umti_term_pattern_line_admin,umti.term.pattern.line.admin,model_umti_term_pattern_line,umti_core.group_umti_academic_year_admin,1,1,1,1
+access_umti_course_unit_line_user,umti.course.unit.line.user,model_umti_course_unit_line,umti_core.group_umti_user,1,0,0,0
+access_umti_course_unit_line_manager,umti.course.unit.line.manager,model_umti_course_unit_line,umti_core.group_umti_manager,1,1,1,0
+access_umti_course_unit_line_admin,umti.course.unit.line.admin,model_umti_course_unit_line,umti_core.group_umti_admin,1,1,1,1

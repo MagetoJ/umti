@@ -27,6 +27,7 @@
                                 <field name="academic_term_ids" nolabel="1">
                                     <list>
                                         <field name="name"/>
+                                        <field name="course_id"/>
                                         <field name="term_start_date"/>
                                         <field name="term_end_date"/>
                                         <field name="status"/>

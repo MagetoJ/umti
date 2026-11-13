@@ -6,7 +6,8 @@ class UmtiDepartment(models.Model):
     _name = 'umti.department'
     _inherit = ['mail.thread','mail.activity.mixin']
     _rec_name = 'name'
-
+    _description = 'UMTI Department'
+    
     name = fields.Char(string='Name', required=True, index=True, tracking=True)
     code = fields.Char(string='Code', required=True, tracking=True)
     active = fields.Boolean(default=True, tracking=True)

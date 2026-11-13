@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 from datetime import timedelta
-from odoo import fields, models, api, _
+
+from dateutil.relativedelta import relativedelta
+
+from odoo import api, fields, models, _
 from odoo.exceptions import ValidationError
 
 
@@ -64,277 +67,220 @@ class UmtiAcademicYear(models.Model):
         return self.env['ir.config_parameter'].sudo().get_param(
             'umti_core.school_term_structure', 'two_sem')
 
-    def _compute_is_other_term_structure(self):
-        is_other = self._get_term_structure() == 'others'
-        for record in self:
-            record.is_other_term_structure = is_other
+    # ------------------------------------------------------------------
+    # Term generation from course patterns
+    # ------------------------------------------------------------------
+    @api.model
+    def _year_for_date(self, date):
+        """The academic year that owns a date, or the next one if none does."""
+        year = self.search([
+            ('start_date', '<=', date),
+            ('end_date', '>=', date),
+            ('active', '=', True),
+        ], order='start_date desc', limit=1)
+        if year:
+            return year
+        return self.search([
+            ('start_date', '>', date),
+            ('active', '=', True),
+        ], order='start_date', limit=1)
 
-    #TODO: Add a method to activate and deactivate terms automatically
-    #TODO: Close an Academic year automatically when all child terms are closed
+    @api.model
+    def _course_duration(self, course):
+        """Course length in months, or 0 when it is not configured."""
+        if not course.period:
+            return 0
+        return course.period * 12 if course.period_type == 'years' else course.period
+
+    @api.model
+    def _course_end(self, course, start):
+        months = self._course_duration(course)
+        if not months:
+            return None
+        return start + relativedelta(months=months) - timedelta(days=1)
+
+    def _course_span(self, course, pattern):
+        """Span covered by this year's generation for a course."""
+        self.ensure_one()
+        start = self.start_date
+        if pattern.scope == 'whole_course':
+            return start, self._course_end(course, start) or self.end_date
+        return start, self.end_date
+
+    @api.model
+    def _split_span(self, lines, start, end):
+        """Split ``start..end`` across pattern lines.
+
+        Lines with ``duration_value`` take that length; lines with 0 share
+        whatever is left equally. The last line always ends at ``end``.
+        """
+        lines = lines.sorted('sequence')
+        if not lines or not start or not end:
+            return {}
+        if end < start:
+            end = start
+        result = {}
+        cursor = start
+        auto_left = len(lines.filtered(lambda line: not line.duration_value))
+        for index, line in enumerate(lines):
+            is_last = index == len(lines) - 1
+            if is_last:
+                line_end = end
+            elif line.duration_value:
+                line_end = cursor + self._relativedelta(
+                    line.duration_value, line.duration_unit) - timedelta(days=1)
+                if line_end > end:
+                    line_end = end
+            else:
+                days_left = (end - cursor).days + 1
+                share = days_left // max(auto_left, 1)
+                line_end = cursor + timedelta(days=max(share - 1, 0))
+                auto_left = max(auto_left - 1, 1)
+            result[line.id] = (cursor, line_end)
+            cursor = line_end + timedelta(days=1)
+            if cursor > end:
+                cursor = end
+        return result
+
+    @api.model
+    def _relativedelta(self, value, unit):
+        if unit == 'days':
+            return relativedelta(days=value)
+        if unit == 'weeks':
+            return relativedelta(weeks=value)
+        return relativedelta(months=value)
+
+    @api.model
+    def _term_name(self, course, line_name, start):
+        """Human-readable term name: course, period and start month."""
+        label = course.name or course.code or ''
+        name = f"{label} - {line_name}" if label else line_name
+        if start:
+            name = f"{name} ({start.strftime('%b %Y')})"
+        return name
+
+    @api.model
+    def _create_terms_from_pattern(self, year, course, pattern, start, end):
+        Term = self.env['umti.academic.term']
+        main_lines = pattern._main_lines()
+        spans = self._split_span(main_lines, start, end)
+        created = Term
+        by_sequence = {}
+        for line in main_lines:
+            line_start, line_end = spans[line.id]
+            term = Term.create({
+                'name': self._term_name(course, line.name, line_start),
+                'term_start_date': line_start,
+                'term_end_date': line_end,
+                'academic_year_id': year.id,
+                'course_id': course.id,
+                'pattern_id': pattern.id,
+                'sequence': line.sequence,
+                'status': 'draft',
+                'company_id': (course.company_id or year.company_id).id,
+            })
+            by_sequence[line.sequence] = term
+            created |= term
+        for line in main_lines:
+            parent = by_sequence[line.sequence]
+            children = pattern._child_lines(line.sequence)
+            child_spans = self._split_span(
+                children, parent.term_start_date, parent.term_end_date)
+            for child in children:
+                child_start, child_end = child_spans[child.id]
+                term = Term.create({
+                    'name': self._term_name(course, child.name, child_start),
+                    'term_start_date': child_start,
+                    'term_end_date': child_end,
+                    'academic_year_id': year.id,
+                    'course_id': course.id,
+                    'pattern_id': pattern.id,
+                    'sequence': child.sequence,
+                    'parent_term': parent.id,
+                    'status': 'draft',
+                    'company_id': (course.company_id or year.company_id).id,
+                })
+                created |= term
+        return created
+
+    @api.model
+    def _normalize_terms(self, terms):
+        """The first main term of one generated set runs; the rest wait."""
+        main_terms = terms.filtered(lambda term: not term.parent_term).sorted(
+            'term_start_date')
+        if not main_terms:
+            return
+        running = main_terms[0]
+        for term in terms:
+            if term.status == 'ended':
+                continue
+            should_run = term == running or term.parent_term == running
+            wanted = 'in_progress' if should_run else 'draft'
+            if term.status != wanted:
+                term.write({'status': wanted})
+
+    @api.model
+    def generate_course_terms(self, course, start, end=None, year=None):
+        """Create the term set of ``course`` for an explicit span.
+
+        Used both by the yearly generation (``anchor='academic_year'``) and
+        by intake-anchored courses, whose dates come from the intake.
+        """
+        pattern = course._get_term_pattern()
+        if not pattern or not pattern.line_ids:
+            return self.env['umti.academic.term']
+        start = fields.Date.to_date(start)
+        end = fields.Date.to_date(end) if end else self._course_end(
+            course, start)
+        if not start or not end:
+            return self.env['umti.academic.term']
+        year = year or self._year_for_date(start)
+        if not year:
+            raise ValidationError(_(
+                "No academic year contains %(date)s. Create the academic year "
+                "before generating terms for %(course)s.",
+                date=start, course=course.display_name))
+        Term = self.env['umti.academic.term']
+        existing = Term.search([
+            ('academic_year_id', '=', year.id),
+            ('course_id', '=', course.id),
+            ('term_start_date', '=', start),
+        ])
+        if existing:
+            return existing
+        created = self._create_terms_from_pattern(
+            year, course, pattern, start, end)
+        self._normalize_terms(created)
+        course.write({'term_review_dismissed': False})
+        return created
+
     def _generate_terms(self):
-        # Only years generated right now get their statuses normalised;
-        # existing years keep their lifecycle.
-        new_years = self.filtered(lambda y: not y.academic_term_ids)
-        num = 0
-        final = 1
-        term_structure = self._get_term_structure()
-        academic_terms = self.env['umti.academic.term'].search([])
-        if term_structure == 'two_sem':
-            for record in self:
-                if not record.academic_term_ids:
-                    from_d = self.start_date
-                    to_d = self.end_date
-                    delta = to_d - from_d
-                    res = []
-                    day = (delta.days + 1) / 2
-                    vals = {'name': 'Semester 1',
-                            'from_date': from_d,
-                            'to_date': (from_d + timedelta(days=day))}
-                    res.append(vals)
-                    vals = {'name': 'Semester 2',
-                            'from_date': (from_d + timedelta(days=day + 1)),
-                            'to_date': to_d}
-                    res.append(vals)
-                    for term in res:
-                        academic_terms.create({
-                            'name': term['name'],
-                            'term_start_date': term['from_date'],
-                            'term_end_date': term['to_date'],
-                            'academic_year_id': self.id,
-                            'status': 'in_progress'
-                        })
-                    
-            self.write({'status': 'running'})
+        """Generate course-scoped terms for this academic year.
 
-        elif term_structure == 'two_sem_qua':
-            for record in self:
-                if not record.academic_term_ids:
-                    from_d = self.start_date
-                    to_d = self.end_date
-                    delta = to_d - from_d
-                    res = []
-                    day = (delta.days + 1) / 2
-                    vals = {'name': 'Semester 1',
-                            'from_date': from_d,
-                            'to_date': (from_d + timedelta(days=day))}
-                    res.append(vals)
-                    vals = {'name': 'Semester 2',
-                            'from_date': (from_d + timedelta(days=day + 1)),
-                            'to_date': to_d}
-                    res.append(vals)
-                    for term in res:
-                        academic_terms.create({
-                            'name': term['name'],
-                            'term_start_date': term['from_date'],
-                            'term_end_date': term['to_date'],
-                            'academic_year_id': self.id,
-                            'status': 'in_progress'
-                        })
-                        for sub_term in self.academic_term_ids:
-                            sub_from_d = sub_term.term_start_date
-                            sub_to_d = sub_term.term_end_date
-                            delta = sub_to_d - sub_from_d
-                            result = []
-                            day = (delta.days + 1) / 2
-                            vals = {'name': 'Quarter' + ' ' + str(num+1),
-                                    'from_date': sub_from_d,
-                                    'to_date': (sub_from_d + timedelta(days=day))}
-                            result.append(vals)
-                            vals = {'name': 'Quarter' + ' ' + str(num+2),
-                                    'from_date': (sub_from_d + timedelta(
-                                        days=day + 1)),
-                                    'to_date': sub_to_d}
-                            result.append(vals)
-                        num = num + 2
-
-                        for in_terms in result:
-                            academic_terms.create({
-                                'name': in_terms['name'],
-                                'term_start_date': in_terms['from_date'],
-                                'term_end_date': in_terms['to_date'],
-                                'academic_year_id': self.id,
-                                'status': 'in_progress',
-                                'parent_term': sub_term.id
-                            })
-                    
-            self.write({'status': 'running'})   
-        elif term_structure == 'two_sem_final':
-            for record in self:
-                if not record.academic_term_ids:
-                    from_d = self.start_date
-                    to_d = self.end_date
-                    delta = to_d - from_d
-                    res = []
-                    day = (delta.days + 1) / 2
-                    vals = {'name': 'Semester 1',
-                            'from_date': from_d,
-                            'to_date': (from_d + timedelta(days=day))}
-                    res.append(vals)
-                    vals = {'name': 'Semester 2',
-                            'from_date': (from_d + timedelta(days=day + 1)),
-                            'to_date': to_d}
-                    res.append(vals)
-
-                    for term in res:
-                        academic_terms.create({
-                            'name': term['name'],
-                            'term_start_date': term['from_date'],
-                            'term_end_date': term['to_date'],
-                            'academic_year_id': self.id,
-                            'status': 'in_progress'
-                        })
-
-                        for sub_term in self.academic_term_ids:
-                            sub_from_d = sub_term.term_start_date
-                            sub_to_d = sub_term.term_end_date
-                            delta = sub_to_d - sub_from_d
-                            result = []
-
-                            day = (delta.days + 1) / 2
-                            vals = {'name': 'Quarter' + ' ' + str(num+1),
-                                    'from_date': sub_from_d,
-                                    'to_date': (sub_from_d + timedelta(days=day))}
-                            result.append(vals)
-                            vals = {'name': 'Quarter' + ' ' + str(num + 2),
-                                    'from_date': (sub_from_d + timedelta(
-                                        days=day + 1)),
-                                    'to_date': (sub_from_d + timedelta(
-                                        days=delta.days - 1))}
-                            result.append(vals)
-                            vals = {'name': 'Final Exam' + ' ' + str(final),
-                                    'from_date': sub_to_d,
-                                    'to_date': sub_to_d}
-                            result.append(vals)
-                        num = num + 2
-                        final = final + 1
-
-                        for in_terms in result:
-                            academic_terms.create({
-                                'name': in_terms['name'],
-                                'term_start_date': in_terms['from_date'],
-                                'term_end_date': in_terms['to_date'],
-                                'academic_year_id': self.id,
-                                'parent_term': sub_term.id,
-                                'status': 'in_progress'
-                            })
-
-                            self.write({'status': 'running'})
-
-        elif term_structure == 'three_sem':
-            for record in self:
-                if not record.academic_term_ids:
-                    from_d = self.start_date
-                    to_d = self.end_date
-                    delta = to_d - from_d
-                    res = []
-                    day = (delta.days + 1) / 3
-                    to_date1 = (from_d + timedelta(days=day))
-                    from_date1 = (from_d + timedelta(days=day + 1))
-                    to_date2 = (from_date1 + timedelta(days=day))
-                    from_date2 = (from_date1 + timedelta(days=day + 1))
-
-                    vals = {'name': 'Semester 1',
-                            'from_date': from_d,
-                            'to_date': to_date1}
-                    res.append(vals)
-
-                    vals = {'name': 'Semester 2',
-                            'from_date': from_date1,
-                            'to_date': to_date2}
-                    res.append(vals)
-
-                    vals = {'name': 'Semester 3',
-                            'from_date': from_date2,
-                            'to_date': to_d}
-                    res.append(vals)
-                    for term in res:
-                        academic_terms.create({
-                            'name': term['name'],
-                            'term_start_date': term['from_date'],
-                            'term_end_date': term['to_date'],
-                            'status': 'in_progress',
-                            'academic_year_id': self.id
-                        })
-                        self.write({'status': 'running'})
-
-        elif term_structure == 'four_Quarter':
-            for record in self:
-                if not record.academic_term_ids:
-                    from_d = self.start_date
-                    to_d = self.end_date
-                    delta = to_d - from_d
-                    res = []
-                    day = (delta.days + 1) / 4
-
-                    to_date1 = (from_d + timedelta(days=day))
-                    from_date1 = (from_d + timedelta(days=day + 1))
-                    to_date2 = (from_date1 + timedelta(days=day))
-                    from_date2 = (from_date1 + timedelta(days=day + 1))
-                    to_date3 = (from_date2 + timedelta(days=day))
-                    from_date3 = (from_date2 + timedelta(days=day + 1))
-
-                    vals = {'name': 'Semester 1',
-                            'from_date': from_d,
-                            'to_date': to_date1}
-                    res.append(vals)
-
-                    vals = {'name': 'Semester 2',
-                            'from_date': from_date1,
-                            'to_date': to_date2}
-                    res.append(vals)
-
-                    vals = {'name': 'Semester 3',
-                            'from_date': from_date2,
-                            'to_date': to_date3}
-                    res.append(vals)
-
-                    vals = {'name': 'Semester 4',
-                            'from_date': from_date3,
-                            'to_date': to_d}
-                    res.append(vals)
-
-                    for term in res:
-                        academic_terms.create({
-                            'name': term['name'],
-                            'term_start_date': term['from_date'],
-                            'term_end_date': term['to_date'],
-                            'status': 'in_progress',
-                            'academic_year_id': self.id
-                        })
-                        self.write({'status': 'running'})
-
-        new_years._normalize_term_status()
-
-    def _normalize_term_status(self):
-        """Only the first term of a year runs; the others wait as drafts.
-
-        Terms are generated for the whole year at once, so activating them
-        all (as the generator used to) would leave several "in progress" and
-        defeat any downstream filter on the running term.
+        Only courses anchored to the academic year are generated here;
+        intake-anchored courses are generated when their intake opens.
         """
         for year in self:
-            terms = year.academic_term_ids
-            if not terms:
-                continue
-            main_terms = terms.filtered(
-                lambda t: not t.parent_term).sorted('term_start_date')
-            if not main_terms:
-                continue
-            running = main_terms[0]
-            for term in terms:
-                # Sub-terms follow their parent; everything else is draft.
-                should_run = term == running or term.parent_term == running
-                wanted = 'in_progress' if should_run else 'draft'
-                if term.status != wanted:
-                    term.write({'status': wanted})
+            domain = [
+                ('active', '=', True),
+                ('status', '!=', 'discontinued'),
+            ]
+            if year.company_id:
+                domain.append(
+                    ('company_id', 'in', [year.company_id.id, False]))
+            courses = self.env['umti.course'].search(domain)
+            for course in courses:
+                pattern = course._get_term_pattern()
+                if not pattern or pattern.anchor != 'academic_year':
+                    continue
+                start, end = year._course_span(course, pattern)
+                if start and end:
+                    self.generate_course_terms(
+                        course, start, end, year=year)
+            year.write({'status': 'running'})
 
     def activate_academic_year(self):
         self._generate_terms()
-        # The first term runs; _generate_terms already leaves it in progress.
-        first_term = self.academic_term_ids.filtered(
-            lambda t: not t.parent_term).sorted('term_start_date')[:1]
-        if first_term and first_term.status != 'in_progress':
-            first_term.action_activate_academic_term()
         self.write({'status': 'running'})
 
     def close_academic_year(self):

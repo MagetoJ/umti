@@ -40,6 +40,15 @@ class SchoolAdmissionApplication(models.Model):
     mobile = fields.Char()
     email = fields.Char()
 
+    apply_financial_support = fields.Boolean(
+        string='Apply for Financial Support', tracking=True)
+    financial_support_description = fields.Text(
+        string='Financial Support Details')
+    financial_support_attachment_ids = fields.Many2many(
+        'ir.attachment', 'school_admission_financial_support_rel',
+        'application_id', 'attachment_id',
+        string='Finance Support Documents')
+
     guardian_name = fields.Char( required=True)
     guardian_relationship = fields.Selection([
         ('parent', 'Parent'), ('guardian', 'Guardian'), ('sibling', 'Sibling'),
@@ -59,16 +68,39 @@ class SchoolAdmissionApplication(models.Model):
     admission_fee = fields.Monetary(
         related='intake_id.admission_fee', currency_field='currency_id')
     currency_id = fields.Many2one(related='intake_id.currency_id')
-    fee_paid = fields.Boolean(string='Admission Fee Paid', compute='_compute_fee_paid', tracking=True, copy=False)
+    fee_paid = fields.Boolean(
+        string='Intake Fees Paid', compute='_compute_fee_paid',
+        tracking=True, copy=False)
+    admission_fee_paid = fields.Boolean(
+        string='Admission Fee Paid', compute='_compute_admission_fee_paid',
+        tracking=True, copy=False)
+    admission_fee_waived = fields.Boolean(
+        string='Admission Fee Waived', copy=False, tracking=True)
+    admission_fee_waiver_reason = fields.Text(
+        string='Waiver Reason', copy=False)
+    admission_fee_waived_by = fields.Many2one(
+        'res.users', string='Waived By', copy=False, readonly=True)
+    admission_fee_waived_date = fields.Date(
+        string='Waived On', copy=False, readonly=True)
     # TODO: fold fee_status into the application workflow — block enrolment
     # while partially paid and surface it on the application form/portal.
     fee_status = fields.Selection([
         ('no_invoice', 'No Invoice'),
         ('unpaid', 'Unpaid'),
+        ('in_payment', 'Payment in Process'),
         ('partial', 'Partially Paid'),
         ('paid', 'Paid'),
+        ('waived', 'Waived'),
     ], compute='_compute_fee_paid', string='Fee Status')
-    adm_fee_invoice_id = fields.Many2one('account.move', string='Admission Fee Invoice')
+    adm_fee_invoice_id = fields.Many2one(
+        'account.move', string='Paid Once Invoice')
+    refundable_invoice_id = fields.Many2one(
+        'account.move', string='Refundable Invoice')
+    normal_invoice_id = fields.Many2one(
+        'account.move', string='Normal Invoice')
+    intake_invoice_ids = fields.Many2many(
+        'account.move', string='Intake Invoices',
+        compute='_compute_intake_invoices')
     fee_reference = fields.Char(string='Payment Reference', copy=False)
 
     rejection_reason = fields.Text(copy=False)
@@ -142,36 +174,66 @@ class SchoolAdmissionApplication(models.Model):
                      'requirement_id': requirement.id}
                     for requirement in missing])
 
-    @api.depends('adm_fee_invoice_id',
-                 'adm_fee_invoice_id.state',
-                 'adm_fee_invoice_id.payment_state',
-                 'adm_fee_invoice_id.amount_residual')
-    def _compute_fee_paid(self):
-        """The admission fee counts as paid when its invoice is settled.
+    @api.depends('adm_fee_invoice_id', 'adm_fee_invoice_id.state',
+                 'adm_fee_invoice_id.payment_state')
+    def _compute_admission_fee_paid(self):
+        """Whether the dedicated admission (paid-once) invoice is settled.
 
-        ``account.move.payment_count`` (the previous check) only counted
-        *attached* payments: a partial payment, a payment still pending, or a
-        cancelled invoice would all mark the fee as paid. The invoice's
-        ``payment_state`` is the authoritative value: ``in_payment`` means the
-        payment is registered but not yet matched with a bank statement, which
-        still settles the student's obligation.
+        The ADMISSION votehead must be marked *paid once* so intake puts it
+        on ``adm_fee_invoice_id``. Refundable and normal invoices are not
+        part of this gate.
         """
+        settled = ('paid', 'in_payment', 'partial')
         for rec in self:
             invoice = rec.adm_fee_invoice_id
-            rec.invoice_count = 1 if invoice else 0
-            rec.fee_paid = bool(
+            rec.admission_fee_paid = bool(
                 invoice
                 and invoice.state == 'posted'
-                and invoice.payment_state in ('paid', 'in_payment')
-            )
-            if not invoice:
-                rec.fee_status = 'no_invoice'
-            elif invoice.payment_state in ('paid', 'in_payment'):
+                and invoice.payment_state in settled)
+
+    @api.depends('adm_fee_invoice_id', 'refundable_invoice_id',
+                 'normal_invoice_id',
+                 'adm_fee_invoice_id.state',
+                 'adm_fee_invoice_id.payment_state',
+                 'refundable_invoice_id.state',
+                 'refundable_invoice_id.payment_state',
+                 'normal_invoice_id.state',
+                 'normal_invoice_id.payment_state',
+                 'admission_fee_waived')
+    def _compute_fee_paid(self):
+        """The intake fees are settled when every intake invoice is."""
+        settled = ('paid', 'in_payment', 'partial')
+        for rec in self:
+            invoices = rec.intake_invoice_ids
+            rec.invoice_count = len(invoices)
+            if not invoices:
+                rec.fee_paid = False
+                rec.fee_status = (
+                    'waived' if rec.admission_fee_waived else 'no_invoice')
+                continue
+            rec.fee_paid = all(
+                invoice.state == 'posted'
+                and invoice.payment_state in settled
+                for invoice in invoices)
+            if all(invoice.payment_state == 'paid' for invoice in invoices):
                 rec.fee_status = 'paid'
-            elif invoice.payment_state == 'partial':
+            elif any(invoice.payment_state == 'partial'
+                     for invoice in invoices):
                 rec.fee_status = 'partial'
+            elif any(invoice.payment_state == 'in_payment'
+                     for invoice in invoices):
+                rec.fee_status = 'in_payment'
             else:
                 rec.fee_status = 'unpaid'
+
+    @api.depends('adm_fee_invoice_id', 'refundable_invoice_id',
+                 'normal_invoice_id')
+    def _compute_intake_invoices(self):
+        for rec in self:
+            rec.intake_invoice_ids = (
+                rec.adm_fee_invoice_id
+                | rec.refundable_invoice_id
+                | rec.normal_invoice_id)
 
 
     @api.depends('document_ids.attachment', 'document_ids.waived')
@@ -256,9 +318,11 @@ class SchoolAdmissionApplication(models.Model):
             if missing:
                 raise UserError(_('Cannot submit. Missing: %s', ', '.join(missing)))
         self.write({'state': 'submitted'})
+        for rec in self:
+            rec._ensure_review()
 
-    def action_start_review(self):
-        """Start reviewing, reusing the review of a previously closed file."""
+    def _ensure_review(self):
+        """The review record that represents this application in the queue."""
         self.ensure_one()
         review = self.env['school.admission.review'].search(
             [('application_id', '=', self.id)], limit=1)
@@ -268,10 +332,22 @@ class SchoolAdmissionApplication(models.Model):
                 'review_start_date': fields.Date.context_today(self),
                 'reviewer_id': self.env.user.id,
             })
+        return review
+
+    def action_start_review(self):
+        """Start reviewing, reusing the review of a previously closed file."""
+        self.ensure_one()
+        review = self._ensure_review()
         self.write({'state': 'review'})
         return review
         
     #TODO: For waived documents, every record shoudl be created but indicated as waived and should always show on the profiile that these documents are missing
+    def _get_intake_fee_lines(self):
+        self.ensure_one()
+        return self.env['umti.fee.structure.line']._applicable_lines(
+            self.course_id, self.academic_year_id,
+            self.intake_id.semester_id)
+
     def action_accept(self):
         """Accept: mandatory documents must be attached and the intake must have a free seat."""
         for rec in self:
@@ -283,6 +359,12 @@ class SchoolAdmissionApplication(models.Model):
             intake = rec.intake_id
             if intake.capacity and intake.seats_taken >= intake.capacity:
                 raise UserError(_('The intake "%s" is full.', intake.name))
+            if not rec.admission_fee_waived and rec.admission_fee <= 0:
+                raise UserError(_(
+                    "No admission fee is configured for %(course)s. Set the "
+                    "Admission Fees structure for the course/year, or ask a "
+                    "manager to waive the fee.",
+                    course=rec.course_id.name))
             student_documents = [(0, 0, {
                 'requirement_id': line.requirement_id.id,
                 'application_id': rec.id,
@@ -304,24 +386,67 @@ class SchoolAdmissionApplication(models.Model):
                     'is_emergency': True,
                 })],
                 'document_ids': student_documents,
+                'financial_support_requested': rec.apply_financial_support,
+                'financial_support_description':
+                    rec.financial_support_description,
+                'financial_support_attachment_ids':
+                    [(6, 0, rec.financial_support_attachment_ids.ids)],
+                'admission_fee_waived': rec.admission_fee_waived,
             })
             # Semester ladder is generated once, when the student is created
             # from the application (no button on the student form).
             student.action_initialize_program_semesters()
-            invoice = self.env['account.move'].create({
-                'partner_id': student.partner_id.id,
-                'date': fields.Date.context_today(self),
-                'move_type': 'out_invoice',
-                'ref': "Admission Fee",
-                'invoice_line_ids': [(0, 0, {
-                    'name': "Admission Fee",
+            buckets = {'adm': [], 'refundable': [], 'normal': []}
+            for fee_line in rec._get_intake_fee_lines().sorted(
+                    lambda line: (line.votehead.sequence,
+                                  line.votehead.name)):
+                if (rec.admission_fee_waived
+                        and fee_line.votehead.code == 'ADMISSION'):
+                    continue
+                if fee_line.votehead.refundable:
+                    bucket = 'refundable'
+                elif fee_line.votehead.paid_once:
+                    bucket = 'adm'
+                else:
+                    bucket = 'normal'
+                buckets[bucket].append((0, 0, {
+                    'name': fee_line.votehead.name,
                     'quantity': 1,
-                    'price_unit': rec.admission_fee,
-                })],
-            })
-            invoice.action_post()
+                    'price_unit': fee_line.amount,
+                    'umti_votehead_id': fee_line.votehead.id,
+                    'umti_refundable': fee_line.votehead.refundable,
+                }))
+            labels = {
+                'adm': _('Intake Fees - Paid Once'),
+                'refundable': _('Intake Fees - Refundable'),
+                'normal': _('Semester Fees - %(term)s',
+                            term=rec.intake_id.semester_id.name),
+            }
+            invoices = {}
+            for bucket, invoice_lines in buckets.items():
+                if not invoice_lines:
+                    continue
+                invoice = self.env['account.move'].create({
+                    'partner_id': student.partner_id.id,
+                    'date': fields.Date.context_today(self),
+                    'move_type': 'out_invoice',
+                    'ref': labels[bucket],
+                    'umti_student_id': student.id,
+                    'umti_academic_term_id':
+                        rec.intake_id.semester_id.id,
+                    'umti_fee_period_sequence':
+                        rec.intake_id.semester_id.sequence or 0,
+                    'umti_invoice_kind': (
+                        'semester' if bucket == 'normal' else 'intake'),
+                    'invoice_line_ids': invoice_lines,
+                })
+                invoice.action_post()
+                invoices[bucket] = invoice
             rec.write({
-                'adm_fee_invoice_id': invoice.id,
+                'adm_fee_invoice_id': invoices.get('adm', False),
+                'refundable_invoice_id': invoices.get(
+                    'refundable', False),
+                'normal_invoice_id': invoices.get('normal', False),
                 'student_id': student.id,
                 'state': 'accepted',
             })
@@ -357,7 +482,7 @@ class SchoolAdmissionApplication(models.Model):
     def action_view_review_status(self):
         self.ensure_one()
         
-        review = self.env['school.admission.review'].search([('application_id', '=', self.id)], limit=1)
+        review = self._ensure_review()
         
         return {
             'type': 'ir.actions.act_window',

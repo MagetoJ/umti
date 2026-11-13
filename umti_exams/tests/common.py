@@ -39,22 +39,11 @@ class ExamsCommon(TransactionCase):
         student.state = 'active'
         return student
 
-    def _enable_type(self, kind, semester=None):
-        """Enable an optional assessment type in the department's plan."""
-        plan = self.env['umti.assessment.plan']._get_or_create(
-            semester or self.sem1, self.course.department_id)
-        plan.line_ids.filtered(lambda l: l.assessment_type == kind).write({'enabled': True})
-
     def _assessment(self, **vals):
-        if vals.get('assessment_type') in ('midterm', 'quiz', 'practical', 'project'):
-            self._enable_type(
-                vals['assessment_type'],
-                self.env['umti.academic.term'].browse(vals['semester_id'])
-                if vals.get('semester_id') else None)
         values = {
             'name': 'Test', 'course_id': self.course.id, 'unit_id': self.unit.id,
             'academic_year_id': self.year.id, 'semester_id': self.sem1.id,
-            'assessment_type': 'cat', 'max_marks': 100, 'weight': 40,
+            'assessment_type': 'cat', 'max_marks': 100,
             'date': '2026-11-20', 'start_time': 9.0, 'end_time': 11.0,
         }
         values.update(vals)

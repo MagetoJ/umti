@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="umti_alumni_profile_view_form" model="ir.ui.view">
+        <field name="name">umti.alumni.profile.form</field>
+        <field name="model">umti.alumni.profile</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="student_id"/>
+                        <h1><field name="student_id" options="{'no_create': True}"/></h1>
+                    </div>
+                    <group>
+                        <group string="Graduation">
+                            <field name="course_id" readonly="1"/>
+                            <field name="graduation_date"/>
+                            <field name="graduation_year" readonly="1"/>
+                            <field name="student_state" readonly="1"/>
+                            <field name="active"/>
+                        </group>
+                        <group string="Contact">
+                            <field name="email" readonly="1"/>
+                            <field name="phone" readonly="1"/>
+                            <field name="consent"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Career">
+                            <field name="employment_status"/>
+                            <field name="employer"
+                                   invisible="employment_status not in ('employed', 'self_employed')"/>
+                            <field name="job_title"
+                                   invisible="employment_status not in ('employed', 'self_employed')"/>
+                            <field name="further_study"
+                                   invisible="employment_status != 'further_study'"/>
+                        </group>
+                        <group string="Engagement">
+                            <field name="engagement_status"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Notes">
+                            <field name="notes"/>
+                        </page>
+                        <page string="Attachments">
+                            <field name="attachment_ids" widget="many2many_binary"
+                                   nolabel="1"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="umti_alumni_profile_view_list" model="ir.ui.view">
+        <field name="name">umti.alumni.profile.list</field>
+        <field name="model">umti.alumni.profile</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="course_id"/>
+                <field name="graduation_date"/>
+                <field name="employment_status" widget="badge"/>
+                <field name="employer"/>
+                <field name="engagement_status" widget="badge"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="umti_alumni_profile_view_search" model="ir.ui.view">
+        <field name="name">umti.alumni.profile.search</field>
+        <field name="model">umti.alumni.profile</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="student_id"/>
+                <field name="course_id"/>
+                <field name="graduation_year"/>
+                <field name="employment_status"/>
+                <field name="engagement_status"/>
+                <filter name="filter_contactable" string="Contactable"
+                        domain="[('engagement_status','!=','not_contactable')]"/>
+                <filter name="filter_consent" string="Consented"
+                        domain="[('consent','=',True)]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_year" string="Graduation Year"
+                            context="{'group_by': 'graduation_year'}"/>
+                    <filter name="group_course" string="Course"
+                            context="{'group_by': 'course_id'}"/>
+                    <filter name="group_employment" string="Employment"
+                            context="{'group_by': 'employment_status'}"/>
+                    <filter name="group_engagement" string="Engagement"
+                            context="{'group_by': 'engagement_status'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_umti_alumni" model="ir.actions.act_window">
+        <field name="name">Alumni</field>
+        <field name="res_model">umti.alumni.profile</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="umti_alumni_profile_view_list"/>
+        <field name="search_view_id" ref="umti_alumni_profile_view_search"/>
+    </record>
+
+    <record id="action_umti_alumni_dashboard" model="ir.actions.client">
+        <field name="name">Alumni</field>
+        <field name="tag">umti_section_dashboard</field>
+        <field name="context">{'umti_section': 'alumni'}</field>
+    </record>
+
+    <record id="umti_alumni_profile_company_rule" model="ir.rule">
+        <field name="name">Alumni profile: multi-company</field>
+        <field name="model_id" ref="model_umti_alumni_profile"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+</odoo>

@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Common school fee voteheads. noupdate keeps local names/codes. -->
+    <data noupdate="1">
+        <record id="votehead_tuition" model="umti.structure.votehead">
+            <field name="name">Tuition</field>
+            <field name="code">TUITION</field>
+            <field name="sequence">20</field>
+        </record>
+        <record id="votehead_boarding_equipment" model="umti.structure.votehead">
+            <field name="name">Boarding Equipment &amp; Stores</field>
+            <field name="code">BOARDING_EQUIPMENT</field>
+            <field name="sequence">30</field>
+        </record>
+        <record id="votehead_boarding_meals" model="umti.structure.votehead">
+            <field name="name">Boarding Meals</field>
+            <field name="code">BOARDING_MEALS</field>
+            <field name="sequence">40</field>
+        </record>
+        <record id="votehead_activity" model="umti.structure.votehead">
+            <field name="name">Activity / Co-curricular</field>
+            <field name="code">ACTIVITY</field>
+            <field name="sequence">50</field>
+        </record>
+        <record id="votehead_repairs" model="umti.structure.votehead">
+            <field name="name">Repair, Maintenance and Improvement</field>
+            <field name="code">REPAIRS</field>
+            <field name="sequence">60</field>
+        </record>
+        <record id="votehead_medical" model="umti.structure.votehead">
+            <field name="name">Medical and Insurance</field>
+            <field name="code">MEDICAL</field>
+            <field name="sequence">70</field>
+        </record>
+        <record id="votehead_utilities" model="umti.structure.votehead">
+            <field name="name">Electricity, Water and Conservancy</field>
+            <field name="code">UTILITIES</field>
+            <field name="sequence">80</field>
+        </record>
+        <record id="votehead_local_transport" model="umti.structure.votehead">
+            <field name="name">Local Travel and Transport</field>
+            <field name="code">LOCAL_TRANSPORT</field>
+            <field name="sequence">90</field>
+        </record>
+        <record id="votehead_administrative" model="umti.structure.votehead">
+            <field name="name">Administrative</field>
+            <field name="code">ADMIN</field>
+            <field name="sequence">100</field>
+        </record>
+
+        <!-- Other voteheads commonly used in a school/TVET environment. -->
+        <record id="votehead_examination" model="umti.structure.votehead">
+            <field name="name">Examination Fees</field>
+            <field name="code">EXAM</field>
+            <field name="sequence">110</field>
+        </record>
+        <record id="votehead_registration" model="umti.structure.votehead">
+            <field name="name">Registration Fees</field>
+            <field name="code">REGISTRATION</field>
+            <field name="sequence">120</field>
+        </record>
+        <record id="votehead_library" model="umti.structure.votehead">
+            <field name="name">Library and Learning Materials</field>
+            <field name="code">LIBRARY</field>
+            <field name="sequence">130</field>
+        </record>
+        <record id="votehead_laboratory" model="umti.structure.votehead">
+            <field name="name">Laboratory and Practical Materials</field>
+            <field name="code">LABORATORY</field>
+            <field name="sequence">140</field>
+        </record>
+        <record id="votehead_ict" model="umti.structure.votehead">
+            <field name="name">ICT and Internet</field>
+            <field name="code">ICT</field>
+            <field name="sequence">150</field>
+        </record>
+        <record id="votehead_development" model="umti.structure.votehead">
+            <field name="name">Development Levy</field>
+            <field name="code">DEVELOPMENT</field>
+            <field name="sequence">160</field>
+        </record>
+        <record id="votehead_caution" model="umti.structure.votehead">
+            <field name="name">Caution Money</field>
+            <field name="code">CAUTION</field>
+            <field name="sequence">170</field>
+            <field name="paid_once" eval="True"/>
+            <field name="refundable" eval="True"/>
+        </record>
+        <record id="votehead_attachment" model="umti.structure.votehead">
+            <field name="name">Industrial Attachment</field>
+            <field name="code">ATTACHMENT</field>
+            <field name="sequence">180</field>
+        </record>
+        <record id="votehead_graduation" model="umti.structure.votehead">
+            <field name="name">Graduation Fees</field>
+            <field name="code">GRADUATION</field>
+            <field name="sequence">190</field>
+        </record>
+        <record id="votehead_uniform" model="umti.structure.votehead">
+            <field name="name">Uniform and Kits</field>
+            <field name="code">UNIFORM</field>
+            <field name="sequence">200</field>
+        </record>
+        <record id="votehead_security" model="umti.structure.votehead">
+            <field name="name">Security</field>
+            <field name="code">SECURITY</field>
+            <field name="sequence">210</field>
+        </record>
+        <record id="votehead_cleaning" model="umti.structure.votehead">
+            <field name="name">Cleaning and Sanitation</field>
+            <field name="code">CLEANING</field>
+            <field name="sequence">220</field>
+        </record>
+        <record id="votehead_sports" model="umti.structure.votehead">
+            <field name="name">Sports and Games</field>
+            <field name="code">SPORTS</field>
+            <field name="sequence">230</field>
+        </record>
+        <record id="votehead_counselling" model="umti.structure.votehead">
+            <field name="name">Guidance and Counselling</field>
+            <field name="code">COUNSELLING</field>
+            <field name="sequence">240</field>
+        </record>
+        <record id="votehead_welfare" model="umti.structure.votehead">
+            <field name="name">Student Welfare</field>
+            <field name="code">WELFARE</field>
+            <field name="sequence">250</field>
+        </record>
+    </data>
+</odoo>

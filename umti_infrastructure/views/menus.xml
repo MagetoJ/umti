@@ -1,55 +1,82 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-
-    <!-- Root menu -->
     <menuitem id="menu_umti_infrastructure_root"
-              name="Campus Infrastructure"
+              name="Infrastructure"
               web_icon="umti_infrastructure,static/description/icon.png"
-              sequence="80"/>
+              sequence="25"/>
 
-    <!-- Class Timetable -->
+    <menuitem id="menu_umti_infrastructure_schedules"
+              name="Schedules &amp; Timetables"
+              parent="menu_umti_infrastructure_root"
+              sequence="10"/>
+
     <menuitem id="menu_class_timetable"
               name="Class Timetable"
-              parent="menu_umti_infrastructure_root"
+              parent="menu_umti_infrastructure_schedules"
               action="action_umti_class_schedule"
               sequence="10"/>
 
-    <!-- Exam Timetable -->
-    <menuitem id="menu_exam_timetable"
-              name="Exam Timetable"
-              parent="menu_umti_infrastructure_root"
-              action="action_umti_exam_schedule"
-              sequence="20"/>
-
-    <!-- Facilities -->
-    <menuitem id="menu_facilities"
-              name="Facilities &amp; Rooms"
-              parent="menu_umti_infrastructure_root"
-              action="action_umti_facility"
-              sequence="30"/>
-
-    <!-- Configuration -->
-    <menuitem id="menu_infrastructure_config"
-              name="Configuration"
-              parent="menu_umti_infrastructure_root"
-              sequence="90"/>
-
-    <menuitem id="menu_config_time_slots"
-              name="Time Slots"
-              parent="menu_infrastructure_config"
-              action="action_umti_timetable_slot"
-              sequence="10"/>
-
-    <menuitem id="menu_config_slot_templates"
+    <menuitem id="menu_umti_slot_template"
               name="Slot Templates"
-              parent="menu_infrastructure_config"
+              parent="menu_umti_infrastructure_schedules"
               action="action_umti_slot_template"
               sequence="20"/>
 
-    <menuitem id="menu_config_facility_unavailability"
-              name="Facility Unavailability"
-              parent="menu_infrastructure_config"
-              action="action_umti_facility_unavailability"
+    <menuitem id="menu_umti_slot_template_links"
+              name="Time Slots"
+              parent="menu_umti_infrastructure_schedules"
+              action="action_umti_timetable_slot"
               sequence="30"/>
 
+
+    <menuitem id="menu_umti_infrastructure_facilities"
+              name="Facilities"
+              parent="menu_umti_infrastructure_root"
+              sequence="20"/>
+
+    <menuitem id="menu_umti_facility"
+              name="Facilities &amp; Rooms"
+              parent="menu_umti_infrastructure_facilities"
+              action="action_umti_facility"
+              sequence="10"/>
+
+    <menuitem id="menu_umti_facility_unavailability"
+              name="Facility Unavailability"
+              parent="menu_umti_infrastructure_facilities"
+              action="action_umti_facility_unavailability"
+              sequence="20"/>
+
+    <menuitem id="menu_umti_infrastructure_hostels"
+              name="Hostels"
+              parent="menu_umti_infrastructure_root"
+              sequence="30"/>
+
+    <menuitem id="menu_umti_hostel"
+              name="Hostels"
+              parent="menu_umti_infrastructure_hostels"
+              action="action_umti_hostel_block"
+              sequence="10"/>
+
+    <menuitem id="menu_umti_hostel_allocation"
+              name="Hostel Allocations"
+              parent="menu_umti_infrastructure_hostels"
+              action="action_umti_hostel_allocation"
+              sequence="20"/>
+
+    <menuitem id="menu_umti_infrastructure_exams"
+              name="Exams &amp; Periods"
+              parent="menu_umti_infrastructure_root"
+              sequence="40"/>
+
+    <menuitem id="menu_umti_exam_period"
+              name="Exam Periods"
+              parent="menu_umti_infrastructure_exams"
+              action="action_umti_exam_period"
+              sequence="10"/>
+
+    <menuitem id="menu_umti_infrastructure_dashboard"
+              name="Dashboard"
+              parent="menu_umti_infrastructure_root"
+              action="action_umti_infrastructure_dashboard"
+              sequence="5"/>
 </odoo>

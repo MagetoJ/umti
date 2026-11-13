@@ -2,7 +2,7 @@
 <odoo>
 
     <!-- Assessment Form View -->
-    <record id="view_umti_assessment_form" model="ir.ui.view">
+        <record id="view_umti_assessment_form" model="ir.ui.view">
         <field name="name">umti.assessment.form</field>
         <field name="model">umti.assessment</field>
         <field name="arch" type="xml">
@@ -35,7 +35,7 @@
                             class="btn-secondary" icon="fa-calendar"
                             invisible="state != 'draft' or not course_id"/>
                     <field name="state" widget="statusbar"
-                           statusbar_visible="draft,scheduled,open,closed"/>
+                        statusbar_visible="draft,scheduled,open,closed"/>
                 </header>
                 <sheet>
                     <div class="oe_button_box" name="button_box">
@@ -51,7 +51,7 @@
                     <group>
                         <group string="Classification">
                             <field name="code"/>
-                            <field name="assessment_type"/>
+                            <field name="assessment_type" widget="radio" options="{'horizontal': true}"/>
                             <field name="learning_outcome_type" readonly="state != 'draft'"/>
                             <field name="category"/>
                             <field name="course_id" options="{'no_create': True}"/>
@@ -69,13 +69,14 @@
                             <field name="duration" widget="float_time" help="Default duration is 2 hours. Editable for multi-hour or multi-day practicals/CATs."/>
                             <field name="end_time" widget="float_time"/>
                         </group>
-                        <group string="Grading">
+                        <group string="Dynamic Weighting &amp; Grading">
                             <field name="max_marks"/>
                             <field name="pass_marks"/>
+                            <field name="weight" string="Weight (%)" help="Weight of this assessment toward the unit's final mark."/>
                             <field name="counts_toward_final"/>
                             <field name="effective_weight" invisible="not counts_toward_final"/>
                             <field name="pass_marks_warning" nolabel="1" colspan="2"
-                                   invisible="not pass_marks_warning" class="text-warning"/>
+                                invisible="not pass_marks_warning" class="text-warning"/>
                             <field name="pass_marks_manual" invisible="1"/>
                         </group>
                     </group>
@@ -90,14 +91,14 @@
                                     <field name="percentage" widget="float"/>
                                     <field name="grade"/>
                                     <field name="result" widget="badge"
-                                           decoration-success="result == 'pass'"
-                                           decoration-danger="result == 'fail'"
-                                           decoration-warning="result == 'absent'"/>
+                                        decoration-success="result == 'pass'"
+                                        decoration-danger="result == 'fail'"
+                                        decoration-warning="result == 'absent'"/>
                                     <field name="remarks" readonly="state != 'draft'"/>
                                     <field name="state" widget="badge"
-                                           decoration-info="state == 'draft'"
-                                           decoration-warning="state == 'verified'"
-                                           decoration-success="state == 'published'"/>
+                                        decoration-info="state == 'draft'"
+                                        decoration-warning="state == 'verified'"
+                                        decoration-success="state == 'published'"/>
                                     <button name="action_verify" type="object" string="Verify" icon="fa-check"
                                             invisible="state != 'draft' or parent.state != 'closed'"
                                             groups="umti_exams.group_umti_exams_manager,base.group_system"/>
@@ -120,14 +121,14 @@
                                     <field name="end_time" widget="float_time"/>
                                 </list>
                             </field>
-                        </page>
-                        <page string="Notes" name="notes"><field name="note"/></page>
-                    </notebook>
-                </sheet>
-                <chatter/>
-            </form>
-        </field>
-    </record>
+                            </page>
+                            <page string="Notes" name="notes"><field name="note"/></page>
+                        </notebook>
+                    </sheet>
+                    <chatter/>
+                </form>
+            </field>
+        </record>
 
     <!-- Assessment List View -->
     <record id="view_umti_assessment_list" model="ir.ui.view">
@@ -145,7 +146,7 @@
                 <field name="category" optional="hide"/>
                 <field name="date"/>
                 <field name="duration" widget="float_time" optional="show"/>
-                <field name="effective_weight" optional="show"/>
+                <field name="weight" string="Weight (%)" optional="show"/>
                 <field name="max_marks" optional="hide"/>
                 <field name="company_id" groups="base.group_multi_company" optional="hide"/>
                 <field name="state" widget="badge"

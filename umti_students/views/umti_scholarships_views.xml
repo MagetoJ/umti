@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="umti_scholarship_award_view_form" model="ir.ui.view">
+        <field name="name">umti.scholarship.award.form</field>
+        <field name="model">umti.scholarship.award</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_approve" type="object" string="Approve"
+                            class="oe_highlight" invisible="state != 'draft'"/>
+                    <button name="action_activate" type="object" string="Activate"
+                            class="oe_highlight" invisible="state != 'approved'"/>
+                    <button name="action_disburse" type="object" string="Disburse"
+                            class="oe_highlight" invisible="state not in ('approved', 'active')"/>
+                    <button name="action_close" type="object" string="Close"
+                            invisible="state != 'disbursed'"/>
+                    <button name="action_cancel" type="object" string="Cancel"
+                            invisible="state in ('closed', 'cancelled')"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,approved,active,disbursed,closed"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name"/></h1>
+                    </div>
+                    <group>
+                        <group string="Student">
+                            <field name="student_id"/>
+                            <field name="course_id" readonly="1"/>
+                            <field name="student_state" readonly="1"/>
+                        </group>
+                        <group string="Award">
+                            <field name="reference"/>
+                            <field name="award_type"/>
+                            <field name="sponsor_type"/>
+                            <field name="sponsor"/>
+                            <field name="academic_year_id"/>
+                            <field name="academic_term_id"/>
+                            <field name="start_date"/>
+                            <field name="end_date"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="active"/>
+                        </group>
+                    </group>
+                    <group string="Amount">
+                        <group>
+                            <field name="amount"/>
+                            <field name="disbursed_amount"/>
+                            <field name="disbursement_date"/>
+                            <field name="currency_id" invisible="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Notes">
+                            <field name="notes"/>
+                        </page>
+                        <page string="Attachments">
+                            <field name="attachment_ids" widget="many2many_binary"
+                                   nolabel="1"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="umti_scholarship_award_view_list" model="ir.ui.view">
+        <field name="name">umti.scholarship.award.list</field>
+        <field name="model">umti.scholarship.award</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="student_id"/>
+                <field name="name"/>
+                <field name="sponsor"/>
+                <field name="award_type" widget="badge"/>
+                <field name="amount"/>
+                <field name="disbursed_amount"/>
+                <field name="state" widget="badge"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="umti_scholarship_award_view_search" model="ir.ui.view">
+        <field name="name">umti.scholarship.award.search</field>
+        <field name="model">umti.scholarship.award</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="student_id"/>
+                <field name="name"/>
+                <field name="sponsor"/>
+                <field name="course_id"/>
+                <field name="award_type"/>
+                <field name="state"/>
+                <filter name="filter_active" string="Active"
+                        domain="[('state','in',('approved','active'))]"/>
+                <filter name="filter_pending" string="Pending Disbursement"
+                        domain="[('state','in',('approved','active'))]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_type" string="Award Type"
+                            context="{'group_by': 'award_type'}"/>
+                    <filter name="group_state" string="State"
+                            context="{'group_by': 'state'}"/>
+                    <filter name="group_sponsor" string="Sponsor"
+                            context="{'group_by': 'sponsor'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_umti_scholarship_awards" model="ir.actions.act_window">
+        <field name="name">Scholarships</field>
+        <field name="res_model">umti.scholarship.award</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="umti_scholarship_award_view_list"/>
+        <field name="search_view_id" ref="umti_scholarship_award_view_search"/>
+    </record>
+
+    <record id="action_umti_scholarships_dashboard" model="ir.actions.client">
+        <field name="name">Scholarships &amp; Sponsorship</field>
+        <field name="tag">umti_section_dashboard</field>
+        <field name="context">{'umti_section': 'scholarships'}</field>
+    </record>
+
+    <record id="umti_scholarship_award_company_rule" model="ir.rule">
+        <field name="name">Scholarship award: multi-company</field>
+        <field name="model_id" ref="model_umti_scholarship_award"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+</odoo>

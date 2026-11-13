@@ -261,7 +261,7 @@ class SchoolStudent(models.Model):
 
 
     def action_initialize_program_semesters(self):
-        """Generate the student's semester ladder from the course period.
+        """Generate the student's study-period ladder from the course pattern.
 
         Runs automatically when a student is created from an admission
         application; there is no button for it. Idempotent: a student that
@@ -270,44 +270,120 @@ class SchoolStudent(models.Model):
         self.ensure_one()
         if self.semester_ids:
             return
+        pattern = (self.course_id._get_term_pattern()
+                   if self.course_id else False)
+        if pattern and pattern.line_ids:
+            self._generate_pattern_ladder(pattern)
+            return
+        self._generate_legacy_ladder()
+
+    def _course_years(self):
+        """Number of study years, used to repeat a per-year pattern."""
+        if self.course_id.period_type == 'years':
+            return max(self.course_id.period or 1, 1)
+        months = self.course_id.period or 0
+        return max((months + 11) // 12, 1)
+
+    def _generate_pattern_ladder(self, pattern):
+        self.ensure_one()
+        lines = pattern._main_lines()
+        if not lines:
+            return
+        cycles = 1 if pattern.scope == 'whole_course' else self._course_years()
+        Semester = self.env['umti.student.semester']
+        rows = Semester
+        sequence = 0
+        for course_year in range(1, cycles + 1):
+            for _line in lines:
+                sequence += 1
+                rows |= Semester.create({
+                    'student_id': self.id,
+                    'course_year': course_year,
+                    'sequence': sequence,
+                    'company_id': self.company_id.id,
+                })
+        if not rows:
+            return
+        self.write({'semester_ids': [(6, 0, rows.ids)]})
+        self._assign_ladder_terms(rows, pattern)
+
+    def _assign_ladder_terms(self, rows, pattern):
+        """Point ladder rows at the term instances that already exist."""
+        self.ensure_one()
+        ordered = rows.sorted('sequence')
+        first = ordered[:1]
+        if pattern.anchor == 'intake':
+            intake = self.application_id.intake_id
+            if intake and not intake.start_date:
+                _logger.warning(
+                    "Terms not assigned to %s: intake %s has no start date.",
+                    self.display_name, intake.name)
+                return
+            if not intake:
+                _logger.warning(
+                    "Terms not assigned to %s: the course is intake-anchored "
+                    "but the student has no admission intake.",
+                    self.display_name)
+                return
+            terms = intake._ensure_terms()
+            main_terms = terms.filtered(
+                lambda term: not term.parent_term).sorted('term_start_date')
+            for row, term in zip(ordered, main_terms):
+                row.write({
+                    'academic_year_id': term.academic_year_id.id,
+                    'academic_term_id': term.id,
+                })
+            if first:
+                first.write({'state': 'active'})
+            return
+
+        year = self.env['umti.academic.year'].search([
+            ('status', '=', 'running'), ('active', '=', True),
+        ], order='start_date desc', limit=1)
+        if not year:
+            year = self.env['umti.academic.year']._year_for_date(
+                fields.Date.context_today(self))
+        if not year or not first:
+            return
+        term = self.env['umti.academic.term'].search([
+            ('academic_year_id', '=', year.id),
+            ('course_id', '=', self.course_id.id),
+            ('parent_term', '=', False),
+        ], order='term_start_date', limit=1)
+        first.write({
+            'academic_year_id': year.id,
+            'academic_term_id': term.id if term else False,
+            'state': 'active',
+        })
+
+    def _generate_legacy_ladder(self):
+        """Fallback for courses without a term pattern."""
+        self.ensure_one()
         course_period = self.course_id.period if self.course_id.period else 0
         if not course_period:
-            # Automatic call: do not block the admission flow on a missing
-            # course configuration, just leave the student without semesters.
             _logger.warning(
                 "Semesters not generated for %s: course period is not set.",
                 self.display_name)
             return
-
-        # 1. How many semesters a year holds is decided in one place, shared
-        # with the semester label.
         terms_per_year = self.env[
             'umti.student.semester']._semesters_per_year()
-
-        semester_ids = []
+        semester_values = []
         sequence_counter = 1
-
-        # 2. Outer Loop: Iterates through each Year (e.g., Year 1, Year 2...)
         for year_idx in range(course_period):
             year_num = year_idx + 1
-
-            # 3. Inner Loop: Generates the semesters of that specific year
             for _term_idx in range(terms_per_year):
-                semester = self.env['umti.student.semester'].create({
+                semester_values.append({
                     'student_id': self.id,
                     'course_year': year_num,
                     'sequence': sequence_counter,
                     'company_id': self.company_id.id,
                 })
-                semester_ids.append(semester.id)
                 sequence_counter += 1
-                
-        # 5. Safe batch writing outside loop logic
-        if semester_ids:
-            self.write({'semester_ids': [(6, 0, semester_ids)]})
-
-        #update academic year and term with the current active academic year and its running term
-        current_academic_year = self.env['umti.academic.year'].search([('status', '=', 'running'),('active', '=', True)],limit=1)
+        semesters = self.env['umti.student.semester'].create(semester_values)
+        self.write({'semester_ids': [(6, 0, semesters.ids)]})
+        current_academic_year = self.env['umti.academic.year'].search([
+            ('status', '=', 'running'), ('active', '=', True)],
+            limit=1)
         if current_academic_year:
             running_term = current_academic_year.academic_term_ids.filtered(
                 lambda t: t.status == 'in_progress' and not t.parent_term)[:1]
@@ -316,9 +392,6 @@ class SchoolStudent(models.Model):
             if running_term:
                 first_semester.academic_term_id = running_term
             first_semester.write({'state': 'active'})
-
-        
-                
 
     def action_view_invoices(self):
         self.ensure_one()

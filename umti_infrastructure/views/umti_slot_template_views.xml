@@ -1,42 +1,63 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-    <!-- Slot Template Form -->
     <record id="umti_slot_template_view_form" model="ir.ui.view">
         <field name="name">umti.timetable.slot.template.form</field>
         <field name="model">umti.timetable.slot.template</field>
         <field name="arch" type="xml">
             <form string="Slot Template">
                 <header>
-                    <button name="action_generate_standard_8to5_slots"
-                            string="Generate Standard 8–5 Schedule (Mon–Fri)"
-                            type="object" class="btn-primary"
-                            icon="fa-magic"/>
+                    <button name="action_apply" string="Apply / Refresh Slots"
+                            type="object" class="btn-primary" icon="fa-refresh"/>
                 </header>
                 <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_slots" type="object"
+                                class="oe_stat_button" icon="fa-clock-o">
+                            <field name="slot_count" widget="statinfo" string="Slots"/>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger"
+                            invisible="active"/>
                     <div class="oe_title">
                         <label for="name"/>
-                        <h1><field name="name" placeholder="e.g. Standard 3-Hour Regular Set"/></h1>
+                        <h1><field name="name" placeholder="e.g. Full-time Day (90 min periods)"/></h1>
                     </div>
                     <group>
                         <group>
                             <field name="code"/>
                             <field name="active" invisible="1"/>
                         </group>
+                        <group>
+                            <field name="auto_apply"/>
+                            <field name="lock_when_in_use"/>
+                        </group>
                     </group>
                     <notebook>
-                        <page string="Time Slots" name="slots">
-                            <field name="slot_ids">
+                        <page string="Periods" name="periods">
+                            <field name="line_ids">
                                 <list editable="bottom">
-                                    <field name="day_of_week"/>
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="name"/>
+                                    <field name="line_type" widget="badge"
+                                           decoration-info="line_type == 'regular'"
+                                           decoration-warning="line_type == 'exam'"
+                                           decoration-success="line_type == 'both'"
+                                           decoration-muted="line_type == 'break'"/>
                                     <field name="start_time" widget="float_time"/>
                                     <field name="end_time" widget="float_time"/>
-                                    <field name="slot_type" widget="badge"
-                                           decoration-info="slot_type == 'regular'"
-                                           decoration-warning="slot_type == 'exam'"
-                                           decoration-success="slot_type == 'both'"/>
+                                    <field name="day_mon"/>
+                                    <field name="day_tue"/>
+                                    <field name="day_wed"/>
+                                    <field name="day_thu"/>
+                                    <field name="day_fri"/>
+                                    <field name="day_sat"/>
+                                    <field name="day_sun"/>
                                 </list>
                             </field>
+                        </page>
+                        <page string="Notes" name="notes">
+                            <field name="description"/>
                         </page>
                     </notebook>
                 </sheet>
@@ -44,7 +65,6 @@
         </field>
     </record>
 
-    <!-- Slot Template List -->
     <record id="umti_slot_template_view_list" model="ir.ui.view">
         <field name="name">umti.timetable.slot.template.list</field>
         <field name="model">umti.timetable.slot.template</field>
@@ -52,19 +72,33 @@
             <list>
                 <field name="name"/>
                 <field name="code"/>
-                <field name="slot_ids" widget="many2many_tags"/>
+                <field name="line_count"/>
+                <field name="slot_count"/>
+                <field name="auto_apply" optional="hide"/>
             </list>
         </field>
     </record>
 
-    <!-- Slot Template Action -->
+    <record id="umti_slot_template_view_search" model="ir.ui.view">
+        <field name="name">umti.timetable.slot.template.search</field>
+        <field name="model">umti.timetable.slot.template</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="code"/>
+                <filter string="Archived" name="inactive" domain="[('active', '=', False)]"/>
+            </search>
+        </field>
+    </record>
+
     <record id="action_umti_slot_template" model="ir.actions.act_window">
         <field name="name">Slot Templates</field>
         <field name="res_model">umti.timetable.slot.template</field>
         <field name="view_mode">list,form</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">Create your first slot template</p>
-            <p>Group time slots into reusable seasonal or term-based templates.</p>
+            <p>Define periods, breaks and exam sessions once, then reuse them
+               for any course, level, term pattern or semester.</p>
         </field>
     </record>
 

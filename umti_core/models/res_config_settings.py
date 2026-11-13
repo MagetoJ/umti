@@ -10,8 +10,9 @@ class ResConfigSettings(models.TransientModel):
          ('three_sem', 'Three Trimesters'),
          ('four_Quarter', 'Four Quarters'),
          ('others', 'Other (overlapping semesters, custom schedules)')],
-        string="School Semester Structure",
-        config_parameter='umti_core.school_term_structure', # This saves it perfectly to system parameters
-        help="Select the structure of the school year.",
+        string="Default Term Pattern",
+        config_parameter='umti_core.school_term_structure',
+        help="Fallback pattern when neither the course nor its level sets "
+             "one. Seeded term patterns mirror these options.",
         default='two_sem'
     )

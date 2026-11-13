@@ -8,29 +8,69 @@
             <field name="arch" type="xml">
                 <form string="Fee Structure">
                     <header>
-                        <button name="approve_fee_structure" type="object" string="Approve" invisible="status!='draft'" class="oe_highlight"/>
-                        <button name="close_fee_structure" type="object" string="Close" invisible="status!='approved'" class="oe_highlight"/>
-                        <field name="status" widget="statusbar" statusbar_visible="draft,approved,closed"/>
+                        <button name="approve_fee_structure" type="object" string="Activate" invisible="status!='proposed'" class="oe_highlight"/>
+                        <button name="close_fee_structure" type="object" string="Mark Historic" invisible="status!='active'" class="oe_highlight"/>
+                        <field name="status" widget="statusbar" statusbar_visible="proposed,active,historic"/>
                     </header>
                     <sheet>
                         <group>
-                            <field name="name"/>
-                            <field name="code"/>
+                            <group string="Structure">
+                                <field name="name" readonly="1"/>
+                                <field name="company_id"
+                                       groups="base.group_multi_company"/>
+                            </group>
+                            <group string="Validity">
+                                <field name="active_from"/>
+                                <field name="active_to"/>
+                                <field name="close_date"
+                                       invisible="status != 'historic'"/>
+                                <field name="academic_year_ids"
+                                       widget="many2many_tags" readonly="1"/>
+                            </group>
                         </group>
-                    <notebook>
-                        <page string="Structure Lines">
-                            <field name="structure_line_ids" nolabel="1">
-                                <list>
-                                    <field name="academic_year_id"/>
-                                    <!-- <field name="semester_id"/> -->
-                                    <field name="course_id"/>
-                                    <field name="votehead"/>
-                                    <field name="department_id"/>
-                                    <field name="amount"/>
-                                </list>
-                            </field>
-                        </page>
-                    </notebook>
+                        <notebook>
+                            <page string="Structure Lines">
+                                <div class="mb-2">
+                                    <button name="action_fill_from_voteheads"
+                                            type="object"
+                                            string="Fill from Voteheads"
+                                            class="btn btn-secondary"
+                                            confirm="Add zero-amount lines for every active votehead and course?"/>
+                                </div>
+                                <field name="structure_line_ids" nolabel="1"
+                                       context="{'default_structure_id': id, 'default_company_id': company_id}">
+                                    <list editable="bottom">
+                                        <field name="structure_id" column_invisible="1"/>
+                                        <field name="votehead"/>
+                                        <field name="course_ids"
+                                               widget="many2many_tags"/>
+                                        <field name="academic_year_ids"
+                                               widget="many2many_tags"/>
+                                        <field name="semester_ids"
+                                               widget="many2many_tags"
+                                               optional="hide"/>
+                                        <field name="department_ids"
+                                               widget="many2many_tags"
+                                               optional="hide"/>
+                                        <field name="period_sequence" optional="hide"/>
+                                        <field name="amount" sum="Total"/>
+                                        <field name="currency_id" column_invisible="1"/>
+                                        <field name="company_id" column_invisible="1"/>
+                                        <field name="active" column_invisible="1"/>
+                                    </list>
+                                </field>
+                            </page>
+                        </notebook>
+                        <group string="Metadata">
+                            <group>
+                                <field name="create_uid" string="Created By" readonly="1"/>
+                                <field name="create_date" string="Created On" readonly="1"/>
+                            </group>
+                            <group>
+                                <field name="write_uid" string="Updated By" readonly="1"/>
+                                <field name="write_date" string="Updated On" readonly="1"/>
+                            </group>
+                        </group>
                     </sheet>
                     <chatter/>
                 </form>
@@ -44,8 +84,10 @@
             <field name="arch" type="xml">
                 <list string="Fee Structure">
                     <field name="name"/>
-                    <field name="code"/>
                     <field name="status"/>
+                    <field name="active_from" optional="hide"/>
+                    <field name="active_to" optional="hide"/>
+                    <field name="close_date" optional="hide"/>
                 </list>
             </field>
         </record>
@@ -61,12 +103,11 @@
                         <t t-name="card">
                             <main>
                                 <field name="name" class="fw-bold fs-5"/>
-                                <field name="code" class="text-muted"/>
-                                <footer>
+                                        <footer>
                                     <field name="status" widget="badge"
-                                           decoration-info="status == 'draft'"
-                                           decoration-success="status == 'approved'"
-                                           decoration-muted="status == 'closed'"/>
+                                           decoration-info="status == 'proposed'"
+                                           decoration-success="status == 'active'"
+                                           decoration-muted="status == 'historic'"/>
                                 </footer>
                             </main>
                         </t>
@@ -82,10 +123,10 @@
             <field name="arch" type="xml">
                 <search>
                     <field name="name"/>
-                    <field name="code"/>
-                    <filter name="filter_draft" string="Draft" domain="[('status', '=', 'draft')]"/>
-                    <filter name="filter_approved" string="Approved" domain="[('status', '=', 'approved')]"/>
-                    <filter name="filter_closed" string="Closed" domain="[('status', '=', 'closed')]"/>
+                    <field name="academic_year_ids"/>
+                    <filter name="filter_proposed" string="Proposed" domain="[('status', '=', 'proposed')]"/>
+                    <filter name="filter_active" string="Active" domain="[('status', '=', 'active')]"/>
+                    <filter name="filter_historic" string="Historic" domain="[('status', '=', 'historic')]"/>
                     <group expand="0" string="Group By">
                         <filter name="group_status" string="Status" context="{'group_by': 'status'}"/>
                     </group>
@@ -103,6 +144,37 @@
                 <p class="o_view_nocontent_smiling_face">
                     Create your first umti fee_structure!
                 </p>
+            </field>
+        </record>
+        <!-- Line form: context fields are hidden because the parent
+             structure and the selected course fill them. -->
+        <record id="umti_fee_structure_line_form" model="ir.ui.view">
+            <field name="name">umti.fee.structure.line.form</field>
+            <field name="model">umti.fee.structure.line</field>
+            <field name="arch" type="xml">
+                <form>
+                    <group>
+                        <group>
+                            <field name="votehead"/>
+                            <field name="course_ids"
+                                   widget="many2many_tags"/>
+                            <field name="academic_year_ids"
+                                   widget="many2many_tags"/>
+                            <field name="semester_ids"
+                                   widget="many2many_tags"/>
+                            <field name="department_ids"
+                                   widget="many2many_tags"/>
+                            <field name="period_sequence"/>
+                            <field name="amount"/>
+                        </group>
+                        <group>
+                            <field name="structure_id" readonly="1"/>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="company_id" invisible="1"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                    </group>
+                </form>
             </field>
         </record>
     </data>

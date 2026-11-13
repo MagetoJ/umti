@@ -13,7 +13,11 @@
                                 <field name="name"/>
                                 <field name="code"/>
                                 <field name="unit_type"/>
-                                <field name="department_id"/>
+                                <field name="department_ids"
+                                       widget="many2many_tags"/>
+                                <field name="department_id"
+                                       domain="[('id', 'in', department_ids)]"
+                                       options="{'no_create': True}"/>
                             </group>
                             <group string="Level Info">
                                 <field name="unit_level"/>
@@ -36,7 +40,9 @@
                     <field name="name"/>
                             <field name="code"/>
                             <field name="unit_type"/>
-                            <field name="department_id"/>
+                            <field name="department_ids"
+                                   widget="many2many_tags"/>
+                            <field name="department_id" optional="hide"/>
                             <field name="unit_level"/>
                             <field name="unit_semester"/>
                             <field name="credit_contribution"/>
@@ -50,6 +56,7 @@
             <field name="model">umti.course.units</field>
             <field name="arch" type="xml">
                 <kanban default_group_by="department_id">
+                    <field name="department_ids" widget="many2many_tags"/>
                     <field name="department_id"/>
                     <templates>
                         <t t-name="card">
@@ -75,9 +82,11 @@
                 <search>
                     <field name="name"/>
                     <field name="code"/>
+                    <field name="department_ids"/>
                     <field name="department_id"/>
                     <group expand="0" string="Group By">
-                        <filter name="group_department" string="Department" context="{'group_by': 'department_id'}"/>
+                        <filter name="group_departments" string="Departments" context="{'group_by': 'department_ids'}"/>
+                        <filter name="group_department" string="Department (primary)" context="{'group_by': 'department_id'}"/>
                         <filter name="group_unit_type" string="Unit Type" context="{'group_by': 'unit_type'}"/>
                         <filter name="group_unit_level" string="Level" context="{'group_by': 'unit_level'}"/>
                         <filter name="group_unit_semester" string="Semester" context="{'group_by': 'unit_semester'}"/>

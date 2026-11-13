@@ -89,11 +89,11 @@
                             <field name="unpaid_lost_kits_count" widget="statinfo" string="Lost Kits"/>
                         </button>
                         <!--TODO: Make visisble to accounting-->
-                        <button name="action_view_invoices" type="object" string="Invoices" class="oe_stat_button" icon="fa-usd">
-                            <field name="invoices_count" widget="statinfo" string="Invoices"/>
-                        </button>
-                        <button name="action_view_payments" type="object" string="Payments" class="oe_stat_button" icon="fa-money">
-                            <field name="payments_count" widget="statinfo" string="Payments"/>
+                        <button name="action_view_invoices" type="object"
+                                string="Amount Due"
+                                class="oe_stat_button" icon="fa-usd">
+                            <field name="balance" widget="statinfo"
+                                   string="Amount Due"/>
                         </button>
                     </div>
                     <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
@@ -138,6 +138,23 @@
                             <field name="fee_status"/>
                             <field name="sponsor_id" invisible="fee_status != 'sponsored'"
                                    required="fee_status == 'sponsored'"/>
+                            <field name="financial_support_requested"
+                                   readonly="1"/>
+                            <field name="admission_fee_waived" readonly="1"/>
+                            <button name="action_refund_deposits"
+                                    type="object"
+                                    string="Refund Graduation Deposits"
+                                    class="btn-link"
+                                    groups="umti_students.group_umti_students_manager,umti_students.group_umti_students_admin"
+                                    invisible="state != 'graduated'"
+                                    confirm="Create a credit note for the refundable voteheads on the intake invoice?"/>
+                            <field name="financial_support_description"
+                                   readonly="1"
+                                   invisible="not financial_support_requested"/>
+                            <field name="financial_support_attachment_ids"
+                                   widget="many2many_binary" nolabel="1"
+                                   readonly="1"
+                                   invisible="not financial_support_requested"/>
                             <field name="user_id"/>
                             <field name="active" invisible="1"/>
                             <field name="company_id" groups="base.group_multi_company"/>
@@ -193,6 +210,133 @@
                                            string="Application File" invisible="not application_id"/>
                                     <field name="source_filename" column_invisible="1"/>
                                     <field name="note"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Student Services" name="student_services"
+                              groups="umti_students.group_umti_student_services_user">
+                            <div class="mb-3">
+                                <h4>Wellbeing</h4>
+                                <div class="d-flex flex-wrap gap-2">
+                                    <button name="action_view_counselling_cases" type="object"
+                                            string="Counselling" class="btn btn-secondary"
+                                            groups="umti_students.group_umti_service_counselling"/>
+                                    <button name="action_view_welfare_requests" type="object"
+                                            string="Welfare" class="btn btn-secondary"
+                                            groups="umti_students.group_umti_service_welfare"/>
+                                    <button name="action_view_clinic_visits" type="object"
+                                            string="Clinic Visits" class="btn btn-secondary"
+                                            groups="umti_students.group_umti_service_health"/>
+                                    <button name="action_view_support_plans" type="object"
+                                            string="Support Plans" class="btn btn-secondary"
+                                            groups="umti_students.group_umti_service_inclusion"/>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <h4>Conduct &amp; Feedback</h4>
+                                <div class="d-flex flex-wrap gap-2">
+                                    <button name="action_view_discipline_cases" type="object"
+                                            string="Discipline" class="btn btn-secondary"
+                                            groups="umti_students.group_umti_service_discipline"/>
+                                    <button name="action_view_grievances" type="object"
+                                            string="Grievances" class="btn btn-secondary"
+                                            groups="umti_students.group_umti_service_grievances"/>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <h4>Student Life</h4>
+                                <div class="d-flex flex-wrap gap-2">
+                                    <button name="action_view_club_memberships" type="object"
+                                            string="Clubs" class="btn btn-secondary"
+                                            groups="umti_students.group_umti_service_activities"/>
+                                    <button name="action_view_transport_subscriptions" type="object"
+                                            string="Transport" class="btn btn-secondary"
+                                            groups="umti_students.group_umti_service_transport"/>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <h4>Progression</h4>
+                                <div class="d-flex flex-wrap gap-2">
+                                    <button name="action_view_clearance" type="object"
+                                            string="Clearance" class="btn btn-secondary"
+                                            groups="umti_students.group_umti_service_clearance"/>
+                                    <button name="action_view_onboarding" type="object"
+                                            string="Onboarding" class="btn btn-secondary"
+                                            groups="umti_students.group_umti_service_onboarding"/>
+                                </div>
+                            </div>
+                        </page>
+                        <page string="Alumni" name="alumni"
+                              groups="umti_students.group_umti_service_alumni">
+                            <div class="mb-2">
+                                <button name="action_new_alumni_profile"
+                                        type="object"
+                                        string="New Alumni Profile"
+                                        class="btn btn-secondary"/>
+                            </div>
+                            <field name="alumni_profile_ids" readonly="1">
+                                <list create="0" delete="0">
+                                    <field name="graduation_date"/>
+                                    <field name="employment_status"
+                                           widget="badge"/>
+                                    <field name="employer"/>
+                                    <field name="engagement_status"
+                                           widget="badge"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Attachments" name="attachments"
+                              groups="umti_students.group_umti_service_careers">
+                            <div class="mb-2">
+                                <button name="action_new_attachment"
+                                        type="object"
+                                        string="New Attachment"
+                                        class="btn btn-secondary"/>
+                            </div>
+                            <field name="attachment_ids" readonly="1">
+                                <list create="0" delete="0">
+                                    <field name="employer"/>
+                                    <field name="placement_type"/>
+                                    <field name="start_date"/>
+                                    <field name="end_date"/>
+                                    <field name="state" widget="badge"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Accommodation" name="accommodation"
+                              groups="umti_students.group_umti_service_accommodation">
+                            <div class="mb-2">
+                                <button name="action_new_hostel_allocation"
+                                        type="object"
+                                        string="New Hostel Allocation"
+                                        class="btn btn-secondary"/>
+                            </div>
+                            <field name="hostel_allocation_ids" readonly="1">
+                                <list create="0" delete="0">
+                                    <field name="hostel_id"/>
+                                    <field name="room"/>
+                                    <field name="bed"/>
+                                    <field name="check_in"/>
+                                    <field name="check_out"/>
+                                    <field name="state" widget="badge"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Scholarships" name="scholarships"
+                              groups="umti_students.group_umti_service_scholarships">
+                            <div class="mb-2">
+                                <button name="action_new_scholarship_award"
+                                        type="object"
+                                        string="New Scholarship"
+                                        class="btn btn-secondary"/>
+                            </div>
+                            <field name="scholarship_award_ids" readonly="1">
+                                <list create="0" delete="0">
+                                    <field name="name"/>
+                                    <field name="sponsor"/>
+                                    <field name="award_type"/>
+                                    <field name="amount"/>
+                                    <field name="state" widget="badge"/>
                                 </list>
                             </field>
                         </page>

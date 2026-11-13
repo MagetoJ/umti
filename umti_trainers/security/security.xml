@@ -21,10 +21,19 @@
             <field name="implied_ids" eval="[(4, ref('group_umti_trainers_user'))]"/>
         </record>
 
+        <!-- Work Plan Manager / School Administrator Group: Controls Master Work Plans -->
+        <record id="group_umti_work_plan_manager" model="res.groups">
+            <field name="name">Work Plan Manager / Academic Administrator</field>
+            <field name="category_id" ref="module_category_umti_trainers"/>
+            <field name="comment">Authorized users with permissions to create, edit, approve, and manage Master Work Plans.</field>
+            <field name="implied_ids" eval="[(4, ref('group_umti_trainers_manager'))]"/>
+        </record>
+
+        <!-- Administrator group: System level access -->
         <record id="group_umti_trainers_admin" model="res.groups">
             <field name="name">Administrator</field>
             <field name="category_id" ref="module_category_umti_trainers"/>
-            <field name="implied_ids" eval="[(4, ref('group_umti_trainers_manager'))]"/>
+            <field name="implied_ids" eval="[(4, ref('group_umti_work_plan_manager'))]"/>
             <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
         </record>
 

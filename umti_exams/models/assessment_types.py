@@ -1,8 +1,8 @@
 """Assessment type definitions shared by the exam models.
 
-Only the CORE types feed the final unit mark. The OPTIONAL types can be
-switched on per department and semester (see ``umti.assessment.plan``) but are
-recorded for information only.
+Any type can be created at any time. How much an assessment counts toward the
+unit's final mark is its own ``weight`` (%): the weights of the assessments of
+a unit in a semester should total 100.
 """
 
 ASSESSMENT_TYPES = [
@@ -15,11 +15,9 @@ ASSESSMENT_TYPES = [
     ('project', 'Project'),
 ]
 
-#: Types that are always enabled and compute to the final mark.
+#: Types that summarise into the CAT / Assignment / Exam columns of a result.
 CORE_TYPES = ('cat', 'assignment', 'final')
 
-#: Types the HOD may enable per semester; they never count to the final mark.
-OPTIONAL_TYPES = ('midterm', 'quiz', 'practical', 'project')
-
-#: Default split of the final mark between the three core components (sums to 100).
+#: Suggested weight (%) when a new assessment of this type is created.
+#: It is only a starting point: the user can change it freely.
 DEFAULT_CORE_WEIGHTS = {'cat': 20.0, 'assignment': 10.0, 'final': 70.0}

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="umti_exam_period_view_form" model="ir.ui.view">
+        <field name="name">umti.exam.period.form</field>
+        <field name="model">umti.exam.period</field>
+        <field name="arch" type="xml">
+            <form string="Exam Period">
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_schedules" type="object"
+                                class="oe_stat_button" icon="fa-calendar">
+                            <field name="schedule_count" widget="statinfo" string="Exams"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="e.g. Semester 1 Final Exams"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="academic_term_id" options="{'no_create': True}"/>
+                            <field name="slot_template_id" options="{'no_create': True}"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                        <group>
+                            <field name="date_from"/>
+                            <field name="date_to"/>
+                            <field name="session_count"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Excluded Dates" name="exclusions">
+                            <field name="exclusion_ids">
+                                <list editable="bottom">
+                                    <field name="date"/>
+                                    <field name="reason"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="umti_exam_period_view_list" model="ir.ui.view">
+        <field name="name">umti.exam.period.list</field>
+        <field name="model">umti.exam.period</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="academic_term_id"/>
+                <field name="date_from"/>
+                <field name="date_to"/>
+                <field name="slot_template_id"/>
+                <field name="session_count"/>
+                <field name="schedule_count"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_umti_exam_period" model="ir.actions.act_window">
+        <field name="name">Exam Periods</field>
+        <field name="res_model">umti.exam.period</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Create an exam period</p>
+            <p>An exam period is a date range with a session template and
+               excluded dates. Duplicate it for the next semester.</p>
+        </field>
+    </record>
+
+</odoo>

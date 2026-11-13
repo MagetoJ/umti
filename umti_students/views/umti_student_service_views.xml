@@ -1,0 +1,359 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="umti_student_service_case_view_form" model="ir.ui.view">
+        <field name="name">umti.student.service.case.form</field>
+        <field name="model">umti.student.service.case</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_start" type="object" string="Start"
+                            class="oe_highlight" invisible="state != 'new'"/>
+                    <button name="action_hold" type="object" string="Put On Hold"
+                            invisible="state not in ('new', 'in_progress')"/>
+                    <button name="action_resolve" type="object" string="Resolve"
+                            class="oe_highlight"
+                            invisible="state not in ('new', 'in_progress', 'on_hold')"/>
+                    <button name="action_close" type="object" string="Close"
+                            invisible="state != 'resolved'"/>
+                    <button name="action_cancel" type="object" string="Cancel"
+                            invisible="state in ('closed', 'cancelled')"/>
+                    <button name="action_reopen" type="object" string="Reopen"
+                            invisible="state not in ('resolved', 'closed', 'cancelled')"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="new,in_progress,resolved,closed"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="What is this case about?"/></h1>
+                    </div>
+                    <group>
+                        <group string="Service">
+                            <field name="service_type_id"/>
+                            <field name="student_id"/>
+                            <field name="course_id" readonly="1"/>
+                            <field name="student_state" readonly="1"/>
+                            <field name="assigned_to"/>
+                            <field name="priority"/>
+                            <field name="confidential"/>
+                        </group>
+                        <group string="Timeline">
+                            <field name="opened_date"/>
+                            <field name="closed_date"/>
+                            <field name="start_date"/>
+                            <field name="end_date"/>
+                            <field name="location"/>
+                            <field name="external_party"/>
+                            <field name="reference"/>
+                            <field name="amount"/>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Details">
+                            <field name="description"/>
+                        </page>
+                        <page string="Resolution">
+                            <field name="resolution"/>
+                        </page>
+                        <page string="Attachments">
+                            <field name="attachment_ids"
+                                   widget="many2many_binary" nolabel="1"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="umti_student_service_case_view_list" model="ir.ui.view">
+        <field name="name">umti.student.service.case.list</field>
+        <field name="model">umti.student.service.case</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="student_id"/>
+                <field name="service_type_id"/>
+                <field name="assigned_to"/>
+                <field name="priority" widget="badge"/>
+                <field name="state" widget="badge"/>
+                <field name="opened_date"/>
+                <field name="closed_date" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="umti_student_service_case_view_search" model="ir.ui.view">
+        <field name="name">umti.student.service.case.search</field>
+        <field name="model">umti.student.service.case</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="student_id"/>
+                <field name="service_type_id"/>
+                <field name="assigned_to"/>
+                <field name="course_id"/>
+                <field name="student_state"/>
+                <field name="state"/>
+                <field name="priority"/>
+                <filter name="filter_open" string="Open"
+                        domain="[('state','in',('new','in_progress','on_hold'))]"/>
+                <filter name="filter_new" string="New"
+                        domain="[('state','=','new')]"/>
+                <filter name="filter_progress" string="In Progress"
+                        domain="[('state','=','in_progress')]"/>
+                <filter name="filter_resolved" string="Resolved"
+                        domain="[('state','=','resolved')]"/>
+                <separator/>
+                <filter name="filter_urgent" string="High / Urgent"
+                        domain="[('priority','in',('high','urgent'))]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_service" string="Service"
+                            context="{'group_by': 'service_type_id'}"/>
+                    <filter name="group_state" string="State"
+                            context="{'group_by': 'state'}"/>
+                    <filter name="group_priority" string="Priority"
+                            context="{'group_by': 'priority'}"/>
+                    <filter name="group_course" string="Course"
+                            context="{'group_by': 'course_id'}"/>
+                    <filter name="group_assigned" string="Assigned To"
+                            context="{'group_by': 'assigned_to'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_umti_student_service_cases" model="ir.actions.act_window">
+        <field name="name">Student Services</field>
+        <field name="res_model">umti.student.service.case</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="umti_student_service_case_view_list"/>
+        <field name="search_view_id" ref="umti_student_service_case_view_search"/>
+    </record>
+
+    <menuitem id="menu_school_student_services"
+              name="Student Services"
+              parent="menu_school_students"
+              sequence="21"
+              groups="group_umti_student_services_user"/>
+
+    <!-- The parent is a container: clearing the action removes the stale
+         dashboard action left by previous versions. -->
+    <record id="menu_school_student_services" model="ir.ui.menu">
+        <field name="action" eval="False"/>
+    </record>
+
+    <menuitem id="menu_school_services_wellbeing"
+              name="Wellbeing"
+              parent="menu_school_student_services"
+              sequence="10"
+              groups="group_umti_student_services_user"/>
+
+    <record id="action_umti_service_counselling" model="ir.actions.client">
+        <field name="name">Guidance &amp; Counselling</field>
+        <field name="tag">umti_section_dashboard</field>
+        <field name="context" eval="{'umti_section': 'student_services', 'umti_default_filters': {'service_type_id': str(ref('service_type_counselling'))}}"/>
+    </record>
+
+    <menuitem id="menu_school_service_counselling"
+              name="Guidance &amp; Counselling"
+              parent="menu_school_services_wellbeing"
+              action="action_umti_counselling_dashboard"
+              sequence="10"
+              groups="group_umti_service_counselling"/>
+
+    <record id="action_umti_service_welfare" model="ir.actions.client">
+        <field name="name">Student Welfare</field>
+        <field name="tag">umti_section_dashboard</field>
+        <field name="context" eval="{'umti_section': 'student_services', 'umti_default_filters': {'service_type_id': str(ref('service_type_welfare'))}}"/>
+    </record>
+
+    <menuitem id="menu_school_service_welfare"
+              name="Student Welfare"
+              parent="menu_school_services_wellbeing"
+              action="action_umti_welfare_dashboard"
+              sequence="20"
+              groups="group_umti_service_welfare"/>
+
+    <record id="action_umti_service_health" model="ir.actions.client">
+        <field name="name">Health &amp; Clinic</field>
+        <field name="tag">umti_section_dashboard</field>
+        <field name="context" eval="{'umti_section': 'student_services', 'umti_default_filters': {'service_type_id': str(ref('service_type_health'))}}"/>
+    </record>
+
+    <menuitem id="menu_school_service_health"
+              name="Health &amp; Clinic"
+              parent="menu_school_services_wellbeing"
+              action="action_umti_health_dashboard"
+              sequence="30"
+              groups="group_umti_service_health"/>
+
+    <record id="action_umti_service_inclusion" model="ir.actions.client">
+        <field name="name">Special Needs &amp; Inclusion</field>
+        <field name="tag">umti_section_dashboard</field>
+        <field name="context" eval="{'umti_section': 'student_services', 'umti_default_filters': {'service_type_id': str(ref('service_type_inclusion'))}}"/>
+    </record>
+
+    <menuitem id="menu_school_service_inclusion"
+              name="Special Needs &amp; Inclusion"
+              parent="menu_school_services_wellbeing"
+              action="action_umti_inclusion_dashboard"
+              sequence="40"
+              groups="group_umti_service_inclusion"/>
+
+    <menuitem id="menu_school_services_conduct"
+              name="Conduct &amp; Feedback"
+              parent="menu_school_student_services"
+              sequence="20"
+              groups="group_umti_student_services_user"/>
+
+    <record id="action_umti_service_discipline" model="ir.actions.client">
+        <field name="name">Discipline</field>
+        <field name="tag">umti_section_dashboard</field>
+        <field name="context" eval="{'umti_section': 'student_services', 'umti_default_filters': {'service_type_id': str(ref('service_type_discipline'))}}"/>
+    </record>
+
+    <menuitem id="menu_school_service_discipline"
+              name="Discipline"
+              parent="menu_school_services_conduct"
+              action="action_umti_discipline_dashboard"
+              sequence="10"
+              groups="group_umti_service_discipline"/>
+
+    <record id="action_umti_service_grievances" model="ir.actions.client">
+        <field name="name">Grievances &amp; Feedback</field>
+        <field name="tag">umti_section_dashboard</field>
+        <field name="context" eval="{'umti_section': 'student_services', 'umti_default_filters': {'service_type_id': str(ref('service_type_grievances'))}}"/>
+    </record>
+
+    <menuitem id="menu_school_service_grievances"
+              name="Grievances &amp; Feedback"
+              parent="menu_school_services_conduct"
+              action="action_umti_grievances_dashboard"
+              sequence="20"
+              groups="group_umti_service_grievances"/>
+
+    <menuitem id="menu_school_services_life"
+              name="Student Life"
+              parent="menu_school_student_services"
+              sequence="30"
+              groups="group_umti_student_services_user"/>
+
+    <record id="action_umti_service_accommodation" model="ir.actions.client">
+        <field name="name">Accommodation</field>
+        <field name="tag">umti_section_dashboard</field>
+        <field name="context" eval="{'umti_section': 'student_services', 'umti_default_filters': {'service_type_id': str(ref('service_type_accommodation'))}}"/>
+    </record>
+
+    <menuitem id="menu_school_service_accommodation"
+              name="Accommodation"
+              parent="menu_school_services_life"
+              action="action_umti_accommodation_dashboard"
+              sequence="10"
+              groups="group_umti_service_accommodation"/>
+
+    <record id="action_umti_service_activities" model="ir.actions.client">
+        <field name="name">Student Activities</field>
+        <field name="tag">umti_section_dashboard</field>
+        <field name="context" eval="{'umti_section': 'student_services', 'umti_default_filters': {'service_type_id': str(ref('service_type_activities'))}}"/>
+    </record>
+
+    <menuitem id="menu_school_service_activities"
+              name="Student Activities"
+              parent="menu_school_services_life"
+              action="action_umti_activities_dashboard"
+              sequence="20"
+              groups="group_umti_service_activities"/>
+
+    <record id="action_umti_service_transport" model="ir.actions.client">
+        <field name="name">Transport</field>
+        <field name="tag">umti_section_dashboard</field>
+        <field name="context" eval="{'umti_section': 'student_services', 'umti_default_filters': {'service_type_id': str(ref('service_type_transport'))}}"/>
+    </record>
+
+    <menuitem id="menu_school_service_transport"
+              name="Transport"
+              parent="menu_school_services_life"
+              action="action_umti_transport_dashboard"
+              sequence="30"
+              groups="group_umti_service_transport"/>
+
+    <menuitem id="menu_school_services_careers"
+              name="Careers &amp; Progression"
+              parent="menu_school_student_services"
+              sequence="40"
+              groups="group_umti_student_services_user"/>
+
+    <record id="action_umti_service_careers" model="ir.actions.client">
+        <field name="name">Careers &amp; Attachment</field>
+        <field name="tag">umti_section_dashboard</field>
+        <field name="context" eval="{'umti_section': 'student_services', 'umti_default_filters': {'service_type_id': str(ref('service_type_careers'))}}"/>
+    </record>
+
+    <menuitem id="menu_school_service_careers"
+              name="Careers &amp; Attachment"
+              parent="menu_school_services_careers"
+              action="action_umti_careers_dashboard"
+              sequence="10"
+              groups="group_umti_service_careers"/>
+
+    <record id="action_umti_service_clearance" model="ir.actions.client">
+        <field name="name">Clearance &amp; Graduation</field>
+        <field name="tag">umti_section_dashboard</field>
+        <field name="context" eval="{'umti_section': 'student_services', 'umti_default_filters': {'service_type_id': str(ref('service_type_clearance'))}}"/>
+    </record>
+
+    <menuitem id="menu_school_service_clearance"
+              name="Clearance &amp; Graduation"
+              parent="menu_school_services_careers"
+              action="action_umti_clearance_dashboard"
+              sequence="20"
+              groups="group_umti_service_clearance"/>
+
+    <record id="action_umti_service_alumni" model="ir.actions.client">
+        <field name="name">Alumni</field>
+        <field name="tag">umti_section_dashboard</field>
+        <field name="context" eval="{'umti_section': 'student_services', 'umti_default_filters': {'service_type_id': str(ref('service_type_alumni'))}}"/>
+    </record>
+
+    <menuitem id="menu_school_service_alumni"
+              name="Alumni"
+              parent="menu_school_services_careers"
+              action="action_umti_alumni_dashboard"
+              sequence="30"
+              groups="group_umti_service_alumni"/>
+
+    <menuitem id="menu_school_services_admin"
+              name="Student Administration"
+              parent="menu_school_student_services"
+              sequence="50"
+              groups="group_umti_student_services_user"/>
+
+    <record id="action_umti_service_scholarships" model="ir.actions.client">
+        <field name="name">Scholarships &amp; Sponsorship</field>
+        <field name="tag">umti_section_dashboard</field>
+        <field name="context" eval="{'umti_section': 'student_services', 'umti_default_filters': {'service_type_id': str(ref('service_type_scholarships'))}}"/>
+    </record>
+
+    <menuitem id="menu_school_service_scholarships"
+              name="Scholarships &amp; Sponsorship"
+              parent="menu_school_services_admin"
+              action="action_umti_scholarships_dashboard"
+              sequence="10"
+              groups="group_umti_service_scholarships"/>
+
+    <record id="action_umti_service_onboarding" model="ir.actions.client">
+        <field name="name">Student ID &amp; Onboarding</field>
+        <field name="tag">umti_section_dashboard</field>
+        <field name="context" eval="{'umti_section': 'student_services', 'umti_default_filters': {'service_type_id': str(ref('service_type_onboarding'))}}"/>
+    </record>
+
+    <menuitem id="menu_school_service_onboarding"
+              name="Student ID &amp; Onboarding"
+              parent="menu_school_services_admin"
+              action="action_umti_onboarding_dashboard"
+              sequence="20"
+              groups="group_umti_service_onboarding"/>
+</odoo>

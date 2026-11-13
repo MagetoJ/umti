@@ -18,46 +18,98 @@ class UmtiStudentSemesterInherit(models.Model):
         return res
 
     @api.model
-    def _running_term(self):
-        """The main term that is running now, or today's, or the latest."""
+    def _running_terms(self):
+        """Main terms that are running today, across courses and cohorts."""
         Term = self.env['umti.academic.term']
-        base = [('parent_term', '=', False), ('status', '=', 'in_progress'),
-                ('active', '=', True)]
         today = fields.Date.context_today(self)
-        term = Term.search(base + [
+        return Term.search([
+            ('parent_term', '=', False),
+            ('status', '=', 'in_progress'),
+            ('active', '=', True),
             ('term_start_date', '<=', today),
             ('term_end_date', '>=', today),
-        ], order='term_start_date desc', limit=1)
-        return term or Term.search(base, order='term_start_date desc', limit=1)
+        ], order='course_id, term_start_date')
 
     @api.model
-    def _start_pending(self):
-        """Point every active student at the semester that is now running.
+    def _term_set(self, running):
+        """All main terms that form one cohort's sequence."""
+        Term = self.env['umti.academic.term']
+        domain = [
+            ('parent_term', '=', False),
+            ('course_id', '=', running.course_id.id),
+        ]
+        if running.pattern_id:
+            domain.append(('pattern_id', '=', running.pattern_id.id))
+        if running.intake_id:
+            domain.append(('intake_id', '=', running.intake_id.id))
+        terms = Term.search(domain, order='term_start_date')
+        if running not in terms:
+            terms |= running
+        return terms.sorted('term_start_date')
+
+    @api.model
+    def _student_in_cohort(self, student, running):
+        if not running.intake_id:
+            return True
+        if student.application_id.intake_id == running.intake_id:
+            return True
+        return any(
+            semester.academic_term_id.intake_id == running.intake_id
+            for semester in student.semester_ids)
+
+    @api.model
+    def _start_pending(self, term=None):
+        """Advance the students whose next period has just started.
 
         Called when a main term becomes in progress, and by the nightly cron
         as a safety net. Idempotent: a student already on the running term is
-        skipped.
-
-        A semester with failed or unfinished results is left open and the
-        student is put on hold; the student still advances, because a hold
-        only blocks graduation (carry-over units are normal). A semester with
-        no results yet is also left open, but without a hold: marks are
-        usually published after the next term has started.
+        skipped. A failed or unfinished semester stays open and puts the
+        student on hold, but the student still advances; a semester with no
+        results yet is left open without a hold.
         """
-        running = self._running_term()
-        if not running:
-            return self.browse()
-        Semester = self.sudo()
-        students = self.env['school.student'].sudo().search([
+        advanced = self.browse()
+        for running in (term or self._running_terms()):
+            advanced |= self._advance_term(running)
+        return advanced
+
+    @api.model
+    def _advance_term(self, running):
+        Term = self.env['umti.academic.term']
+        domain = [
             ('state', '=', 'active'),
             ('semester_ids', '!=', False),
-        ])
-        advanced = self.env['school.student']
+        ]
+        if running.course_id:
+            domain.append(('course_id', '=', running.course_id.id))
+        students = self.env['school.student'].sudo().search(domain)
+        sequence = self._term_set(running)
+        index = list(sequence).index(running)
+        previous = sequence[index - 1] if index else Term
+        advanced = self.browse()
         for student in students:
-            semesters = student.semester_ids
-            if semesters.filtered(lambda s: s.academic_term_id == running):
+            if not self._student_in_cohort(student, running):
                 continue
-            for semester in semesters.filtered(lambda s: s.state == 'active'):
+            semesters = student.semester_ids
+            active = semesters.filtered(lambda s: s.state == 'active')
+            if active.filtered(lambda s: s.academic_term_id == running):
+                continue
+            current = active.sorted('sequence', reverse=True)[:1]
+            current_term = current.academic_term_id
+            if current_term == running:
+                continue
+            if previous:
+                due = current_term == previous
+                if not due and not current_term:
+                    last_complete = semesters.filtered(
+                        lambda s: s.state == 'complete').sorted(
+                            'sequence', reverse=True)[:1]
+                    due = last_complete.academic_term_id == previous
+                if not due:
+                    continue
+            elif current_term:
+                continue
+
+            for semester in active:
                 state = semester._results_state()
                 if state['ok']:
                     semester.write({'state': 'complete'})
@@ -71,6 +123,7 @@ class UmtiStudentSemesterInherit(models.Model):
                         semester=semester.name,
                         student=student.display_name))
                 # state['missing']: wait for the marks, no hold.
+
             next_semester = semesters.filtered(
                 lambda s: s.state == 'draft').sorted('sequence')[:1]
             if next_semester:
@@ -79,21 +132,28 @@ class UmtiStudentSemesterInherit(models.Model):
                     'academic_year_id': running.academic_year_id.id,
                     'state': 'active',
                 })
-                advanced |= student
+                advanced |= next_semester
+            else:
+                # action_mark_complete already activated the next row; it
+                # only needs the term that has just started.
+                waiting = semesters.filtered(
+                    lambda s: s.state == 'active'
+                    and not s.academic_term_id).sorted('sequence')[:1]
+                if waiting:
+                    waiting.with_context(umti_skip_enroll=True).write({
+                        'academic_term_id': running.id,
+                        'academic_year_id': running.academic_year_id.id,
+                    })
+                    advanced |= waiting
         if advanced:
-            advanced._auto_fill_enrollment()
-        return Semester.search([
-            ('academic_term_id', '=', running.id),
-            ('state', '=', 'active'),
-        ])
+            advanced.student_id._auto_fill_enrollment()
+        return advanced
 
     @api.model
     def _cron_advance_semesters(self):
         """Daily: keep enrolments in sync and move students forward."""
         Semester = self.sudo()
-        # Running semesters always have their units enrolled.
         Semester.search([('state', '=', 'active')]).student_id._auto_fill_enrollment()
-        # Students whose term has already changed are moved onto it.
         self._start_pending()
 
     def action_assign_unit_trainers(self):

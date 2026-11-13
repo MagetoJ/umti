@@ -19,6 +19,9 @@ class UmtiFeeRecord(models.Model):
     semester_id = fields.Many2one(
         'umti.academic.term', string='Semester', required=True, tracking=True,
         domain="[('academic_year_id', '=', academic_year_id)]")
+    period_sequence = fields.Integer(
+        related='semester_id.sequence', store=True, readonly=True,
+        help="Sequence of the student's term inside the course pattern.")
     course_id = fields.Many2one(
         'umti.course', string='Course', required=True, tracking=True)
     department_id = fields.Many2one(
@@ -26,9 +29,9 @@ class UmtiFeeRecord(models.Model):
         related='course_id.department_id', store=True, readonly=True)
     fee_structure_line_id = fields.Many2one(
         'umti.fee.structure.line', string='Fee Structure Line', tracking=True,
-        domain="[('academic_year_id', '=', academic_year_id), "
-               "('course_id', '=', course_id), "
-               "('semester_id', 'in', [semester_id, False])]")
+        domain="[('academic_year_ids', 'in', [academic_year_id]), "
+               "('course_ids', 'in', [course_id]), "
+               "('period_sequence', 'in', [period_sequence, 0])]")
 
     date = fields.Date(default=fields.Date.context_today, required=True, tracking=True)
     description = fields.Char(help="e.g. Tuition, Hostel, Library fee")
@@ -113,12 +116,19 @@ class UmtiFeeRecord(models.Model):
             self.semester_id = False
         self._onchange_clear_fee_line()
 
-    @api.onchange('semester_id', 'course_id')
+    @api.onchange('semester_id', 'course_id', 'academic_year_id',
+                  'period_sequence')
     def _onchange_clear_fee_line(self):
         line = self.fee_structure_line_id
-        if line and (line.academic_year_id != self.academic_year_id
-                     or line.course_id != self.course_id
-                     or (line.semester_id and line.semester_id != self.semester_id)):
+        if not line:
+            return
+        if ((line.academic_year_ids
+             and self.academic_year_id not in line.academic_year_ids)
+                or (line.course_ids
+                    and self.course_id not in line.course_ids)
+                or (line.semester_ids
+                    and self.semester_id not in line.semester_ids)
+                or line.period_sequence not in (0, self.period_sequence)):
             self.fee_structure_line_id = False
 
     @api.constrains('academic_year_id', 'semester_id')
@@ -126,6 +136,18 @@ class UmtiFeeRecord(models.Model):
         for rec in self:
             if rec.semester_id and rec.semester_id.academic_year_id != rec.academic_year_id:
                 raise ValidationError(_("The semester does not belong to the selected academic year."))
+
+    @api.constrains('semester_id', 'course_id')
+    def _check_term_course(self):
+        for rec in self:
+            if (rec.semester_id and rec.semester_id.course_id
+                    and rec.semester_id.course_id != rec.course_id):
+                raise ValidationError(_(
+                    "The term %(term)s belongs to %(term_course)s, not to "
+                    "%(course)s.",
+                    term=rec.semester_id.name,
+                    term_course=rec.semester_id.course_id.name,
+                    course=rec.course_id.name))
 
     @api.constrains('fee_amount', 'payment_amount')
     def _check_amounts(self):

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="group_umti_student_finance" model="res.groups">
+        <field name="name">Student Finance</field>
+        <field name="category_id" ref="module_category_umti_students"/>
+        <field name="implied_ids" eval="[
+            (4, ref('group_umti_students_user')),
+            (4, ref('umti_core.group_umti_fee_structure_user')),
+            (4, ref('account.group_account_invoice'))]"/>
+    </record>
+
+    <!-- Managers already imply the operational student groups; add finance. -->
+    <record id="group_umti_students_manager" model="res.groups">
+        <field name="implied_ids" eval="[
+            (4, ref('group_umti_student_finance'))]"/>
+    </record>
+</odoo>

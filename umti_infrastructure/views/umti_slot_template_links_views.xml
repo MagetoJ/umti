@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Class schedule: restrict the slot picker to the term's template -->
+    <record id="umti_class_schedule_view_form_slot_template" model="ir.ui.view">
+        <field name="name">umti.class.schedule.form.slot.template</field>
+        <field name="model">umti.class.schedule</field>
+        <field name="inherit_id" ref="umti_infrastructure.umti_class_schedule_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='slot_id']" position="before">
+                <field name="allowed_slot_ids" invisible="1"/>
+            </xpath>
+            <xpath expr="//field[@name='slot_id']" position="attributes">
+                <attribute name="domain">[('slot_type', 'in', ['regular', 'both']), ('id', 'in', allowed_slot_ids)]</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Exam schedule: period + restricted slot picker -->
+    <record id="umti_exam_schedule_view_form_slot_template" model="ir.ui.view">
+        <field name="name">umti.exam.schedule.form.slot.template</field>
+        <field name="model">umti.exam.schedule</field>
+        <field name="inherit_id" ref="umti_infrastructure.umti_exam_schedule_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='slot_id']" position="before">
+                <field name="allowed_slot_ids" invisible="1"/>
+                <field name="exam_period_id" options="{'no_create': True}"/>
+            </xpath>
+            <xpath expr="//field[@name='slot_id']" position="attributes">
+                <attribute name="domain">[('slot_type', 'in', ['exam', 'both']), ('id', 'in', allowed_slot_ids)]</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="umti_exam_schedule_view_list_slot_template" model="ir.ui.view">
+        <field name="name">umti.exam.schedule.list.slot.template</field>
+        <field name="model">umti.exam.schedule</field>
+        <field name="inherit_id" ref="umti_infrastructure.umti_exam_schedule_view_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='slot_id']" position="after">
+                <field name="exam_period_id" optional="hide"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Time slots: show label, allow archived filter -->
+    <record id="umti_timetable_slot_view_search_archive" model="ir.ui.view">
+        <field name="name">umti.timetable.slot.search.archive</field>
+        <field name="model">umti.timetable.slot</field>
+        <field name="inherit_id" ref="umti_infrastructure.umti_timetable_slot_view_search"/>
+        <field name="arch" type="xml">
+            <xpath expr="//search" position="inside">
+                <filter string="Archived" name="inactive" domain="[('active', '=', False)]"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="umti_timetable_slot_view_list_label" model="ir.ui.view">
+        <field name="name">umti.timetable.slot.list.label</field>
+        <field name="model">umti.timetable.slot</field>
+        <field name="inherit_id" ref="umti_infrastructure.umti_timetable_slot_view_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//list" position="inside">
+                <field name="label" optional="show"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Template picker on level / course / term pattern / term -->
+    <record id="umti_course_level_form_slot_template" model="ir.ui.view">
+        <field name="name">umti.course.level.form.slot.template</field>
+        <field name="model">umti.course.level</field>
+        <field name="inherit_id" ref="umti_core.umti_course_level_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='effective_term_pattern_id']" position="after">
+                <field name="slot_template_id" options="{'no_create': True}"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="umti_course_form_slot_template" model="ir.ui.view">
+        <field name="name">umti.course.form.slot.template</field>
+        <field name="model">umti.course</field>
+        <field name="inherit_id" ref="umti_core.umti_course_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='effective_term_pattern_id']" position="after">
+                <field name="slot_template_id" options="{'no_create': True}"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="umti_term_pattern_form_slot_template" model="ir.ui.view">
+        <field name="name">umti.term.pattern.form.slot.template</field>
+        <field name="model">umti.term.pattern</field>
+        <field name="inherit_id" ref="umti_core.umti_term_pattern_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="Slot Templates" name="slot_templates">
+                    <field name="slot_template_ids"/>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="umti_academic_term_form_slot_template" model="ir.ui.view">
+        <field name="name">umti.academic.term.form.slot.template</field>
+        <field name="model">umti.academic.term</field>
+        <field name="inherit_id" ref="umti_core.umti_academic_term_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet//group[1]" position="inside">
+                <field name="slot_template_id" options="{'no_create': True}"/>
+                <field name="effective_slot_template_id" readonly="1"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

@@ -7,10 +7,15 @@
         web_icon="umti_students,static/description/icon.png"
         groups="group_umti_students_user"/>
 
-    <menuitem id="menu_school_students" 
-        name="Students" 
-        action="school_student_action" 
+    <menuitem id="menu_school_students"
+        name="Students"
         sequence="10"/>
+
+    <menuitem id="menu_school_students_list"
+        name="All Students"
+        parent="menu_school_students"
+        action="school_student_action"
+        sequence="1"/>
 
     <!-- 2. Admissions -->
     <menuitem id="menu_school_admissions" 

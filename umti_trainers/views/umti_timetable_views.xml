@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Time Slots Form & List -->
+    <record id="umti_timetable_slot_view_tree" model="ir.ui.view">
+        <field name="name">umti.timetable.slot.list</field>
+        <field name="model">umti.timetable.slot</field>
+        <field name="arch" type="xml">
+            <list string="Master Time Slots" editable="bottom">
+                <field name="day_of_week"/>
+                <field name="start_time" widget="float_time"/>
+                <field name="end_time" widget="float_time"/>
+                <field name="slot_type"/>
+                <field name="name"/>
+                <field name="active"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Timetable Form View -->
+    <record id="umti_timetable_view_form" model="ir.ui.view">
+        <field name="name">umti.timetable.form</field>
+        <field name="model">umti.timetable</field>
+        <field name="arch" type="xml">
+            <form string="Class Group Timetable">
+                <header>
+                    <button name="action_generate_timetable" string="Auto-Generate Timetable" type="object" class="btn-primary" invisible="state == 'published'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,published"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name" placeholder="e.g., Diploma ICT Year 1 Term 1 Timetable"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="class_group_id"/>
+                            <field name="department_id"/>
+                        </group>
+                        <group>
+                            <field name="academic_term_id"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Weekly Schedule Matrix">
+                            <field name="session_ids">
+                                <list editable="bottom">
+                                    <field name="slot_id"/>
+                                    <field name="unit_id"/>
+                                    <field name="trainer_id"/>
+                                    <field name="room_id"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- Actions -->
+    <record id="action_umti_timetable_slot" model="ir.actions.act_window">
+        <field name="name">Master Time Slots</field>
+        <field name="res_model">umti.timetable.slot</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="action_umti_timetable" model="ir.actions.act_window">
+        <field name="name">Class Timetables</field>
+        <field name="res_model">umti.timetable</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+</odoo>

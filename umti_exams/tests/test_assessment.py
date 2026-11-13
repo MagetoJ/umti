@@ -83,14 +83,17 @@ class TestAssessment(ExamsCommon):
             first.with_user(self.manager).action_reset_draft()
         self.assertTrue(second)
 
-    def test_optional_type_must_be_enabled_in_plan(self):
+    def test_any_type_can_be_created_without_a_plan(self):
+        quiz = self.env['umti.assessment'].create({
+            'name': 'Quiz', 'course_id': self.course.id, 'unit_id': self.unit.id,
+            'academic_year_id': self.year.id, 'semester_id': self.sem1.id,
+            'assessment_type': 'quiz', 'max_marks': 10, 'weight': 10})
+        self.assertEqual(quiz.effective_weight, 10)
+
+    def test_weights_cannot_exceed_100_for_a_unit(self):
+        self._assessment(assessment_type='final', weight=70)
         with self.assertRaises(ValidationError):
-            self.env['umti.assessment'].create({
-                'name': 'Quiz', 'course_id': self.course.id, 'unit_id': self.unit.id,
-                'academic_year_id': self.year.id, 'semester_id': self.sem1.id,
-                'assessment_type': 'quiz', 'max_marks': 10})
-        self._enable_type('quiz')
-        self.assertTrue(self._assessment(assessment_type='quiz'))
+            self._assessment(assessment_type='cat', weight=40)
 
     def test_unit_must_belong_to_course_and_semester_to_year(self):
         with self.assertRaises(ValidationError):

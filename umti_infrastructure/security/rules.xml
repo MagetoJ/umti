@@ -51,6 +51,13 @@
         <field name="groups" eval="[(4, ref('base.group_system'))]"/>
     </record>
 
+    <record id="rule_exam_period_admin" model="ir.rule">
+        <field name="name">Exam Period: System Admin Bypass</field>
+        <field name="model_id" ref="model_umti_exam_period"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('base.group_system'))]"/>
+    </record>
+
     <!-- Multi-company rules -->
     <record id="rule_facility_company" model="ir.rule">
         <field name="name">Facility: Multi-Company</field>
@@ -67,6 +74,12 @@
     <record id="rule_exam_schedule_company" model="ir.rule">
         <field name="name">Exam Schedule: Multi-Company</field>
         <field name="model_id" ref="model_umti_exam_schedule"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+
+    <record id="rule_exam_period_company" model="ir.rule">
+        <field name="name">Exam Period: Multi-Company</field>
+        <field name="model_id" ref="model_umti_exam_period"/>
         <field name="domain_force">[('company_id', 'in', company_ids)]</field>
     </record>
 
